@@ -32,7 +32,7 @@ results = {
 def get_results():
   results['memories'].append({
     'content': {
-      'description': request.json['content']
+      'description': request.json['content'][:100]
     },
     'objectID': '246',
     'teams': [
