@@ -41,4 +41,4 @@ def get_results():
   return jsonify({'results': results})
 
 if __name__ == '__main__':
-  app.run(debug=True)
+  app.run()
