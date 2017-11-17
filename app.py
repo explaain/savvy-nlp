@@ -33,64 +33,71 @@ results = {
 
 res = index.search("query string")
 
+def processPageData(organisationID, user, pageData):
+
+
 def compoundSearch(user, pageText):
     try:
 
     except ValueError:
         print("Oops!  This didn't work...")
 
-commonWords = ['i',
-  'a',
-  'of',
-  'me',
-  'my',
-  'is',
-  'im',
-  'so',
-  'all',
-  'get',
-  'how',
-  'new',
-  'out',
-  'the',
-  'use',
-  'best',
-  'name',
-  'next',
-  'take',
-  'what',
-  'image',
-  'something',
-]
+def commonWords():
+    listOfCommonWords = ['i',
+      'a',
+      'of',
+      'me',
+      'my',
+      'is',
+      'im',
+      'so',
+      'all',
+      'get',
+      'how',
+      'new',
+      'out',
+      'the',
+      'use',
+      'best',
+      'name',
+      'next',
+      'take',
+      'what',
+      'image',
+      'something',
+    ]
+    return listOfCommonWords
 
-emailPhrases = ['Skip to content',
-  'Using',
-  'with screen readers',
-  'Search',
-  'Mail',
-  'COMPOSE',
-  'Labels',
-  'Inbox',
-  'Starred',
-  'Sent Mail',
-  'Drafts',
-  'More',
-  '---------- Forwarded message ----------',
-  'From: ',
-  'Date: ',
-  'Subject: ',
-  'To: ',
-  'Click here to Reply or Forward',
-  'GB',
-  'GB used',
-  'Manage',
-  'Program Policies',
-  'Powered by Google',
-  'Last account activity:',
-  'hour ago',
-  'hours ago',
-  'Details',
-]
+def emailPhrases():
+    listOfEmailPhrases = ['Skip to content',
+      'Using',
+      'with screen readers',
+      'Search',
+      'Mail',
+      'COMPOSE',
+      'Labels',
+      'Inbox',
+      'Starred',
+      'Sent Mail',
+      'Drafts',
+      'More',
+      '---------- Forwarded message ----------',
+      'From: ',
+      'Date: ',
+      'Subject: ',
+      'To: ',
+      'Click here to Reply or Forward',
+      'GB',
+      'GB used',
+      'Manage',
+      'Program Policies',
+      'Powered by Google',
+      'Last account activity:',
+      'hour ago',
+      'hours ago',
+      'Details',
+    ]
+    return listOfEmailPhrases
 
 
 @app.route('/parse', methods=['POST'])
