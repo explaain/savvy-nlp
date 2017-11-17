@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import re
 from algoliasearch import algoliasearch
 from flask import Flask, jsonify, request
 
@@ -34,7 +35,11 @@ results = {
 res = index.search("query string")
 
 def processPageData(organisationID, user, pageData):
+    commonWords = commonWords()
+    emailPhrases = emailPhrases()
 
+    for phrase in emailPhrases:
+        re.sub(phrase, '', pageData)
 
 def compoundSearch(user, pageText):
     try:
