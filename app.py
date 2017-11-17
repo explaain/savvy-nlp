@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import os
+from algoliasearch import algoliasearch
 from flask import Flask, jsonify, request
 
+client = algoliasearch.Client("I2VKMNNAXI", 'be6155d34789643ea81563fb671ebb85')
+index = client.init_index('Savvy')
 app = Flask(__name__)
 
 results = {
@@ -27,6 +30,68 @@ results = {
 
   ]
 }
+
+res = index.search("query string")
+
+def compoundSearch(user, pageText):
+    try:
+
+    except ValueError:
+        print("Oops!  This didn't work...")
+
+commonWords = ['i',
+  'a',
+  'of',
+  'me',
+  'my',
+  'is',
+  'im',
+  'so',
+  'all',
+  'get',
+  'how',
+  'new',
+  'out',
+  'the',
+  'use',
+  'best',
+  'name',
+  'next',
+  'take',
+  'what',
+  'image',
+  'something',
+]
+
+emailPhrases = ['Skip to content',
+  'Using',
+  'with screen readers',
+  'Search',
+  'Mail',
+  'COMPOSE',
+  'Labels',
+  'Inbox',
+  'Starred',
+  'Sent Mail',
+  'Drafts',
+  'More',
+  '---------- Forwarded message ----------',
+  'From: ',
+  'Date: ',
+  'Subject: ',
+  'To: ',
+  'Click here to Reply or Forward',
+  'GB',
+  'GB used',
+  'Manage',
+  'Program Policies',
+  'Powered by Google',
+  'Last account activity:',
+  'hour ago',
+  'hours ago',
+  'Details',
+]
+
 
 @app.route('/parse', methods=['POST'])
 def get_results():
