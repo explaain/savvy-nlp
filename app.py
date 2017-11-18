@@ -7,6 +7,7 @@ app = Flask(__name__)
 results = {
   'hits': [
     {
+    'card': {
       'content': {
         'description': 'This is a card'
       },
@@ -15,6 +16,7 @@ results = {
         'gqLdFXQ4Z9SAHfjd6IXX'
       ],
       'highlight': True
+      }
     }
   ],
   'pings': [
@@ -30,15 +32,20 @@ results = {
 
 @app.route('/parse', methods=['POST'])
 def get_results():
-  results['memories'].append({
-    'content': {
-      'description': request.json['content'][:100]
-    },
-    'objectID': '246',
-    'teams': [
-      'gqLdFXQ4Z9SAHfjd6IXX'
-    ]
-  })
+  print request.json['url']
+  if 'mail.google.com' in request.json['url']:
+    results['pings'] = [{
+      'card': {
+        'content': {
+          'description': 'Zendesk integration is due for launch in Sprint 7 (23rd January) and will be posted here'
+        },
+        'objectID': '246',
+        'teams': [
+          'gqLdFXQ4Z9SAHfjd6IXX'
+        ],
+        'highlight': True
+      }
+    }]
   return jsonify({'results': results})
 
 if __name__ == '__main__':
