@@ -32,7 +32,6 @@ results = {
 
 @app.route('/parse', methods=['POST'])
 def get_results():
-  print request.json['url']
   if 'mail.google.com' in request.json['url']:
     results['pings'] = [{
       'card': {
@@ -46,6 +45,8 @@ def get_results():
         'highlight': True
       }
     }]
+  else:
+    results['pings'] = []
   return jsonify({'results': results})
 
 if __name__ == '__main__':
