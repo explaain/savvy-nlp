@@ -1,52 +1,21 @@
 #!/usr/bin/env python
 import os
 from flask import Flask, jsonify, request
+from parse import parse
 
 app = Flask(__name__)
 
-results = {
-  'hits': [
-    {
-    'card': {
-      'content': {
-        'description': 'This is a card'
-      },
-      'objectID': '123',
-      'teams': [
-        'gqLdFXQ4Z9SAHfjd6IXX'
-      ],
-      'highlight': True
-      }
-    }
-  ],
-  'pings': [
-
-  ],
-  'memories': [
-
-  ],
-  'reminders': [
-
-  ]
-}
+# print(parse.getResults({ 'userID': '123', 'content': 'Some content' }))
 
 @app.route('/parse', methods=['POST'])
 def get_results():
-  if 'mail.google.com' in request.json['url']:
-    results['pings'] = [{
-      'card': {
-        'content': {
-          'description': 'Zendesk integration is due for launch in Sprint 7 (23rd January) and will be posted here'
-        },
-        'objectID': '246',
-        'teams': [
-          'gqLdFXQ4Z9SAHfjd6IXX'
-        ],
-        'highlight': True
-      }
-    }]
-  else:
-    results['pings'] = []
+  print('job')
+  try:
+    results = parse.getResults(request.json)
+  except Exception as e:
+    print('Main error')
+    print(e)
+
   return jsonify({'results': results})
 
 if __name__ == '__main__':
