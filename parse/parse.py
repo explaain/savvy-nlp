@@ -45,7 +45,6 @@ def getResults(data):
         if (i < len(words) - 1):
           bonusPoints = getPhrasePoints(word + ' ' + words[i+1], content)
           score += bonusPoints
-      print(score, card['card']['content']['description'])
       if score >= len(card['card']['content']['description']):
         card['card']['highlight'] = True
         results['hits'].append(card)

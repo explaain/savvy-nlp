@@ -10,7 +10,6 @@ def search(organisationID, user, query):
   try:
     if 'data' in user and 'teams' in user['data']:
       filters = 'teams: "' + '" OR teams: "'.join(list(map(lambda x: x['team'], user['data']['teams']))) + '"'
-      print(filters)
     results = index.search(query, {
       'filters': filters
     })
@@ -35,7 +34,7 @@ def compound(organisationID, user, query):
     for result in results:
       cards += result
     cards = deDup(cards)
-    print(json.dumps(cards, indent=1))
+    # print(json.dumps(cards, indent=1))
     return cards
   except Exception as e:
     print('------ Error:', e)
