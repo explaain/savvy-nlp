@@ -1,24 +1,19 @@
 #!/usr/bin/env python
 import math
 import json
-# from algoliasearch import algoliasearch
-#
-# client = algoliasearch.Client("I2VKMNNAXI", 'be6155d34789643ea81563fb671ebb85')
-# index = client.init_index('Savvy')
+from algoliasearch import algoliasearch
+
+client = algoliasearch.Client("I2VKMNNAXI", 'be6155d34789643ea81563fb671ebb85')
+index = client.init_index('Savvy')
 
 def search(organisationID, user, query):
   try:
     filters = ''
     if 'data' in user and 'teams' in user['data']:
       filters = 'teams: "' + '" OR teams: "'.join(list(map(lambda x: x['team'], user['data']['teams']))) + '"'
-    # results = index.search(query, {
-    #   'filters': filters
-    # })
-    results = [
-      {
-        'objectID': '123'
-      }
-    ]
+    results = index.search(query, {
+      'filters': filters
+    })
     cards = algoliaToCards(results)
     print(cards)
     return cards
