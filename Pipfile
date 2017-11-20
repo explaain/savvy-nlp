@@ -13,3 +13,4 @@ name = "pypi"
 
 Flask = "*"
 jsonify = "*"
+algoliasearch = "*"
