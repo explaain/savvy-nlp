@@ -8,18 +8,23 @@ index = client.init_index('Savvy')
 
 def search(organisationID, user, query):
   try:
+    filters = ''
     if 'data' in user and 'teams' in user['data']:
       filters = 'teams: "' + '" OR teams: "'.join(list(map(lambda x: x['team'], user['data']['teams']))) + '"'
     results = index.search(query, {
       'filters': filters
     })
     cards = algoliaToCards(results)
+    print(cards)
     return cards
   except Exception as e:
     print('------ Error:', e)
     return { 'error': True }
   except:
     print(123)
+
+
+
 
 def compound(organisationID, user, query):
   try:

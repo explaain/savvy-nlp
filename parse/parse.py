@@ -11,7 +11,7 @@ emailPhrases = phrases.emailPhrases()
 
 def getPhrasePoints(phrase, content):
   if phrase.lower() not in commonWords and len(phrase) > 2:
-    return content.count(phrase) * len(phrase)
+    return content.lower().count(phrase.lower()) * len(phrase)
   else:
     return 0
 

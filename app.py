@@ -5,7 +5,7 @@ from parse import parse
 
 app = Flask(__name__)
 
-# print(parse.getResults({ 'userID': '123', 'content': 'Some content' }))
+# print(parse.getResults({ 'user': '123', 'organisationID': '12345', 'content': 'Some content the queen' }))
 
 @app.route('/parse', methods=['POST'])
 def get_results():
