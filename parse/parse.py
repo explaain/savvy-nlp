@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 import re
-from algoliasearch import algoliasearch
 import search, phrases
-
-client = algoliasearch.Client("I2VKMNNAXI", 'be6155d34789643ea81563fb671ebb85')
-index = client.init_index('Savvy')
 
 commonWords = phrases.commonWords()
 emailPhrases = phrases.emailPhrases()
