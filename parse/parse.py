@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import re
-import search, phrases
+from parse import search, phrases
 
 commonWords = phrases.commonWords()
 emailPhrases = phrases.emailPhrases()
