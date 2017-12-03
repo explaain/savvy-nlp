@@ -9,12 +9,13 @@ app = Flask(__name__)
 
 @app.route('/parse', methods=['POST'])
 def get_results():
-  print('job')
-  try:
-    results = parse.getResults(request.json)
-  except Exception as e:
-    print('Main error')
-    print(e)
+  print('Starting get_results()')
+  # try:
+  results = parse.getResults(request.json)
+  # except Exception as e:
+  #   print('Main error')
+  #   print(e)
+  #   results = {}
 
   return jsonify({'results': results})
 
