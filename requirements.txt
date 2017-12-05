@@ -6,3 +6,4 @@ Markdown==2.4.1
 pipenv==8.3.2
 timestamp==0.0.1
 wordfreq==1.6.1
+xmljson==0.1.9
