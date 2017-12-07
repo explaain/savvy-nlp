@@ -71,8 +71,8 @@ def getResults(data):
     re.sub(phrase, '', content)
 
   algoliaCards = search.compound(organisationID, user, algoliaQuery)
-  fileCards = drives.search('', '', driveQuery)
-  cards = algoliaCards + fileCards
+  # fileCards = drives.search({}, driveQuery)
+  cards = algoliaCards # + fileCards
   for card in cards:
     score = 0
     if 'content' in card['card']:

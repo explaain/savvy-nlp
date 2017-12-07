@@ -1,1 +1,1 @@
-web: python index.py
+web: /bin/bash run.sh

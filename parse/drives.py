@@ -9,22 +9,36 @@ pp = pprint.PrettyPrinter(indent=1)
 
 import kloudless
 kloudless.configure(api_key='q4djKR_UXs8MxmUv8M56WdTVihDK6Z7ci8JnL1qJvC2Xx40T')
-account = kloudless.Account.all()[0]
 
-def getContent(organisationID, user, fileID, asArray=False):
+def listAccounts():
+  accounts = kloudless.Account.all()
+  return accounts
+
+def getAccount(accountID):
+  account = kloudless.Account(id=accountID)
+  return account
+
+
+
+def getContent(accountInfo, fileID, asArray=False):
+  account = getAccount(accountInfo['accountID'])
   kfile = account.files.retrieve(fileID)
   content = kfile.contents().content
   try:
     z = zipfile.ZipFile(io.BytesIO(content))
     fileList = z.infolist()
-    docs = [f for f in fileList if f.filename == 'word/document.xml']
+    pp.pprint(fileList)
+    docs = [f for f in fileList if f.filename == 'word/document.xml'] # or 'xl' in f.filename]
+    print(len(docs))
     if len(docs):
-      doc = docs[0]
-      xmlContent = z.read(doc).decode('utf-8')
-      print(xmlContent)
-      xml = xmlFindText(xmlContent)
-      print('xml', xml)
-      return xml
+      xmls = []
+      for doc in docs:
+        xmlContent = z.read(doc).decode('utf-8')
+        pp.pprint('join(xmlContent)')
+        pp.pprint(''.join(xmlContent))
+        xmls.append(xmlFindText(xmlContent))
+        print('xml', xmls[-1])
+      return xmls[0]
       # reg = re.findall('>([^<>]*)<', xmlContent)
       # contentArray = [r for r in reg if len(r) > 0 and r != '\r']
       # if asArray:
@@ -36,9 +50,11 @@ def getContent(organisationID, user, fileID, asArray=False):
       return ''
     pass
   except Exception as e:
+    print(e)
     return ''
 
-def search(organisationID, user, query):
+def search(accountInfo, query):
+  account = getAccount(accountInfo['accountID'])
   print(query)
   queries = query.split()[:8] # Max 8 words
   split = lambda A, n=2: [' '.join(str(x) for x in A[i:i+n]) for i in range(0, len(A), n)]
@@ -56,15 +72,21 @@ def search(organisationID, user, query):
   cards = list(map(fileToCard, files))
   return cards
 
-def listfiles(organisationID, user, after, number=100):
+def listfiles(accountInfo, after=False, number=500):
+  account = getAccount(accountInfo['accountID'])
   print(after)
-  recent = account.recent.all(page_size=number, after=after)
+  recent = []
+  if after:
+    recent = account.recent.all(page_size=number, after=after)
+  else:
+    recent = account.recent.all(page_size=number)
   pp.pprint(len(recent))
   pp.pprint('files:' + '\n'.join(list(map(lambda x: x['name'], recent))))
   files = [fileToAlgolia(f) for f in recent]
   return files
 
-def getfile(organisationID, user, fileID):
+def getfile(accountInfo, fileID):
+  account = getAccount(accountInfo['accountID'])
   f = account.files.retrieve(id=fileID)
   print('file:')
   pp.pprint(f)
@@ -190,6 +212,8 @@ def getRanking(el):
   ranking = 0
   if el._name == 'w_numPr':
     ranking = -10
+  if el._name == 'w_ilvl':
+    ranking = -10 * int(el._attributes['w:val'])
   if el._name == 'w_sz': # Doesn't appear to work on headings?
     ranking = int(el._attributes['w:val'])
   if el._name == 'w_pStyle':

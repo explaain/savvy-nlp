@@ -1,6 +1,7 @@
 algoliasearch==1.14.1
 DateTime==4.0.1
 Flask==0.10.1
+Flask-Cors==3.0.3
 kloudless==1.1.2
 Markdown==2.4.1
 pipenv==8.3.2
