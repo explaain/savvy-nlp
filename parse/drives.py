@@ -21,10 +21,10 @@ def getAccount(accountID):
 
 
 def getContent(accountInfo, fileID, asArray=False):
-  account = getAccount(accountInfo['accountID'])
-  kfile = account.files.retrieve(fileID)
-  content = kfile.contents().content
   try:
+    account = getAccount(accountInfo['accountID'])
+    kfile = account.files.retrieve(fileID)
+    content = kfile.contents().content
     z = zipfile.ZipFile(io.BytesIO(content))
     fileList = z.infolist()
     pp.pprint(fileList)
