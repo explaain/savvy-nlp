@@ -30,7 +30,7 @@ def addSource(data):
     'organisationID': source['organisationID'],
     'accountID': source['objectID']
   }
-  indexFiles(accountInfo, True)
+  indexFiles(accountInfo, False, True)
   return source
 
 def indexAll():
