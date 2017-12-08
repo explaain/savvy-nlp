@@ -42,6 +42,7 @@ def indexAll():
   for account in accounts:
     print(account)
     accountID = account['id']
+    source = False
     try:
       source = algoliaSourcesIndex.getObject(accountID)
     except Exception as e:
