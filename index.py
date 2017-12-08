@@ -42,13 +42,17 @@ def indexAll():
   for account in accounts:
     print(account)
     accountID = account['id']
-    source = algoliaSourcesIndex.getObject(accountID)
-    organisationID = source['organisationID']
-    accountInfo = {
-      'organisationID': organisationID,
-      'accountID': accountID
-    }
-    indexFiles(accountInfo, after=lastRefreshTime)
+    try:
+      source = algoliaSourcesIndex.getObject(accountID)
+    except Exception as e:
+      print('Couldn\'t find Algolia record for this source - skipping.', e)
+    if source:
+      organisationID = source['organisationID']
+      accountInfo = {
+        'organisationID': organisationID,
+        'accountID': accountID
+      }
+      indexFiles(accountInfo, after=lastRefreshTime)
   memory = open('memory.txt','w') # Happens now so that incomplete indexing doesn't overwrite lastRefreshTime
   memory.write(thisRefreshTime)
 
