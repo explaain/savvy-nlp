@@ -79,6 +79,7 @@ def listfiles(accountInfo, after=False, number=500):
   if after:
     recent = account.recent.all(page_size=number, after=after)
   else:
+    print('Mytest 2')
     recent = account.recent.all(page_size=number)
   pp.pprint(len(recent))
   pp.pprint('files:' + '\n'.join(list(map(lambda x: x['name'], recent))))

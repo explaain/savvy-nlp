@@ -59,6 +59,7 @@ def indexAll():
 
 def indexFiles(accountInfo, after, allFiles=False):
   if allFiles:
+    print('Mytest 1')
     files = drives.listfiles(accountInfo)
   else:
     files = drives.listfiles(accountInfo, after=after)
@@ -116,7 +117,11 @@ def createCardsFromContentArray(accountInfo, contentArray, f):
     cards.append(card)
     allCards.append(card)
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
-  cardIDs = algoliaCardsIndex.add_objects(cards)
+  cardIDs = []
+  try:
+    cardIDs = algoliaCardsIndex.add_objects(cards)
+  except Exception as e:
+    print('Something went wrong saving this card to Algolia:,' + f['title'])
   print(cardIDs['objectIDs'])
   for i, objectID in enumerate(cardIDs['objectIDs']):
     cards[i]['objectID'] = objectID
@@ -140,8 +145,14 @@ def startIndexing():
 
 
 # indexAll()
-# indexFiles()
-# indexFile('FB1p0q-c5G8Ul72nh_TACbocYbX1KwwcwavwiIG_lauJYYgC7B_L3aPaWBtfsax4t')
+# indexFiles({
+#   'organisationID': 'askporter',
+#   'accountID': '284151319'
+# }, allFiles=True, after=None)
+indexFile({
+  'organisationID': 'askporter',
+  'accountID': '284151319'
+}, 'FtORrzfQkKOM6NOR_ZgkDcBmP258Sne-HAMXW32x2F29Xr1VGyK2JKsqCq0eu704P')
 # indexFileContent({'objectID': 'FVNDMMXfVj99RqJMyz1xiFpk63kKA44NqCKEKimaUF1F63QxFJmvnRuuGKN2JyLXY', 'title': 'Policy Tracker for GE2017.com', 'modified': '1499418614', 'created': 'null'})
 
 
