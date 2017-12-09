@@ -58,6 +58,9 @@ def indexAll():
   memory.write(thisRefreshTime)
 
 def indexFiles(accountInfo, after, allFiles=False):
+  print(accountInfo)
+  print(after)
+  print(allFiles)
   if allFiles:
     print('Mytest 1')
     files = drives.listfiles(accountInfo)
@@ -144,15 +147,21 @@ def startIndexing():
   s.run()
 
 
+# accountInfo = {
+#   'accountID': '284119499',
+#   'organisationID': 'tickbox'
+# }
+# indexFiles(accountInfo, False, True)
+
 # indexAll()
 # indexFiles({
 #   'organisationID': 'askporter',
 #   'accountID': '284151319'
 # }, allFiles=True, after=None)
-indexFile({
-  'organisationID': 'askporter',
-  'accountID': '284151319'
-}, 'FtORrzfQkKOM6NOR_ZgkDcBmP258Sne-HAMXW32x2F29Xr1VGyK2JKsqCq0eu704P')
+# indexFile({
+#   'organisationID': 'askporter',
+#   'accountID': '284151319'
+# }, 'FtORrzfQkKOM6NOR_ZgkDcBmP258Sne-HAMXW32x2F29Xr1VGyK2JKsqCq0eu704P')
 # indexFileContent({'objectID': 'FVNDMMXfVj99RqJMyz1xiFpk63kKA44NqCKEKimaUF1F63QxFJmvnRuuGKN2JyLXY', 'title': 'Policy Tracker for GE2017.com', 'modified': '1499418614', 'created': 'null'})
 
 
