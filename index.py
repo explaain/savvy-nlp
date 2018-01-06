@@ -97,6 +97,7 @@ def indexFile(accountInfo, fileID: str):
     # pp.pprint(f)
     algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
     algoliaFilesIndex.add_object(f)
+    createFileCard(accountInfo, f)
     if f['mimeType'] in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
       indexFileContent(accountInfo, f)
     else:
@@ -114,12 +115,29 @@ def indexFileContent(accountInfo, f):
 
   print('Deleted')
 
-  # Create new chunks
+  # Create new cards
   contentArray = drives.getContent(accountInfo, f['objectID'], True) # Should only take first one!!!
   cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
   print('Number of Cards:', len(cards))
   if toPrint['cardsCreated']:
     pp.pprint(cards)
+
+def createFileCard(accountInfo, f):
+  card = {
+    'type': 'file',
+    'objectID': f['objectID'],
+    'title': f['title'],
+    'fileID': f['objectID'],
+    'fileUrl': f['url'],
+    'fileType': f['mimeType'],
+    'fileTitle': f['title'],
+    'created': f['created'],
+    'modified': f['modified'],
+  }
+  algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
+  algoliaCardsIndex.add_object(card)
+  print('File Card Created!')
+  pp.pprint(card)
 
 
 def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
@@ -129,13 +147,15 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
   allCards = []
   for i, chunk in enumerate(contentArray):
     card = {
+      'type': 'p',
       'content': chunk['content'],
       'fileID': f['objectID'],
+      'fileUrl': f['url'],
+      'fileType': f['mimeType'],
       'fileTitle': f['title'],
       'context': parentContext,
       'created': f['created'],
       'modified': f['modified'],
-      'type': 'p',
       'index': i
     }
     if 'title' in chunk:
