@@ -108,7 +108,7 @@ def indexFileContent(accountInfo, f):
   print(f)
   # Delete all chunks from file
   params = {
-    'filters': 'fileID: "' + f['objectID'] + '"'
+    'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
   }
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
   algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
