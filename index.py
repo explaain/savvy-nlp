@@ -105,15 +105,16 @@ def indexFile(accountInfo, fileID: str):
         print('"doc" was found in:', f['mimeType'])
 
 def indexFileContent(accountInfo, f):
-  print(f)
-  # Delete all chunks from file
-  params = {
-    'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
-  }
-  algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
-  algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
+  if not Testing:
+    print(f)
+    # Delete all chunks from file
+    params = {
+      'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
+    }
+    algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
+    algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
 
-  print('Deleted')
+    print('Deleted')
 
   # Create new cards
   contentArray = drives.getContent(accountInfo, f['objectID'], True) # Should only take first one!!!
@@ -214,13 +215,21 @@ def startIndexing():
 
 # indexAll()
 # indexFiles({
-#   'organisationID': 'askporter',
-#   'accountID': '284151319'
+#   'organisationID': 'explaain',
+#   'accountID': '282782204'
 # }, allFiles=True, after=None)
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
-# }, 'FrgFloBV1hJZbWdgYDHIX9d6fL8IfaJ1lQzMiov53_HFhS7IKTeNrexpdc2xUbeYi')
+# }, 'FXWHwSyZjCQfgFJEEij7NoRWkIhVyI48LZqYMOwOTmmJkWbXQJ43VPdDKUQVH6DoY')
+# indexFile({
+#   'organisationID': 'explaain',
+#   'accountID': '282782204'
+# }, 'J13B2DLXBLT8HsALzNTfviaXVscPNm5RtgnSv_KPbZgSMJAe0vNj5M5ipz')
+# indexFile({
+#   'organisationID': 'explaain',
+#   'accountID': '282782204'
+# }, 'F88bWIq-LWUFA72bVPTHSBrJni_zNfEufrlqw8Hc--DkNBTM4u7InvdV8JcVurbpT')
 # indexFile({
 #   'organisationID': 'askporter',
 #   'accountID': '284151319'

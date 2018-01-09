@@ -41,7 +41,7 @@ def listFiles(accountInfo, after=False, number=500):
     recent = account.recent.all(page_size=number)
   print('Number of Files:', len(recent))
   print('files: ', '\n'.join(list(map(lambda x: x['name'], recent))))
-  files = [fileToAlgolia(f) for f in recent]
+  files = [fileToAlgolia(f, accountInfo) for f in recent]
   return files
 
 def getFile(accountInfo, fileID):
@@ -49,7 +49,7 @@ def getFile(accountInfo, fileID):
   f = {}
   try:
     f = account.files.retrieve(id=fileID)
-    f = fileToAlgolia(f)
+    f = fileToAlgolia(f, accountInfo)
     print('file:')
     pp.pprint(f)
   except Exception as e:
@@ -57,8 +57,10 @@ def getFile(accountInfo, fileID):
     print('Error getting file: "' + fileID + '"', e)
   return f
 
-def fileToAlgolia(f):
+def fileToAlgolia(f, accountInfo):
+  print('fileToAlgolia')
   print(f)
+  pp.pprint(accountInfo)
   return {
     'objectID': f['id'],
     'url': 'https://docs.google.com/document/d/' + f['raw_id'],
@@ -66,6 +68,7 @@ def fileToAlgolia(f):
     'title': f['name'],
     'created': f['created'],
     'modified': f['modified'],
+    'source': accountInfo['accountID']
   }
 
 def fileToCard(f):
@@ -99,6 +102,10 @@ def getContent(accountInfo, fileID, asArray=False):
     xmls = []
     for doc in docs:
       xmlContent = z.read(doc).decode('utf-8')
+      # # Use this when you want to add more files to the test bank
+      # file3 = open('tests/sampleFiles/' + fileID + '.xml', 'w')
+      # file3.write(xmlContent)
+      # #
       if toPrint['xmlString']:
         print('join(xmlContent)')
         print(''.join(xmlContent))
@@ -130,18 +137,20 @@ def xmlFindText(xmlContent):
   if toPrint['hierarchies']:
     pp.pprint(chunkHierarchy)
   if toPrint['hierarchyText']:
-    printChunks(chunkHierarchy, 0)
+    print(chunksToPrint(chunkHierarchy, 0))
   return chunkHierarchy
 
-def printChunks(chunks, layer):
+def chunksToPrint(chunks, layer = 0):
+  printArray = []
   for chunk in chunks:
     content = ''.join(chunk['content'])
     content = content[:80] + '...' if len(content) > 80 else content
     if 'title' in chunk:
       content = chunk['title'] + ': ' + content
-    print('    ' * layer, content)
+    printArray += [('    ' * layer) + content]
     if 'chunks' in chunk:
-      printChunks(chunk['chunks'], layer + 1)
+      printArray += chunksToPrint(chunk['chunks'], layer + 1)
+  return printArray
 
 def xmlSearchTextInChildren(xml, level, dataPassedDown, ongoingCounter, context):
   children = xml.__dict__['children'] or xml['children']
@@ -202,18 +211,18 @@ def getRanking(el):
     ranking = -1 * int(el._attributes['w:left']) / 20
   if el._name == 'w_sz':
     ranking = int(el._attributes['w:val'])
-  # if el._name == 'w_pStyle':
-  #   style = el._attributes['w:val']
-  #   styles = {
-  #     'Heading1': 400,
-  #     'Heading2': 300,
-  #     'Heading3': 200,
-  #     'Heading4': 100,
-  #     'Heading5': 60,
-  #     'Heading6': 40
-  #   }
-  #   if style in styles:
-  #     ranking = styles[style]
+  if el._name == 'w_pStyle':
+    style = el._attributes['w:val']
+    styles = {
+      'Heading1': 400,
+      'Heading2': 300,
+      'Heading3': 200,
+      'Heading4': 100,
+      'Heading5': 60,
+      'Heading6': 40
+    }
+    if style in styles:
+      ranking = styles[style]
   if el._name == 'w_b' and el._attributes['w:val'] == '1':
     ranking = 10
   return {
