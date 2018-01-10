@@ -9,6 +9,10 @@ testFiles = [
   'internal_faqs',
   'competitor_analysis',
   'feature_list_pricing_tier',
+  'test_account_logins',
+  'election_2017_handbook',
+  'abc_company_handbook',
+  'resume'
 ]
 
 def parseTestFileByFilename(filename):

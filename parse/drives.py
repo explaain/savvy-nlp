@@ -214,6 +214,8 @@ def getRanking(el):
   if el._name == 'w_pStyle':
     style = el._attributes['w:val']
     styles = {
+      'Title': 800,
+      'Subtitle': 600,
       'Heading1': 400,
       'Heading2': 300,
       'Heading3': 200,
