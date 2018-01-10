@@ -117,7 +117,7 @@ def indexFileContent(accountInfo, f):
     print('Deleted')
 
   # Create new cards
-  contentArray = drives.getContent(accountInfo, f['objectID'], True) # Should only take first one!!!
+  contentArray = drives.getContent(accountInfo, f['objectID']) # Should only take first one!!!
   cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
   print('Number of Cards:', len(cards))
   if toPrint['cardsCreated']:
@@ -221,7 +221,7 @@ def startIndexing():
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
-# }, 'FXWHwSyZjCQfgFJEEij7NoRWkIhVyI48LZqYMOwOTmmJkWbXQJ43VPdDKUQVH6DoY')
+# }, 'FZFSR0chh4O89xJ-70HfseeFyz6MoRQK5VyJ2tkGFGbbHEh6tlaXdsXyZ6r0SHfG7')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
