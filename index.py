@@ -46,7 +46,7 @@ def addSource(data: dict):
     'accountID': source['objectID']
   }
   time.sleep(5)
-  indexFiles(accountInfo, False, True)
+  indexFiles(accountInfo, allFiles=True, after=None)
   return source
 
 def indexAll():
@@ -208,10 +208,7 @@ def startIndexing():
 
 """Below here is stuff for testing"""
 
-# accountInfo = {
-#   'accountID': '284119499',
-#   'organisationID': 'tickbox'
-# }
+# accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
 # indexFiles(accountInfo, False, True)
 
 # indexAll()
