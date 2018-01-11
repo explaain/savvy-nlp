@@ -136,8 +136,9 @@ def createFileCard(accountInfo, f):
     'modified': f['modified'],
   }
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
-  algoliaCardsIndex.add_object(card)
-  print('File Card Created!')
+  if not Testing:
+    algoliaCardsIndex.add_object(card)
+    print('File Card Created!')
   pp.pprint(card)
 
 

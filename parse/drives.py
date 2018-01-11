@@ -57,13 +57,22 @@ def getFile(accountInfo, fileID):
     print('Error getting file: "' + fileID + '"', e)
   return f
 
+def getFileUrl(id, fileType):
+  roots = {
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'https://docs.google.com/document/d/',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'https://docs.google.com/spreadsheets/d/',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'https://docs.google.com/presentation/d/',
+    # 'application/pdf': 'https://drive.google.com/file/d/'
+  }
+  return (roots[fileType] if fileType in roots else 'https://drive.google.com/file/d/') + id
+
 def fileToAlgolia(f, accountInfo):
   print('fileToAlgolia')
   print(f)
   pp.pprint(accountInfo)
   return {
     'objectID': f['id'],
-    'url': 'https://docs.google.com/document/d/' + f['raw_id'],
+    'url': getFileUrl(f['raw_id'], f['mime_type']),
     'mimeType': f['mime_type'],
     'title': f['name'],
     'created': f['created'],
@@ -78,7 +87,7 @@ def fileToCard(f):
       'content': {},
       'file': {
         'id': f['id'],
-        'url': 'https://docs.google.com/document/d/' + f['raw_id'], # Only works for docs currently
+        'url': getFileUrl(f['raw_id'], f['mime_type']),
         'title': f['name'],
         'folder': 'Google Drive'
       },
