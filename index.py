@@ -4,7 +4,10 @@ from random import *
 from algoliasearch import algoliasearch
 from parse import drives
 import xmljson
+from mixpanel import Mixpanel
+
 pp = pprint.PrettyPrinter(indent=4)
+mp = Mixpanel('e3b4939c1ae819d65712679199dfce7e')
 
 # Decides whether we're in testing mode or not
 Testing = False
@@ -40,6 +43,8 @@ def addSource(data: dict):
   print('source:', source)
   algoliaSourcesIndex.add_object(source)
 
+  mp.track('admin', 'Source Added', source)
+
   # Index all files from source
   accountInfo = {
     'organisationID': source['organisationID'],
@@ -56,6 +61,13 @@ def indexAll():
   lastRefreshTime = datetime.datetime.strptime(memory.read().splitlines()[0], '%Y-%m-%d %H:%M:%S.%f')
   print(lastRefreshTime)
   thisRefreshTime = str(datetime.datetime.now())
+  mp.track('admin', 'Beginning Global Index', {
+    'lastRefreshTime': lastRefreshTime,
+    'thisRefreshTime': thisRefreshTime,
+    'accounts': accounts,
+    'numberOfAccounts': len(accounts)
+  })
+  indexed = []
   for account in accounts:
     print(account)
     accountID = account['id']
@@ -70,9 +82,20 @@ def indexAll():
         'organisationID': organisationID,
         'accountID': accountID
       }
-      indexFiles(accountInfo, after=lastRefreshTime)
+      num = indexFiles(accountInfo, after=lastRefreshTime)
+      indexed.append({
+        'organisationID': organisationID,
+        'accountID': accountID,
+        'numberOfFiles': num
+      })
   memory = open('memory.txt','w') # Happens now so that incomplete indexing doesn't overwrite lastRefreshTime
   memory.write(thisRefreshTime)
+  mp.track('admin', 'Completed Global Index', {
+    'lastRefreshTime': lastRefreshTime,
+    'thisRefreshTime': thisRefreshTime,
+    'accounts': indexed,
+    'numberOfAccounts': len(indexed)
+  })
 
 def indexFiles(accountInfo, after, allFiles=False):
   """Indexes files from a query based on criteria given"""
@@ -89,20 +112,29 @@ def indexFiles(accountInfo, after, allFiles=False):
 
   for f in files:
     indexFile(accountInfo, f['objectID']) # We index them again because they seem to first come in with their original names e.g. "Untitled document"
+  if len(files):
+    other = {
+      'onlyFilesModifiedAfter': after,
+      'allFiles': allFiles,
+      'numberOfFiles': len(files)
+    }
+    mp.track('admin', 'Files Indexed', {**accountInfo, **other})
+  return len(files)
 
 def indexFile(accountInfo, fileID: str):
   f = drives.getFile(accountInfo, fileID=fileID)
   if f is not None:
-    print('Not None')
-    # pp.pprint(f)
     algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
     algoliaFilesIndex.add_object(f)
     createFileCard(accountInfo, f)
+    cardsCreated = 0
     if f['mimeType'] in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
-      indexFileContent(accountInfo, f)
+      cardsCreated = indexFileContent(accountInfo, f)
     else:
       if 'doc' in f['mimeType']:
         print('"doc" was found in:', f['mimeType'])
+    other = { 'cardsCreated': cardsCreated }
+    mp.track('admin', 'File Indexed', {**f, **other})
 
 def indexFileContent(accountInfo, f):
   if not Testing:
@@ -122,6 +154,7 @@ def indexFileContent(accountInfo, f):
   print('Number of Cards:', len(cards))
   if toPrint['cardsCreated']:
     pp.pprint(cards)
+  return len(cards)
 
 def createFileCard(accountInfo, f):
   card = {
@@ -211,7 +244,7 @@ def startIndexing():
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
 # indexFiles(accountInfo, False, True)
 
-# indexAll()
+indexAll()
 # indexFiles({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
