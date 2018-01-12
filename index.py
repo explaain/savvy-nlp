@@ -19,6 +19,7 @@ toPrint = {
 
 client = algoliasearch.Client('D3AE3TSULH', '1b36934cc0d93e04ef8f0d5f36ad7607') # This API key allows everything
 algoliaSourcesIndex = client.init_index('sources')
+algoliaOrgsIndex = client.init_index('organisations') if not Testing else client.init_index('-local-organisations')
 
 def algoliaGetFilesIndex(organisationID: str):
   algoliaFilesIndex = client.init_index(organisationID + '__Files')
@@ -27,6 +28,31 @@ def algoliaGetFilesIndex(organisationID: str):
 def algoliaGetCardsIndex(organisationID: str):
   algoliaCardsIndex = client.init_index(organisationID + '__Cards')
   return algoliaCardsIndex
+
+def setUpOrg(organisationID: str):
+  """For now this just sets up Cards and Files Algolia Indices,
+  Creates algoliaApiKey and saves this to organisations index
+  """
+  mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
+  res1 = client.copy_index('explaain__Cards', organisationID + '__Cards')
+  res2 = client.copy_index('explaain__Files', organisationID + '__Files')
+  print('res1', res1)
+  print('res2', res2)
+  params = {
+    'acl': ['search', 'browse', 'addObject', 'deleteObject'],
+    'indexes': [organisationID + '__*'],
+    'description': 'Access only for organisation ' + organisationID
+  }
+  print('params', params)
+  algoliaApiKey = client.add_api_key(params)
+  print('algoliaApiKey', algoliaApiKey)
+  algoliaOrgsIndex.partial_update_object({
+    'objectID': organisationID,
+    'algolia': {
+      'apiKey': algoliaApiKey
+    }
+  })
+  mp.track('admin', 'Organisation Setup Complete', { 'organisationID': organisationID })
 
 def addSource(data: dict):
   """This is for when a user adds a new source,
@@ -50,6 +76,17 @@ def addSource(data: dict):
     'organisationID': source['organisationID'],
     'accountID': source['objectID']
   }
+  # Check whether Algolia Indices exist
+  try:
+    algoliaGetCardsIndex(accountInfo['organisationID'])
+    algoliaGetFilesIndex(accountInfo['organisationID'])
+    indicesExist = True
+  except Exception as e:
+    indicesExist = False
+    print(e)
+  # If not then create them, create algoliaApiKey and add this to organisations index
+  if not indicesExist:
+    setUpOrg(accountInfo['organisationID'])
   time.sleep(20)
   indexFiles(accountInfo, False, True)
   return source
@@ -244,7 +281,7 @@ def startIndexing():
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
 # indexFiles(accountInfo, False, True)
 
-indexAll()
+# indexAll()
 # indexFiles({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
