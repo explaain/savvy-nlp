@@ -45,8 +45,8 @@ def addSource(data: dict):
     'organisationID': source['organisationID'],
     'accountID': source['objectID']
   }
-  time.sleep(5)
-  indexFiles(accountInfo, allFiles=True, after=None)
+  time.sleep(20)
+  indexFiles(accountInfo, False, True)
   return source
 
 def indexAll():
