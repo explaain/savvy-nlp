@@ -17,53 +17,71 @@ toPrint = {
   'cardsCreated': True
 }
 
+
 client = algoliasearch.Client('D3AE3TSULH', '1b36934cc0d93e04ef8f0d5f36ad7607') # This API key allows everything
 algoliaSourcesIndex = client.init_index('sources')
 algoliaOrgsIndex = client.init_index('organisations') if not Testing else client.init_index('-local-organisations')
 
-def algoliaGetFilesIndex(organisationID: str):
-  algoliaFilesIndex = client.init_index(organisationID + '__Files')
-  return algoliaFilesIndex
 
+def algoliaGetFilesIndexName(organisationID: str):
+  return organisationID + '__Files'
+def algoliaGetCardsIndexName(organisationID: str):
+  return organisationID + '__Cards'
+def algoliaGetFilesIndex(organisationID: str):
+  algoliaFilesIndex = client.init_index(algoliaGetFilesIndexName(organisationID))
+  return algoliaFilesIndex
 def algoliaGetCardsIndex(organisationID: str):
-  algoliaCardsIndex = client.init_index(organisationID + '__Cards')
+  algoliaCardsIndex = client.init_index(algoliaGetCardsIndexName(organisationID))
   return algoliaCardsIndex
 
 def setUpOrg(organisationID: str):
   """For now this just sets up Cards and Files Algolia Indices,
   Creates algoliaApiKey and saves this to organisations index
   """
+  print('Setting Up Organisation', organisationID)
   mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
-  res1 = client.copy_index('explaain__Cards', organisationID + '__Cards')
-  res2 = client.copy_index('explaain__Files', organisationID + '__Files')
-  print('res1', res1)
-  print('res2', res2)
-  params = {
+  filesSettings = algoliaGetFilesIndex('explaain').get_settings()
+  cardsSettings = algoliaGetCardsIndex('explaain').get_settings()
+  print(filesSettings)
+  print(cardsSettings)
+  algoliaGetFilesIndex(organisationID).set_settings(filesSettings) # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
+  algoliaGetCardsIndex(organisationID).set_settings(cardsSettings)
+  apiKeyParams = {
     'acl': ['search', 'browse', 'addObject', 'deleteObject'],
     'indexes': [organisationID + '__*'],
     'description': 'Access only for organisation ' + organisationID
   }
-  print('params', params)
-  algoliaApiKey = client.add_api_key(params)
+  print('apiKeyParams', apiKeyParams)
+  algoliaApiKey = client.add_api_key(apiKeyParams)
   print('algoliaApiKey', algoliaApiKey)
-  algoliaOrgsIndex.partial_update_object({
-    'objectID': organisationID,
-    'algolia': {
-      'apiKey': algoliaApiKey
-    }
-  })
-  mp.track('admin', 'Organisation Setup Complete', { 'organisationID': organisationID })
+  searchParams = {
+    'filters': 'name: "' + organisationID + '"'
+  }
+  results = algoliaOrgsIndex.search('', searchParams)
+  if len(results['hits']):
+    orgObjectID = results['hits'][0]['objectID']
+    algoliaOrgsIndex.partial_update_object({
+      'objectID': orgObjectID,
+      'algolia': {
+        'apiKey': algoliaApiKey['key']
+      }
+    })
+    mp.track('admin', 'Organisation Setup Complete', { 'organisationID': organisationID })
+    print('Organisation Setup Complete', organisationID)
+  else:
+    mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID, 'error': 'No organisation with name ' + organisationID + ' found.' })
+    print('Organisation Setup Failed - No organisation with name ' + organisationID + ' found.')
 
 def addSource(data: dict):
   """This is for when a user adds a new source,
   such as connecting up their Google Drive.
   It automatically indexes all files after connecting.
   """
-
+  organisationID = data['organisationID']
   print('data:', data)
   source = {
     'objectID': data['source']['account']['id'],
-    'organisationID': data['organisationID'],
+    'organisationID': organisationID,
     'addedBy': data['source']['account']['account']
   }
   print('source:', source)
@@ -73,20 +91,15 @@ def addSource(data: dict):
 
   # Index all files from source
   accountInfo = {
-    'organisationID': source['organisationID'],
+    'organisationID': organisationID,
     'accountID': source['objectID']
   }
-  # Check whether Algolia Indices exist
-  try:
-    algoliaGetCardsIndex(accountInfo['organisationID'])
-    algoliaGetFilesIndex(accountInfo['organisationID'])
-    indicesExist = True
-  except Exception as e:
-    indicesExist = False
-    print(e)
-  # If not then create them, create algoliaApiKey and add this to organisations index
-  if not indicesExist:
-    setUpOrg(accountInfo['organisationID'])
+
+  # If either Algolia Indices doesn't exist then create them, create algoliaApiKey and add this to organisations index
+  indices = client.list_indexes()
+  if not any(i['name'] == algoliaGetFilesIndexName(organisationID) for i in indices['items']) or not any(i['name'] == algoliaGetCardsIndexName(organisationID) for i in indices['items']):
+    setUpOrg(organisationID)
+
   time.sleep(20)
   indexFiles(accountInfo, False, True)
   return source
