@@ -16,6 +16,15 @@ def add_source():
   results = index.addSource(request.json)
   return jsonify({'results': results})
 
+@app.route('/set-up-org', methods=['POST'])
+def set_up_org():
+  print('request.json', request.json)
+  if 'organisationID' in request.json:
+    index.setUpOrg(request.json['organisationID'])
+    return jsonify({'completed': True})
+  else:
+    return jsonify({'completed': False})
+
 @app.route('/parse', methods=['POST'])
 def get_results():
   print('Starting get_results()')
@@ -30,5 +39,5 @@ def get_results():
 
 if __name__ == '__main__':
   # Bind to PORT if defined, otherwise default to 5000.
-  port = int(os.environ.get('PORT', 5000))
+  port = int(os.environ.get('PORT', 5050))
   app.run(host='0.0.0.0', port=port)

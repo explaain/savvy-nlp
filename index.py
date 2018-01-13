@@ -60,12 +60,14 @@ def setUpOrg(organisationID: str):
   results = algoliaOrgsIndex.search('', searchParams)
   if len(results['hits']):
     orgObjectID = results['hits'][0]['objectID']
-    algoliaOrgsIndex.partial_update_object({
+    print('orgObjectID', orgObjectID)
+    res = algoliaOrgsIndex.partial_update_object({
       'objectID': orgObjectID,
       'algolia': {
         'apiKey': algoliaApiKey['key']
       }
     })
+    print(res)
     mp.track('admin', 'Organisation Setup Complete', { 'organisationID': organisationID })
     print('Organisation Setup Complete', organisationID)
   else:
@@ -100,8 +102,12 @@ def addSource(data: dict):
   if not any(i['name'] == algoliaGetFilesIndexName(organisationID) for i in indices['items']) or not any(i['name'] == algoliaGetCardsIndexName(organisationID) for i in indices['items']):
     setUpOrg(organisationID)
 
-  time.sleep(20)
-  indexFiles(accountInfo, False, True)
+  numIndexed = 0
+  numAttempts = 0
+  while numIndexed == 0 and numAttempts < 20:
+    time.sleep(10)
+    numAttempts += 1
+    numIndexed = indexFiles(accountInfo, False, True)
   return source
 
 def indexAll():
