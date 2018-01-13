@@ -61,7 +61,7 @@ def setUpOrg(organisationID: str):
     'hits': []
   }
   numAttempts = 0
-  while results['hits'] == 0 and numAttempts < 20:
+  while len(results['hits']) == 0 and numAttempts < 20:
     time.sleep(5)
     numAttempts += 1
     results = algoliaOrgsIndex.search('', searchParams)
