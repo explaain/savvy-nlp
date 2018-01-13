@@ -57,7 +57,12 @@ def setUpOrg(organisationID: str):
   searchParams = {
     'filters': 'name: "' + organisationID + '"'
   }
-  results = algoliaOrgsIndex.search('', searchParams)
+  results = {}
+  numAttempts = 0
+  while results['hits'] == 0 and numAttempts < 20:
+    time.sleep(5)
+    numAttempts += 1
+    results = algoliaOrgsIndex.search('', searchParams)
   if len(results['hits']):
     orgObjectID = results['hits'][0]['objectID']
     print('orgObjectID', orgObjectID)
