@@ -57,7 +57,9 @@ def setUpOrg(organisationID: str):
   searchParams = {
     'filters': 'name: "' + organisationID + '"'
   }
-  results = {}
+  results = {
+    'hits': []
+  }
   numAttempts = 0
   while results['hits'] == 0 and numAttempts < 20:
     time.sleep(5)
