@@ -3,6 +3,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 import index
+import cards
 from parse import parse
 
 app = Flask(__name__)
@@ -34,6 +35,11 @@ def get_results():
   #   print('Main error')
   #   print(e)
   #   results = {}
+
+@app.route('/generate-card-data', methods=['POST'])
+def generate_card_data():
+  print('Starting generate_card_data()')
+  results = cards.generateCardData(request.json)
 
   return jsonify({'results': results})
 
