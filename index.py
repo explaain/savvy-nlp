@@ -75,7 +75,8 @@ def setUpOrg(organisationID: str):
       }
     })
     print(res)
-    mp.track('admin', 'Organisation Setup Complete', { 'organisationID': organisationID })
+    allOrgs = algoliaOrgsIndex.browse_all({ 'query': '' })
+    mp.track('admin', 'Organisation Setup Complete', { 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
     print('Organisation Setup Complete', organisationID)
   else:
     mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID, 'error': 'No organisation with name ' + organisationID + ' found.' })
@@ -95,7 +96,8 @@ def addSource(data: dict):
   }
   print('source:', source)
   algoliaSourcesIndex.add_object(source)
-
+  allSources = algoliaSourcesIndex.browse_all({ 'query': '' })
+  source['totalSources'] = len(allSources)
   mp.track('admin', 'Source Added', source)
 
   # Index all files from source
@@ -196,7 +198,15 @@ def indexFile(accountInfo, fileID: str):
     else:
       if 'doc' in f['mimeType']:
         print('"doc" was found in:', f['mimeType'])
-    other = { 'cardsCreated': cardsCreated }
+    allFiles = algoliaFilesIndex.browse_all({ 'query': '' })
+    allCards = algoliaCardsIndex.browse_all({ 'query': '' })
+    allFileCards = algoliaCardsIndex.browse_all({ 'query': '', 'filters': 'type:"p"' })
+    other = {
+      'cardsCreated': cardsCreated,
+      'totalOrgFiles': len(allFiles),
+      'totalOrgCards': len(allCards),
+      'totalOrgFileCards': len(allFileCards)
+    }
     mp.track('admin', 'File Indexed', {**f, **other})
 
 def indexFileContent(accountInfo, f):
