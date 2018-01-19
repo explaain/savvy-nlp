@@ -34,6 +34,13 @@ def algoliaGetCardsIndex(organisationID: str):
   algoliaCardsIndex = client.init_index(algoliaGetCardsIndexName(organisationID))
   return algoliaCardsIndex
 
+def browseAlgolia(index, params=False):
+  if params:
+    return [hit for hit in index.browse_all(params)]
+  else:
+    return [hit for hit in index.browse_all()]
+
+
 def setUpOrg(organisationID: str):
   """For now this just sets up Cards and Files Algolia Indices,
   Creates algoliaApiKey and saves this to organisations index
@@ -75,8 +82,8 @@ def setUpOrg(organisationID: str):
       }
     })
     print(res)
-    allOrgs = algoliaOrgsIndex.browse_all({ 'query': '' })
-    mp.track('admin', 'Organisation Setup Complete', { 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
+    allOrgs = browseAlgolia(algoliaOrgsIndex)
+    mp.track('admin', 'Organisation Setup Complete', { 'objectID': orgObjectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
     print('Organisation Setup Complete', organisationID)
   else:
     mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID, 'error': 'No organisation with name ' + organisationID + ' found.' })
@@ -96,7 +103,7 @@ def addSource(data: dict):
   }
   print('source:', source)
   algoliaSourcesIndex.add_object(source)
-  allSources = algoliaSourcesIndex.browse_all({ 'query': '' })
+  allSources = browseAlgolia(algoliaSourcesIndex)
   source['totalSources'] = len(allSources)
   mp.track('admin', 'Source Added', source)
 
@@ -190,6 +197,7 @@ def indexFile(accountInfo, fileID: str):
   f = drives.getFile(accountInfo, fileID=fileID)
   if f is not None:
     algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
+    algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
     algoliaFilesIndex.add_object(f)
     createFileCard(accountInfo, f)
     cardsCreated = 0
@@ -198,9 +206,9 @@ def indexFile(accountInfo, fileID: str):
     else:
       if 'doc' in f['mimeType']:
         print('"doc" was found in:', f['mimeType'])
-    allFiles = algoliaFilesIndex.browse_all({ 'query': '' })
-    allCards = algoliaCardsIndex.browse_all({ 'query': '' })
-    allFileCards = algoliaCardsIndex.browse_all({ 'query': '', 'filters': 'type:"p"' })
+    allFiles = browseAlgolia(algoliaFilesIndex)
+    allCards = browseAlgolia(algoliaCardsIndex)
+    allFileCards = browseAlgolia(algoliaCardsIndex, { 'filters': 'type:"p"' })
     other = {
       'cardsCreated': cardsCreated,
       'totalOrgFiles': len(allFiles),
