@@ -5,9 +5,11 @@ from algoliasearch import algoliasearch
 from parse import drives
 import xmljson
 from mixpanel import Mixpanel
+import CloudFlare
 
 pp = pprint.PrettyPrinter(indent=4)
 mp = Mixpanel('e3b4939c1ae819d65712679199dfce7e')
+cf = CloudFlare.CloudFlare(email='jeremy@explaain.com', token='ada07cb1af04e826fa34ffecd06f954ee5e93')
 
 # Decides whether we're in testing mode or not
 Testing = False
@@ -88,6 +90,17 @@ def setUpOrg(organisationID: str):
   else:
     mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID, 'error': 'No organisation with name ' + organisationID + ' found.' })
     print('Organisation Setup Failed - No organisation with name ' + organisationID + ' found.')
+
+def setUpDomain(organisationID: str):
+  dnsRecords = [
+    {'name':organisationID, 'type':'A', 'content':'151.101.1.195', 'proxied': True},
+    {'name':organisationID, 'type':'A', 'content':'151.101.65.195', 'proxied': True},
+  ]
+  for record in dnsRecords:
+    zone = cf.zones.dns_records.post('1f89549d5561f64fbf1553214c85e960', data=record)
+    pp.pprint(zone)
+  # zones = cf.zones.dns_records.get('1f89549d5561f64fbf1553214c85e960')
+  # zone = [z for z in zones if z['name'] == 'heysavvy.com']
 
 def addSource(data: dict):
   """This is for when a user adds a new source,
