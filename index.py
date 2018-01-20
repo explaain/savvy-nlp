@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-import pprint, datetime, sched, time
+import pprint, datetime, sched, time, json, requests
 from random import *
 from algoliasearch import algoliasearch
 from parse import drives
 import xmljson
+from google.cloud import language
+from google.cloud.language import enums
+from google.cloud.language import types
 from mixpanel import Mixpanel
 import CloudFlare
 
@@ -19,10 +22,11 @@ toPrint = {
   'cardsCreated': True
 }
 
-
+# Initiate Algolia
 client = algoliasearch.Client('D3AE3TSULH', '1b36934cc0d93e04ef8f0d5f36ad7607') # This API key allows everything
 algoliaSourcesIndex = client.init_index('sources')
 algoliaOrgsIndex = client.init_index('organisations') if not Testing else client.init_index('-local-organisations')
+
 
 
 def algoliaGetFilesIndexName(organisationID: str):
@@ -42,6 +46,26 @@ def browseAlgolia(index, params=False):
   else:
     return [hit for hit in index.browse_all()]
 
+
+def getGoogleEntities(text: str):
+  url = 'https://language.googleapis.com/v1/documents:analyzeEntities'
+  params = {"key": "AIzaSyB_IsxgaENfscrFRx9LX_-bdzVAqGRwpN8"}
+  data = {
+    # "encodingType": "UTF8",
+    "document": {
+      "type": "PLAIN_TEXT",
+      "content": text
+    }
+  }
+  res = requests.post(url, params=params, json=data)
+  entities = json.loads(res.text)['entities'] if 'entities' in json.loads(res.text) else []
+  return entities
+
+def getEntityTypes(text: str):
+  entities = getGoogleEntities(text)
+  entityTypes = [entity['type'].capitalize() for entity in entities if 'type' in entity and entity['type'] not in ['UNKNOWN', 'OTHER']]
+  print(entityTypes)
+  return entityTypes
 
 def setUpOrg(organisationID: str):
   """For now this just sets up Cards and Files Algolia Indices,
@@ -271,10 +295,12 @@ def createFileCard(accountInfo, f):
 
 def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
   # print('createCardsFromContentArray')
-  # print('contentArray', contentArray)
+  print('contentArray', contentArray)
+  pp.pprint(contentArray)
   cards = []
   allCards = []
   for i, chunk in enumerate(contentArray):
+    entityTypes = getEntityTypes((chunk['title'] if 'title' in chunk else '') + chunk['content']) # Should this include text from context as well?
     card = {
       'type': 'p',
       'content': chunk['content'],
@@ -283,6 +309,7 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       'fileType': f['mimeType'],
       'fileTitle': f['title'],
       'context': parentContext,
+      'entityTypes': entityTypes,
       'created': f['created'],
       'modified': f['modified'],
       'index': i
@@ -346,7 +373,11 @@ def startIndexing():
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
-# }, 'FZFSR0chh4O89xJ-70HfseeFyz6MoRQK5VyJ2tkGFGbbHEh6tlaXdsXyZ6r0SHfG7')
+# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
+# indexFile({
+#   'organisationID': 'explaain',
+#   'accountID': '282782204'
+# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'

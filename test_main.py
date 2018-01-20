@@ -23,7 +23,7 @@ testFiles = [
 def parseTestFileByID(fileID):
   f = drives.getFile(testAccountInfo, fileID)
   name = f['title']
-  xmlContent = drives.extractRawContent(testAccountInfo, fileID)
+  xmlContent = drives.extractRawXMLContent(testAccountInfo, fileID)
   # Use this when you want to add more files to the test bank
   xmlFile = open('tests/sampleFiles/' + name.replace(' ', '_') + '.xml', 'w')
   xmlFile.write(xmlContent)
