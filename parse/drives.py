@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import re, io, pprint, itertools, zipfile, json, untangle
+import re, io, pprint, itertools, zipfile, untangle
 from collections import OrderedDict
 import xmljson
+import urllib
 from xmljson import parker, Parker
 # bf = BadgerFish(dict_type=OrderedDict)
 from xml.etree.ElementTree import fromstring
@@ -73,6 +74,7 @@ def fileToAlgolia(f, accountInfo):
   return {
     'objectID': f['id'],
     'url': getFileUrl(f['raw_id'], f['mime_type']),
+    'rawID': f['raw_id'],
     'mimeType': f['mime_type'],
     'title': f['name'],
     'created': f['created'],
@@ -98,16 +100,27 @@ def fileToCard(f):
   return card
 
 def getContent(accountInfo, fileID):
-  try:
-    xmlContent = extractRawContent(accountInfo, fileID)
-    chunkHierarchy = xmlFindText(xmlContent)
-    return chunkHierarchy
-    pass
-  except Exception as e:
-    print(e)
-    return ''
+  fileData = getFile(accountInfo, fileID)
+  if fileData:
+    if fileData['mimeType'] == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+      try:
+        xmlContent = extractRawXMLContent(accountInfo, fileID)
+        chunkHierarchy = xmlFindText(xmlContent)
+        return chunkHierarchy
+        pass
+      except Exception as e:
+        print(e)
+        return ''
+    elif fileData['mimeType'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+      csvContent = extractRawContent(accountInfo, fileData['rawID'], 'text/csv')
+      contentArray = getCsvContentArray(csvContent)
+      print(contentArray)
+      return contentArray
+  else:
+    return None
 
-def extractRawContent(accountInfo, fileID):
+
+def extractRawXMLContent(accountInfo, fileID):
   account = getAccount(accountInfo['accountID'])
   kfile = account.files.retrieve(fileID)
   content = kfile.contents().content
@@ -276,6 +289,31 @@ def completeContent(chunks, parentNumber=False):
     if 'chunks' in chunk:
       chunk['chunks'] = completeContent(chunk['chunks'], number)
   return chunks
+
+def extractRawContent(accountInfo, rawID, format):
+  account = getAccount(accountInfo['accountID'])
+  res = account.raw(raw_uri='/drive/v2/files/' + rawID + '/export?mimeType=' + urllib.parse.quote_plus(format), raw_method='GET')
+  content = res.content.decode("utf-8")
+  print(content)
+  return content
+
+def getCsvContentArray(csvContent):
+  split = csvContent.split('\r\n')
+  print(split)
+  firstRow = split[0].split(',')
+  contents = [ '\n'.join([(addColon(firstRow[i]) + ' ' + cell) for i, cell in enumerate(row.split(',')) if len(cell)]) for row in split[1:] ]
+  print(contents)
+  contentArray = [{'content': content, 'allRankings': {}, 'otherContext': {}, 'ranking': 0} for content in contents]
+  return contentArray
+
+def addColon(text):
+  return text + ':' if not text.endswith(':') else text
+
+
+# getContent({
+#   'organisationID': 'explaain',
+#   'accountID': '282782204'
+# }, 'Fuaa5Yz9jDnCPgHNeoPGcIznjrdc80OsWyL97CFoAUM1x8LQQCI6EMAZKz0-vxZaT')
 
 
 """Below here is functions no longer used"""

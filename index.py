@@ -237,12 +237,8 @@ def indexFile(accountInfo, fileID: str):
     algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
     algoliaFilesIndex.add_object(f)
     createFileCard(accountInfo, f)
-    cardsCreated = 0
-    if f['mimeType'] in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
-      cardsCreated = indexFileContent(accountInfo, f)
-    else:
-      if 'doc' in f['mimeType']:
-        print('"doc" was found in:', f['mimeType'])
+    cardsCreated = indexFileContent(accountInfo, f)
+
     allFiles = browseAlgolia(algoliaFilesIndex)
     allCards = browseAlgolia(algoliaCardsIndex)
     allFileCards = browseAlgolia(algoliaCardsIndex, { 'filters': 'type:"p"' })
