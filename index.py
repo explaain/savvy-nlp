@@ -4,6 +4,11 @@ from random import *
 from algoliasearch import algoliasearch
 from parse import drives
 import xmljson
+import firebase_admin
+from firebase_admin import credentials as firebaseCredentials
+from firebase_admin import auth as firebaseAuth
+
+
 from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
@@ -22,10 +27,15 @@ toPrint = {
   'cardsCreated': True
 }
 
+# Initiate Firebase
+cred = firebaseCredentials.Certificate('serviceAccountKey.json')
+default_app = firebase_admin.initialize_app(cred)
+
 # Initiate Algolia
 client = algoliasearch.Client('D3AE3TSULH', '1b36934cc0d93e04ef8f0d5f36ad7607') # This API key allows everything
-algoliaSourcesIndex = client.init_index('sources')
 algoliaOrgsIndex = client.init_index('organisations') if not Testing else client.init_index('-local-organisations')
+algoliaSourcesIndex = client.init_index('sources')
+algoliaUsersIndex = client.init_index('users')
 
 
 
@@ -66,6 +76,27 @@ def getEntityTypes(text: str):
   entityTypes = [entity['type'].capitalize() for entity in entities if 'type' in entity and entity['type'] not in ['UNKNOWN', 'OTHER']]
   print(entityTypes)
   return entityTypes
+
+def serveUserData(idToken: str):
+  try:
+    decoded_token = firebaseAuth.verify_id_token(idToken)
+    print(decoded_token)
+    uid = decoded_token['uid']
+  except Exception as e:
+    print(e)
+    return False
+  params = {
+    'filters': 'firebase: "' + uid + '"'
+  }
+  res = algoliaUsersIndex.search('', params)
+  if 'hits' in res and len(res['hits']):
+    user = res['hits'][0]
+    if '_highlightResult' in user:
+      del user['_highlightResult']
+    print(user)
+    return user
+  else:
+    return False
 
 def setUpOrg(organisationID: str):
   """For now this just sets up Cards and Files Algolia Indices,
@@ -359,6 +390,9 @@ def startIndexing():
 """Below here is stuff for testing"""
 
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
+# accountInfo = {'organisationID': 'explaain', 'accountID': 282782204}
+# drives.listFiles(accountInfo)
+
 # indexFiles(accountInfo, False, True)
 
 # indexAll()
@@ -369,7 +403,7 @@ def startIndexing():
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
-# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
+# }, 'FXWHwSyZjCQfgFJEEij7NoRWkIhVyI48LZqYMOwOTmmJkWbXQJ43VPdDKUQVH6DoY')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'

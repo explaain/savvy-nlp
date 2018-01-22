@@ -17,6 +17,12 @@ def add_source():
   results = index.addSource(request.json)
   return jsonify({'results': results})
 
+@app.route('/get-user', methods=['POST'])
+def get_user():
+  print('Starting to get user data!')
+  results = index.serveUserData(request.json['idToken'])
+  return jsonify({'results': results})
+
 @app.route('/set-up-org', methods=['POST'])
 def set_up_org():
   print('request.json', request.json)
