@@ -50,6 +50,9 @@ def getFile(accountInfo, fileID):
   f = {}
   try:
     f = account.files.retrieve(id=fileID)
+    # Starting to add author info but need to fix permissions issue - team admin access?
+    # print("f['owner']['id']", f['owner']['id'])
+    # author = account.users.retrieve(id=f['owner']['id'])
     f = fileToAlgolia(f, accountInfo)
     print('file:')
     pp.pprint(f)
