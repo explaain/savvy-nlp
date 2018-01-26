@@ -6,6 +6,11 @@ import index
 import cards
 from parse import parse
 
+
+from algoliasearch import algoliasearch
+client = algoliasearch.Client('D3AE3TSULH', '88bd0a77faff65d4ace510fbf172a4e1') # This API key allows everything
+algoliaExplaainIndex = client.init_index('explaain__Cards')
+
 app = Flask(__name__)
 CORS(app)
 
@@ -47,6 +52,13 @@ def generate_card_data():
   print('Starting generate_card_data()')
   results = cards.generateCardData(request.json)
 
+  return jsonify({'results': results})
+
+@app.route('/save-to-savvy', methods=['POST'])
+def save_to_savvy():
+  print('Saving to Savvy')
+  results = algoliaExplaainIndex.add_object(request.json)
+  print(results)
   return jsonify({'results': results})
 
 if __name__ == '__main__':
