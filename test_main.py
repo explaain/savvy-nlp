@@ -1,9 +1,22 @@
 import os, json
-from parse import drives
+from parse.integrations import kloudless_integration as kloudlessDrives, confluence
+from parse.integrations.formats import html, xml_doc as xml
 
 testAccountInfo = {
   'organisationID': 'explaain',
   'accountID': '282782204'
+}
+
+services = {
+  'kloudless': kloudlessDrives,
+  'gdocs': kloudlessDrives,
+  'gsheets': kloudlessDrives,
+  'confluence': confluence
+}
+
+formats = {
+  'html': html,
+  'xml': xml,
 }
 
 testFiles = [
@@ -20,32 +33,53 @@ testFiles = [
   'resume.xml',
 ]
 
-def parseTestFileByID(fileID):
-  f = drives.getFile(testAccountInfo, fileID)
+def parseTestFileByID(service, fileID: str):
+  f = service.getFile(testAccountInfo, fileID)
   name = f['title']
-  xmlContent = drives.extractRawXMLContent(testAccountInfo, fileID)
+  xmlContent = service.extractRawXMLContent(testAccountInfo, fileID)
   # Use this when you want to add more files to the test bank
-  xmlFile = open('tests/sampleFiles/' + name.replace(' ', '_') + '.xml', 'w')
+  xmlFile = open(sourceDirectory + name.replace(' ', '_') + '.xml', 'w')
   xmlFile.write(xmlContent)
   #
 
 def getAllFilesInDirectory(directory):
   return os.listdir(directory)
 
-def parseTestFile(filename):
-  testFile = open('tests/sampleFiles/' + filename, 'r')
+def parseTestFile(service, filename: str, sourceDirectory: str, generatedDirectory: str):
+  testFile = open(sourceDirectory + filename, 'r')
   xmlContent = testFile.read()
-  chunkHierarchy = drives.xmlFindText(xmlContent)
-  generatedScore = open('tests/generatedScores/' + filename[:-4] + '.js', 'w')
-  generatedScore.write(json.dumps(chunkHierarchy, indent=2))
-  generatedHierarchy = open('tests/generatedHierarchies/' + filename[:-4] + '.txt', 'w')
-  for chunk in drives.chunksToPrint(chunkHierarchy):
-    generatedHierarchy.write('\n' + chunk)
+  chunkHierarchy = service.getContentArray(xmlContent)
+  generatedContent = service.chunksToPrint(chunkHierarchy)
+  generated = open(generatedDirectory + filename.split('.')[:-1][0] + '.txt', 'w')
+  for chunk in generatedContent:
+    generated.write('\n' + chunk)
+  correct = open('tests/files/html/correct/sample_product.txt', 'r')
+  correctContent = correct.read()
+  return {
+    'passed': generatedContent == correctContent,
+    'generatedContent': generatedContent,
+    'correctContent': correctContent,
+  }
 
-def test_answer():
-  parseTestFileByID('FvsojaQrWWSNvuxbjS_hrw_fEVkEY8ykbb5kJh_cB-C_l-zw9ZnOEXZsq9HIp15dD')
-  for filename in getAllFilesInDirectory('tests/sampleFiles/'):
-    print(filename)
-    if filename[-4:] == '.xml':
-      parseTestFile(filename)
-  assert 4 == 4
+  # # Extra
+  # generatedScore = open('tests/generatedScores/' + filename[:-4] + '.js', 'w')
+  # generatedScore.write(json.dumps(chunkHierarchy, indent=2))
+
+def fetchAndParse(serviceName: str, sourceFileEnding: str):
+  print(1)
+  # @TODO
+
+def parse(formatName: str, sourceFileEnding: str):
+  sourceFormat = formats[formatName]
+  directoryStub = 'tests/files/' + formatName
+  sourceDirectory = directoryStub + '/source/'
+  correctDirectory = directoryStub + '/correct/'
+  generatedDirectory = directoryStub + '/generated/'
+
+  return [parseTestFile(sourceFormat, filename, sourceDirectory, generatedDirectory) for filename in getAllFilesInDirectory(sourceDirectory) if filename.split('.')[-1] == sourceFileEnding]
+
+# def test_gdocs():
+#   parse('gdocs', 'xml')
+
+def test_html():
+  assert parse('html', 'html')

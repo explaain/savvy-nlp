@@ -1,0 +1,43 @@
+
+Target release
+Release name or number
+Epic
+Link to related JIRA epic or feature
+Document status
+DRAFT
+Document owner
+Jeremy Evans
+Designer
+Lead designer
+Developers
+Lead developer
+QA
+Lead tester
+Goals
+    123
+Background and strategic fit
+    456
+Assumptions
+    789
+Requirements
+    #
+    Title
+    User Story
+    Importance
+    Notes
+    1
+    Short identifier for the story
+    Describe the user and what they are trying to achieve
+    Must Have
+        Additional considerations or noteworthy references (links, issues)
+    2
+User interaction and design
+    Include any mockups, diagrams or visual designs relating to these requirements.
+Questions
+    Below is a list of questions to be addressed as a result of this requirements do...
+    Question
+    Outcome
+    (e.g. How we make users more aware of this feature?)
+    Communicate the decision reached
+Not Doing
+    List the features discussed which are out of scope or might be revisited in a la...
