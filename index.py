@@ -323,6 +323,11 @@ def createFileCard(accountInfo, f):
 def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
   # print('createCardsFromContentArray')
   print('contentArray', contentArray)
+  if contentArray == None:
+    return {
+      'cards': [],
+      'allCards': [],
+    }
   pp.pprint(contentArray)
   cards = []
   allCards = []
