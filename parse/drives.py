@@ -295,8 +295,11 @@ def completeContent(chunks, parentNumber=False):
 
 def extractRawContent(accountInfo, rawID, format):
   account = getAccount(accountInfo['accountID'])
-  res = account.raw(raw_uri='/drive/v2/files/' + rawID + '/export?mimeType=' + urllib.parse.quote_plus(format), raw_method='GET')
-  content = res.content.decode("utf-8")
+  try:
+    res = account.raw(raw_uri='/drive/v2/files/' + rawID + '/export?mimeType=' + urllib.parse.quote_plus(format), raw_method='GET')
+    content = res.content.decode("utf-8")
+  except Exception as e:
+    content = []
   print(content)
   return content
 
