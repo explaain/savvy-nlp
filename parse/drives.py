@@ -304,7 +304,11 @@ def getCsvContentArray(csvContent):
   split = csvContent.split('\r\n')
   print(split)
   firstRow = split[0].split(',')
-  contents = [ '\n'.join([(addColon(firstRow[i]) + ' ' + cell) for i, cell in enumerate(row.split(',')) if len(cell)]) for row in split[1:] ]
+  try:
+    contents = [ '\n'.join([(addColon(firstRow[i]) + ' ' + cell) for i, cell in enumerate(row.split(',')) if len(cell)]) for row in split[1:] ]
+  except Exception as e:
+    print(e)
+    contents = []
   print(contents)
   contentArray = [{'content': content, 'allRankings': {}, 'otherContext': {}, 'ranking': 0} for content in contents]
   return contentArray
