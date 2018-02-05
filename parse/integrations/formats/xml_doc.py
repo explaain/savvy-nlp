@@ -2,6 +2,17 @@ import re, pprint, untangle
 
 pp = pprint.PrettyPrinter(indent=1, width=160)
 
+# Decide what to print out:
+toPrint = {
+  'fileList': True,
+  'xmlString': False,
+  'elements': False,
+  'arrayOfPars': False,
+  'justScores': False,
+  'hierarchies': False,
+  'hierarchyText': True
+}
+
 def getContentArray(xmlContent):
   xml = untangle.parse(xmlContent)
   textArray = []

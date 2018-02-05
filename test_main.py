@@ -16,22 +16,8 @@ services = {
 
 formats = {
   'html': html,
-  'xml': xml,
+  'xml_doc': xml,
 }
-
-testFiles = [
-  'askporter_contract.xml',
-  'public_faqs.xml',
-  'jan_build.xml',
-  'privacy_policy.xml',
-  'internal_faqs.xml',
-  'competitor_analysis.xml',
-  'feature_list_pricing_tier.xml',
-  'test_account_logins.xml',
-  'election_2017_handbook.xml',
-  'abc_company_handbook.xml',
-  'resume.xml',
-]
 
 def parseTestFileByID(service, fileID: str):
   f = service.getFile(testAccountInfo, fileID)
@@ -45,7 +31,7 @@ def parseTestFileByID(service, fileID: str):
 def getAllFilesInDirectory(directory):
   return os.listdir(directory)
 
-def parseTestFile(service, filename: str, sourceDirectory: str, generatedDirectory: str):
+def parseTestFile(service, filename: str, sourceDirectory: str, generatedDirectory: str, correctDirectory: str):
   testFile = open(sourceDirectory + filename, 'r')
   xmlContent = testFile.read()
   chunkHierarchy = service.getContentArray(xmlContent)
@@ -53,12 +39,12 @@ def parseTestFile(service, filename: str, sourceDirectory: str, generatedDirecto
   generated = open(generatedDirectory + filename.split('.')[:-1][0] + '.txt', 'w')
   for chunk in generatedContent:
     generated.write('\n' + chunk)
-  correct = open('tests/files/html/correct/sample_product.txt', 'r')
+  correct = open(correctDirectory + filename.split('.')[:-1][0] + '.txt', 'r')
   correctContent = correct.read()
   return {
     'passed': generatedContent == correctContent,
     'generatedContent': generatedContent,
-    'correctContent': correctContent,
+    'correctContent': correctContent.split('\n')[1:],
   }
 
   # # Extra
@@ -73,13 +59,18 @@ def parse(formatName: str, sourceFileEnding: str):
   sourceFormat = formats[formatName]
   directoryStub = 'tests/files/' + formatName
   sourceDirectory = directoryStub + '/source/'
-  correctDirectory = directoryStub + '/correct/'
   generatedDirectory = directoryStub + '/generated/'
+  correctDirectory = directoryStub + '/correct/'
 
-  return [parseTestFile(sourceFormat, filename, sourceDirectory, generatedDirectory) for filename in getAllFilesInDirectory(sourceDirectory) if filename.split('.')[-1] == sourceFileEnding]
+  return [parseTestFile(sourceFormat, filename, sourceDirectory, generatedDirectory, correctDirectory) for filename in getAllFilesInDirectory(sourceDirectory) if filename.split('.')[-1] == sourceFileEnding]
 
 # def test_gdocs():
 #   parse('gdocs', 'xml')
 
 def test_html():
-  assert parse('html', 'html')
+  for test in parse('html', 'html'):
+    for i, line in enumerate(test['generatedContent']):
+      assert line == test['correctContent'][i]
+  for test in parse('xml_doc', 'xml'):
+    for i, line in enumerate(test['generatedContent']):
+      assert line == test['correctContent'][i]

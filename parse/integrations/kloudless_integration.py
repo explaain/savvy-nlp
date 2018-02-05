@@ -11,18 +11,6 @@ pp = pprint.PrettyPrinter(indent=1, width=160)
 import kloudless
 kloudless.configure(api_key='q4djKR_UXs8MxmUv8M56WdTVihDK6Z7ci8JnL1qJvC2Xx40T')
 
-# Decide what to print out:
-toPrint = {
-  'fileList': True,
-  'xmlString': False,
-  'elements': False,
-  'arrayOfPars': False,
-  'justScores': False,
-  'hierarchies': False,
-  'hierarchyText': True
-}
-
-
 def listAccounts():
   accounts = kloudless.Account.all()
   return accounts

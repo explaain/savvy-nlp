@@ -1,0 +1,344 @@
+
+General Election 2017 Tech Handbook
+    http://bit.ly/GE2017TechHandbook
+    Edit this document to make it better.
+        This document is for people who are building things to influence the 2017 Genera...
+        Initiated by @edsaperia of Newspeak House , and assembled with the help of Democ...
+Resources
+    Datasets
+        http://bit.ly/UKPoliticsDatasets - big crowdsourced collection of all kinds of r...
+    Mailing List
+        bit.ly/DemocracyClubMailingList - If you want to keep up with what’s going on he...
+    V olunteers
+        http://bit.ly/GE2017DigitalInitiativesVolunteers - want to do something but don’...
+    User Research
+        Testing voter advice applications: https://www.flourish.org/2015/04/i-find-polit...
+    Guides
+        How to make a difference in the election: http://robblackie.com/election-make-di...
+        How to handle collected user data for a project like this: https://responsibleda...
+Projects (add yours - and read over the rest)
+    Type
+    Project Name & Contact Details
+    Project description / Mission Statement / Help required / Resources offered
+    Non-partisan data infrastructure
+    Non-partisan data infrastructure
+    Datasmoothie: Create a data-story from Electoral Commission data on donations
+    https://www.datasmoothie.io/datasources/@datasmoothie/public/2017-general-electi...
+    We're uploading data on party donations from the Electoral Commission as fast as...
+    The General Election 2017: Who is funding the parties?
+    Non-partisan data infrastructure
+        Democracy Club (plans for GE) https://democracyclub.org.uk/contact/ | @ democlub
+        Free, open database of UK election candidates (not just at GE...always!) — and g...
+        Also: Polling station finder | Polling station widget | Election/Candidate finde...
+        Non-partisan data infrastructure
+            mySociety https://www.mysociety.org/contact/
+            TheyWorkForYou ( https://www.theyworkforyou.com/ ) lets you check your MP's voti...
+            MapIt
+        Non-partisan data infrastructure
+            Parliament Data Service http://www.data.parliament.uk/dataset
+            “...T o ensure that our data is both accessible and useable. Most of the data is...
+        Non-partisan data infrastructure
+            Represent Represent community Slack channel (help, support, queries for our API ...
+            Open polling data, direct representation, building a relationship with represent...
+            OpenSurveys for polling that you can embed on your website
+            Group and CRM tools
+            Also open API, and embeddable question sets - https://represent.me/2017/04/20/us...
+        Non-partisan data infrastructure
+            YourParliament
+            Represent community Slack channel
+            Represent are working with UK Parliament to create accessible versions (plain En...
+        Non-partisan data infrastructure
+            GetInvolved.click
+            making some easy tools for people to use, eg https://getinvolved.click/pc2const?...
+        Non-partisan data infrastructure
+            TweetyourCandidate.com https://kimondo.co.uk/contact-me/
+            Twitter tools to send tweets to candidates, election version of tweetyourMP.com ...
+            Non-partisan data infrastructure
+            Who Targets Me?
+            https://whotargets.me
+            https://twitter.com/WhoTargetsMe
+            We’re working out which demographics campaigns are targeting and what messages t...
+            Possible scope to use the data as evidence in a campaign for electoral spending ...
+            Evolution of Facebook Ad Tracking
+            Non-partisan data infrastructure
+            Stig
+            https://getstig.org
+            French civic tech, social network dedicated to politics with a ranking system fo...
+            Non-partisan data infrastructure
+            Empowering the homeless to vote.
+            www.homelessvotes.co.uk
+            https://www.facebook.com/apptivists
+            https://www.facebook.com/groups/1416506721725832/
+            homelessvotes@apptivists.org.uk
+            Many people do not realise homeless people are eligible to vote, we are here to ...
+            Many constituencies are highly marginal with a slim majority of only a few hundr...
+            The homeless vote genuinely has the potential to be the decisive vote in this ye...
+            We have created www.homelessvotes.co.uk to be a step by step guide on how get ho...
+            Non-partisan data infrastructure
+            MPs on twitter: http://www.mpsontwitter.co.uk
+                provides an interactive way to explore the way in which Members of the UK parlia...
+            Non-partisan data infrastructure
+            TwittElection
+            http://twittelection.co.uk
+            Creating 650 Twitter lists, each of which will contain the candidates for a cons...
+            Non-partisan data infrastructure
+            Write to your GE candidates about corruption
+            http://www.transparency.org.uk/ge2017/
+            Contact: rose.zussman@transparency.org.uk
+            Help needed:
+            I’m looking to embed a form into our website that will allow visitors to write d...
+            Non-partisan data infrastructure
+            Facebook bot for candidate and manifesto information
+            m.me/politicalgenie
+            https://www.facebook.com/politicalgenie/
+            Contact:
+            philippabywater@gmail.com
+            I’d welcome any suggestions or advice!
+            Non-partisan data infrastructure
+            Analyse Tweets from MPs for sentiment and patterns
+            MPs from the top 5 parties have tweeted a staggering xxx tweets since the GE was...
+            Non-partisan data infrastructure
+            Krzana - election.krzana.com
+    In the build up to the election, journalists will be using Krzana for free to mo...
+        Non-partisan data infrastructure
+        http://bit.ly/ge2017-predictions
+        Predict who will win the most votes in the UK General Election for a chance to w...
+            Non-partisan data infrastructure
+            http://ge2017.amimetic.co.uk/ https://github.com/jamesporter/ge2017
+            Processing/filtering of results from 2015, with visualisation per constituency, ...
+            Non-partisan data infrastructure
+            http://m.voterpower.org.uk/
+            Looks at the ‘power’ of individual votes by constituency. Lots of info-graphics....
+                Fundraising
+        Fundraising
+            Crowdpac
+            • Crowdfunding platform for political causes
+            • Political compass
+            Fundraising
+            Crowdfunder
+            Crowdfunder are actively supporting pro-democracy projects for the general elect...
+                Modelling / Forecasting
+            Forecasts
+                SixFifty
+                contact@sixfifty.org.uk
+                https://twitter.com/SixFiftyData
+                Freshly assembled group of data scientists, software engineers & political opera...
+            Party Activities
+                Party Activities
+                Jeremy Corbyn’s website built by Outlandish
+                    We built Jeremy Corbyn’s website when he was our local MP and his team got in to...
+                Party Activities
+                MyNearestMarginal.com (Momentum)
+                    Enter your postcode to find your nearest marginal and a list of canvassing sessi...
+                    Party Activities
+                    LibDem Digital
+                    Contact @benjaminhowarth for Lib Dem digital project, expertise in data science ...
+                    Party Activities
+                    Green Party Coders
+                    https://www.facebook.com/groups/438838372942873/
+            Party Activities
+                Something New
+                https://somethingnew.org.uk/contact_us.html
+                ‘new political party’ - previously creating an open manifesto
+                Party Activities
+                CorbynRun https://corbynrun.com or search “corbyn run” on the app store(s)
+                8-bit political satire game which communicates the labour manifesto in an easily...
+                Party Activitiesz
+                WhatsApp Deeplink Cascade
+                https://getoutandvote.co.uk/ (Momentum)
+                Promoting GOTV via viral WhatsApp messaging: surfacing ads or promoting posts co...
+                    Progressive Alliance & Vote Swapping
+            Progressive Alliance
+                More United
+                http://www.moreunited.uk/
+                    supporting candidates who share values of opportunity, tolerance, democracy, env...
+            Vote Swapping
+                Swap my Vote
+                Pairs of voters collaborate to minimise wasted votes (available to all major par...
+                API available for vote recommendation sites to prepolulate a swap, making voter ...
+            Progressive Alliance
+                Compass
+                http://www.progressivealliance.org.uk/
+                Launched 23rd April 2017
+                progressive alliance organising & funding & tactical voting tool
+            Progressive Alliance
+                VoteSwap
+                Not relaunching for 2017 - see Swap my Vote
+                Progressive Alliance
+                Campaign Together
+                http://campaigntogether.org
+                https://www.facebook.com/campaigntogether/
+                To mobilise/coordinate people who want to stop Conservative govt but aren’t nece...
+            Progressive Alliance
+                Progressive Alliance
+                A play with data from last election
+                Progressive Alliance
+                http://whothefuckshouldivotefor.com/
+                Simple postcode lookup which returns the name of the anti-Brexit candidate on yo...
+                Progressive Alliance
+                https://secure.avaaz.org/campaign/en/uk_vote_smart_loc_cp/
+                Anti-Tory tactical voting tool
+                Progressive Alliance
+                http://whyimvotingtory.com
+                Gently encouraging people to make their vote count
+                    Tactical Voting
+                Tactical Voting
+                http://democracy150.uk/
+                Tactical Voting
+                @stef
+                https://remainstanding.slack.com/signup
+                remainstanding.co.uk/
+                Tactical Voting
+                www.twitter.com/votetools
+                S topthetori.es Tactical voting tool
+                Tactical voting
+                @UKTactical2017 / #Tactical2017
+            https://www.tactical2017.com/
+            Non-partisan tactical voting recommendation web site. Provides a simple recommen...
+                Tactical voting
+                Operation Votey McVoteface
+                https://www.facebook.com/groups/215658898934595/
+                Tactical voting
+                https://infacts.org/how-should-i-vote-to-stop-a-destructive-brexit/
+            How should I vote to stop a destructive Brexit?
+                Tactical voting
+                VoteEU
+                https://voteeu.ourg.uk
+                Organizing leafleting and ground campaigns; local campaign lead volunteers neede...
+                Tactical
+                Remain Strategic www.remainstrategic.com and Represent US
+                http://www.votesmart2017.com/ With multiple landing pages driven from multiple a...
+                E.g. http://www.votesmart2017.com/industry
+                    Gender Equality
+                Gender Equality
+                    Ones to Watch ( spreadsheet )
+                    50:50 Parliament Campaign - brian@5050parliament.co.uk
+                    For the 2015 election, the 50:50 Parliament campaign compiled a list of “Ones to...
+                    It would be great to do something similar/better, and do it sooner, to support t...
+                    Filterbubble Breakers
+                listenr
+                https://www.facebook.com/listenrconnect
+                Get anonymously connected to a random person with opposing views on facebook mes...
+                Social Media Strategy
+                Bubble Breaking https://sparkhera.wordpress.com/2017/06/01/bubble-breaking-a-qui...
+                Towards developing a loosely coherent and dynamic social media strategy that emp...
+                    Voter Registration/Get Out The Vote
+            Voter Registration
+                Bite The Ballot
+                http://bitetheballot.co.uk/contact/
+                Our mission is to empower young citizens to lead the change that they want to se...
+            Voter Registration
+                Represent https://www.facebook.com/representlive/
+                Represent is an online voting platform. You answer questions, we make sure that ...
+                    reminders to vote and (hopefully) directions to polling booths (via Democracy Cl...
+                Voter Registration
+                School of Politics
+                    Follow us on Twitter
+                An online education platform teaching people how to do politics (voting, electio...
+                Voter Registration
+                The #RentersVote
+                http://www.rentersvote.org.uk
+                Joint project by ACORN #RentersRising, Generation Rent, Renters Power Project an...
+                Voter Registration/Education
+                The Politics Project www.thepoliticsproject.org.uk
+                We are a youth democratic education organisation. We are spearheading a project ...
+                Get Out The Vote
+                http://www.myvotematters.org.uk/
+                We are campaigning for as many people as possible to take part in the UK General...
+            Get Out The Vote
+                Bite the Ballot http://bitetheballot.co.uk/contact/
+                Our mission is to empower young citizens to lead the change that they want to se...
+            Get Out The Vote
+                #hackthevote - http://www.tomhewitson.com/#contact
+                Hack the vote is a volunteer group building technology to increase voter turnout...
+            Get Out The Vote
+                Ben & Jerry’s - get out the youth vote http://www.benjerry.co.uk/values/issues-w...
+                Ben & Jerry’s has teamed up with HOPE not hate to launch ‘Don’t Get Frozen Out’,...
+                News & Education
+                Shout Out UK www.shoutoutuk.org
+                We offer a platform for young people to voice their opinions and a variety of to...
+                Voter Advice Applications
+                Full list of 19 different VAAs from 2015
+                    (most have not yet announced if they’re going to do versions for this election y...
+                    https://www.mysociety.org/2015/03/20/a-list-of-voter-advice-applications-aka-who...
+            Voter Advice Applications
+                Vote for Policies built by Outlandish
+                Purpose: a non-partisan service to help more people vote, and make an informed d...
+            Voter Advice Applications
+                PositionDial
+                explore where you stand, see views from all sides and live your values via buy, ...
+                Voter Advice Applications
+                Represent.me
+                Purpose: vote on issues you care about. Find out how you compare to parties, can...
+                Voter Advice Applications
+                Crowdpac
+                New tool launching soon - Take the political matchmaker test, see where you stan...
+                Voter Advice Applications
+                Postal Vote Generator
+                A tool to help voters generate a pre-filled postal voting form, ready to send to...
+                Voter Advice Applications
+                Online Centres Network
+                A map and addresses of all of the places people can access the internet for free...
+                Voter Advice Applications
+                ge2017.com
+                    Fact Checking/Explainers
+            Fact-checking / explainers
+                FullFact
+                https://fullfact.org/about/contact/
+                The UK's independent non partisan factchecking charity. Will be fact checking ca...
+            Fact-checking / explainers
+                Factmata info@factmata.com
+                assisted fact checking for claims about economic statistics (unemployment, immig...
+            Fact-checking / explainers
+                Explaain beta@explaain.com
+                building a not-for-profit Voter Advice Application, in collaboration with previo...
+            Fact-checking / explainers
+                (Explainer) GovTracker.co.uk http://govtracker.co.uk/contact.php
+                hopefully going to collect a data set of the promises made by main parties in th...
+            Fact-checking / explainers
+                http://www.conservatives2017.com/
+                Fact-checking / explainers
+                Live link coming soon…. http://popupnewsroom.eu
+                General Election 2017 sees the first installment of Pop-Up Newsroom - a from scr...
+                    Campaigning Tools
+                Misc
+                Etic Lab https://eticlab.co.uk/contact-us/
+                Political Twitter Bots, and other political campaigning/propaganda tools “ We wo...
+                Campaigning
+                Schoolcuts.org.uk by Outlandish
+                Tool that makes gov formula on school cuts transparent, and shows what they mean...
+                During the election, the NUT worked out what Con, Lab & Lib Dem manifesto commit...
+                Over 1 million hits since we launched in Nov 16, and over 2.8 million schools se...
+                Campaigning
+                NHScuts.org.uk by Outlandish
+                Similar idea to School Cuts, we found that a lot of the well known NHS stats wer...
+                Campaigning
+                Unelectable by Outlandish
+                A site based on facts, past votes and policies from Con and Lab. User swipes lef...
+                    Ideas (not projects) with no real idea how to execute:
+            Ideas
+                Minimum viable campaign checklist -
+                give citizens a quick run down of how to pop up their own campaign if needed (me...
+            Ideas
+                Tactical voting guidance tool
+                Sam Applebee | sam@super.global
+                identifies potential swing seats and provides tools to lobby people in your soci...
+                Ideas
+                A series of visual essays
+                Awais Hussain | @ahussain4 | unxmnd@gmail.com
+                I think a powerful new medium for communication is the visual essay. Something l...
+                https://pudding.cool/2017/03/hamilton/index.html
+                I’ll give it a go on my own but it is a lot of work. If someone reading this has...
+                Ideas
+                Questions to ask MPs App
+                Bit like Tinder.. List of questions to ask the various parties..MPs/ Canvassers-...
+                Ideas
+                #Nightatthepolls or #VoteParty
+                Idea for events campaign asking folk to host online events to meet and go vote t...
+                Ideas (tactical voting)
+                VoteBuddy Nilesh Vasave | nvasave@gmail.com https://4ppl.tech/
+                Votebuddy will be a tactical voting app. Where people who has same affiliations ...
+                    The votebuddy will alert people know about the main elections happening in their...
+                Government spending visualisation
+                https://uk.wikibudgets.org/w/united-kingdom-budget-2015
+                Hi all, if you think this can be useful for voters to help them make rational de...

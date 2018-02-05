@@ -1,0 +1,69 @@
+
+Obie.Ai
+    https://obie.ai
+    Summary: All of your team knowledge at your fingertips. Obie is a virtual assist...
+    Platforms: Slack
+    Financial model: Freemium model (pricing unknown as have to contact sales)
+    Key positives:
+        1: Fairly good design, relatively easy to use
+        2: On the market with proven market traction and hundreds of customers
+        3: Active on social and marketing scenes - could be considered a thought leader
+    Key negatives:
+        1: Only focussed on Slack- isn’t contextual across all workflows
+        2: Company structure is complicated - Obie is part of Tasytt - confusion as to who ...
+        3: No case studies/ in depth customer testimonies as to impact on workflow
+        4: No analytics unless in paid version
+        5: It pretends to be alive ‘my human workers are xyz.’ - this is a marmite subject ...
+        6: No custom NLP so there is a ramp-up period
+        7: Requires users to use an editor to create, edit and delete content into Obis for...
+    Included in Free:
+    Included in paid:
+Journal
+    https://usejournal.com/
+    Summary: Search and remember information across your work apps and beyond. From ...
+    Platforms: Slack
+    Financial model: Unknown - currently waiting in list for trial
+    Key positives:
+        1: Unknown
+    Key negatives:
+        1: Unknown
+Guru
+    www.getguru.com
+    Summary: Probably our most direct competitor in terms of function, value prop an...
+    Platforms: Slack, browser extension (Google, Opera, Safari, Firefox), web app
+    Financial model: Free 21-Day trial then priced according to role/feature
+    Base: $5 user/month annual billing ($6 user/month on month)
+    Growth: $10 user/month annual billing ($12 user/month on month)
+    Base: $20 user/month annual billing ($24 user/month on month)
+    Pricing model/feature breakdown here > https://www.getguru.com/pricing/
+    Key positives:
+        1: Considered a market leader
+        2: Experienced team - previously sold a B2B business to Dell
+        3: Working on the problem since 2013
+        4: On the market with proven market traction and hundreds of customers
+        5: Active on social and marketing scenes - could be considered a thought leader
+        6: Some form of NLP/ML in order to surface cards
+        7: Verification and Q&A workflow allow for cards to be considered ‘trustworthy’ or ...
+    Key negatives:
+        1: Poor design and overall ‘solution’ offered is another silo e.g. have to create G...
+        2: Cumbersome signup flow - not sure what the value prop is at which point
+        3: High ramp up period - requires investment in time to add cards etc.
+        4: No analytics unless in paid version
+        5: Requires users to use an editor to create, edit and delete content into Gurus fo...
+Butter.ai
+    www.butter.ai
+    Summary: Uses Slack to search connect apps for files in natural language. Can al...
+    Platforms: Slack. We know they’re expanding to browsers soon.
+    Financial model: Free 14-Day trial then $4.99 per user/month (up to 20 users)
+    Key positives:
+        1: Experienced team - previously worked at Evernote
+        2: Working on the problem since 2015
+        3: Raised over $2 million in venture capital - inc. Dell, former Evernote CEO etc.
+        4: On the market with proven market traction and customers
+        5: Active on social and marketing scenes - could be considered a thought leader
+        6: Clear use of NLP/ML in order to surface cards
+    Key negatives:
+        1: Can only surface entire docs
+        2: Only works in Slack
+        3: Cumbersome signup flow - not sure what the value prop is at which point
+        4: No analytics
