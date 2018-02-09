@@ -90,7 +90,7 @@ def fileToAlgolia(f, accountInfo):
 #   }
 #   return card
 
-def getContent(accountInfo, fileID):
+def getExportedFileData(accountInfo, fileID):
   fileData = getFile(accountInfo, fileID)
   if not fileData:
     return None
@@ -101,15 +101,28 @@ def getContent(accountInfo, fileID):
   fileType = fileData['mimeType']
   if fileType not in servicesByFileType:
     return None
-  account = getAccount(account['accountID'])
+  account = getAccount(accountInfo['accountID'])
   driveService = servicesByFileType[fileType]
-  exportParams = driveService.getExportType(fileData)
-  exportMethod = {
-    'retrieve': account.files.retrieve(fileID),
-    'raw': account.raw(raw_uri='/drive/v2/files/' + rawID + '/export?mimeType=' + urllib.parse.quote_plus(format), raw_method='GET')
+  exportParams = driveService.getExportParams(fileData)
+  print('exportParams')
+  print(exportParams)
+  if exportParams['type'] == 'retrieve':
+    exportedFile = account.files.retrieve(fileID)
+  elif exportParams['type'] == 'raw':
+    exportedFile = account.raw(raw_uri = exportParams['raw_uri'] if 'raw_uri' in exportParams else '', raw_method=exportParams['raw_method'] if 'raw_method' in exportParams else '')
+  return {
+    'exportedFile': exportedFile,
+    'driveService': driveService
   }
-  exportedFile = exportMethod[exportParams['type']]
-  return driveService.fileToCardData(exportedFile)
+
+def getFileContent(accountInfo, fileID):
+  exportedFileData = getExportedFileData(accountInfo, fileID)
+  content = exportedFileData['driveService'].fileToContent(exportedFileData['exportedFile'])
+  return content
+
+def getContentForCards(accountInfo, fileID):
+  exportedFileData = getExportedFileData(accountInfo, fileID)
+  return exportedFileData['driveService'].fileToCardData(eexportedFileData['exportedFile'])
 
 
 

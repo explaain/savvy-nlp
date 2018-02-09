@@ -59,14 +59,18 @@ def fileToAlgolia(page, accountInfo):
   }
   return f
 
-def getContent(accountInfo, fileID):
-  """Returns content parsed as data (array) ready to be turned into cards"""
+def getFileContent(accountInfo, fileID):
   # Create API object
   connect = ConfluenceAPI(accountInfo['username'], accountInfo['password'], 'https://' + accountInfo['siteDomain'] + '.atlassian.net/wiki/')
   # Get latest visible content from confluence instance
   page = connect.get_content_by_id(fileID, expand='body.view,childTypes.all,operations,history,metadata.currentuser')
   # Get content
   content = page['body']['view']['value']
+  return content
+
+def getContentForCards(accountInfo, fileID):
+  """Returns content parsed as data (array) ready to be turned into cards"""
+  content = getFileContent(accountInfo, fileID)
   contentArray = html.getContentArray(content)
   return contentArray
 
@@ -77,7 +81,7 @@ def getContent(accountInfo, fileID):
 #   'accountID': 'https://explaain.atlassian.net/wiki/'
 # })
 #
-# getContent({
+# getContentForCards({
 #   'username': 'admin',
 #   'password': 'h3110w0r1d',
 #   'siteDomain': 'explaain',

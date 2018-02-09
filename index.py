@@ -329,7 +329,7 @@ def indexFileContent(accountInfo, f):
 
   # Create new cards
   service = getService(accountInfo)
-  contentArray = service.getContent(accountInfo, f['objectID']) # Should only take first one!!!
+  contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
   cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
   print('Number of Cards:', len(cards))
   if toPrint['cardsCreated']:

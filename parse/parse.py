@@ -81,7 +81,7 @@ def getResults(data):
       score = getMatchScore(text, content)
     if len(text) < 2 and 'file' in card['card']:
       text = ''
-      # text = kloudlessDrives.getContent('', '', card['card']['file'].get('id'))
+      # text = kloudlessDrives.getContentForCards('', '', card['card']['file'].get('id'))
       score = 10000000
     else:
       text = ''
