@@ -20,17 +20,21 @@ def compatible_print(msg):
 def listFiles(accountInfo, after=False, number=500):
   # Create API object
   connect = ConfluenceAPI(accountInfo['username'], accountInfo['password'], 'https://' + accountInfo['siteDomain'] + '.atlassian.net/wiki/')
-  # Get latest visible content from confluence instance
-  page = connect.get_content_by_id('294914', expand='body.view,childTypes.all,operations,history,metadata.currentuser')
+  # Get latest file info
+  page = connect.get_content_by_id('294914', expand='childTypes.all,operations,history,metadata.currentuser')
   pp.pprint(page)
-  body = page.get('body')
-  compatible_print("{} - {} ({})".format(page.get("space", {}).get("key", "???"),
-                                                page.get("title", "(No title)"),
-                                                page.get("id", "(No ID!?)")))
-  content = page.get("body", {}).get("view", {}).get("value", "No content.")
-  pp.pprint(content)
-  pp.pprint(page)
-  return None
+  # # Get latest visible content from confluence instance
+  # page = connect.get_content_by_id('294914', expand='body.view,childTypes.all,operations,history,metadata.currentuser')
+  # pp.pprint(page)
+  # body = page.get('body')
+  # compatible_print("{} - {} ({})".format(page.get("space", {}).get("key", "???"),
+  #                                               page.get("title", "(No title)"),
+  #                                               page.get("id", "(No ID!?)")))
+  # content = page.get("body", {}).get("view", {}).get("value", "No content.")
+  # print('content1')
+  # pp.pprint(content)
+  # pp.pprint(page)
+  return page
 
 def getFile(accountInfo, fileID):
   """Returns complete exported file data"""

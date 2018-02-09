@@ -1,28 +1,51 @@
-import os, json
+import os, json, pprint
+from parse import services
 from parse.integrations import kloudless_integration as kloudlessDrives, confluence
-from parse.integrations.formats import html, xml_doc as xml
+from parse.integrations.formats import html, xml_doc as xml, csv
 
-testAccountInfo = {
-  'organisationID': 'explaain',
-  'accountID': '282782204'
+pp = pprint.PrettyPrinter(indent=4)
+
+TestAccountInfo = {
+  'gdocs': {
+    'organisationID': 'explaain',
+    'accountID': '282782204',
+  },
+  'gsheets': {
+    'organisationID': 'explaain',
+    'accountID': '282782204',
+  },
+  'confluence': {
+    'accountID': 'https://explaain.atlassian.net/wiki/',
+    'username': 'admin',
+    'password': 'h3110w0r1d',
+    'siteDomain': 'explaain',
+  }
 }
 
-services = {
-  'kloudless': kloudlessDrives,
-  'gdocs': kloudlessDrives,
-  'gsheets': kloudlessDrives,
-  'confluence': confluence
+TestFilesToFetch = {
+  'gdocs': [
+    'FS1864iLNT6VttUFpOrGziWMoAqIyx3CZM6wV5jfUKPoE3qCHI0_eh3RELL7I5HIU',
+    'FxfyEPKrpbHvnhYunG8nvXLW4Trg6C85-KrjCrBX9gpo2QJozK1Nba2n5sfx923iL'
+  ]
 }
 
-formats = {
+Formats = {
   'html': html,
   'xml_doc': xml,
+  'csv': csv,
+}
+FormatFileEndings = {
+  'html': 'html',
+  'xml_doc': 'xml',
+  'csv': 'csv',
 }
 
-def parseTestFileByID(service, fileID: str):
-  f = service.getFile(testAccountInfo, fileID)
+def parseTestFileByID(serviceName, fileID: str):
+  serviceData = services.getService(serviceName)
+  service = serviceData['module']
+  f = service.getFile(TestAccountInfo[serviceName], fileID)
   name = f['title']
-  xmlContent = service.extractRawXMLContent(testAccountInfo, fileID)
+  xmlContent = service.extractRawXMLContent(TestAccountInfo[serviceName], fileID)
   # Use this when you want to add more files to the test bank
   xmlFile = open(sourceDirectory + name.replace(' ', '_') + '.xml', 'w')
   xmlFile.write(xmlContent)
@@ -41,22 +64,53 @@ def parseTestFile(service, filename: str, sourceDirectory: str, generatedDirecto
     generated.write('\n' + chunk)
   correct = open(correctDirectory + filename.split('.')[:-1][0] + '.txt', 'r')
   correctContent = correct.read()
+  correctContent = correctContent.split('\n')[1:]
+  lineTests = [{
+    'passed': line == correctContent[i],
+    'generatedLine': line,
+    'correctLine': correctContent[i]
+  } for i, line in enumerate(generatedContent)]
   return {
-    'passed': generatedContent == correctContent,
+    'lineTests': lineTests,
+    'passed': all([test['passed'] for test in lineTests]),
     'generatedContent': generatedContent,
-    'correctContent': correctContent.split('\n')[1:],
+    'correctContent': correctContent,
   }
 
   # # Extra
   # generatedScore = open('tests/generatedScores/' + filename[:-4] + '.js', 'w')
   # generatedScore.write(json.dumps(chunkHierarchy, indent=2))
 
-def fetchAndParse(serviceName: str, sourceFileEnding: str):
+def fetchAndParse(serviceName: str):
+  serviceData = services.getService(serviceName)
+  service = serviceData['module']
+  files = service.listFiles(TestAccountInfo[serviceName])
+  for f in files:
+    print(f)
+    parseTestFileByID(serviceName, f['id'])
   print(1)
   # @TODO
 
-def parse(formatName: str, sourceFileEnding: str):
-  sourceFormat = formats[formatName]
+def fetchFiles(serviceName: str):
+  serviceData = services.getService(serviceName)
+  service = serviceData['module']
+  print('service')
+  print(service)
+  print('TestAccountInfo[serviceName]')
+  print(TestAccountInfo[serviceName])
+  files = service.listFiles(TestAccountInfo[serviceName])
+  print('files')
+  print(files)
+  for f in files:
+    print('f')
+    print(f)
+    if f['objectID'] in TestFilesToFetch[serviceName]:
+      service.getFile(TestAccountInfo, f['objectID'])
+  return files
+
+def parse(formatName: str):
+  sourceFormat = Formats[formatName]
+  sourceFileEnding = FormatFileEndings[formatName]
   directoryStub = 'tests/files/' + formatName
   sourceDirectory = directoryStub + '/source/'
   generatedDirectory = directoryStub + '/generated/'
@@ -64,13 +118,23 @@ def parse(formatName: str, sourceFileEnding: str):
 
   return [parseTestFile(sourceFormat, filename, sourceDirectory, generatedDirectory, correctDirectory) for filename in getAllFilesInDirectory(sourceDirectory) if filename.split('.')[-1] == sourceFileEnding]
 
-# def test_gdocs():
-#   parse('gdocs', 'xml')
+def test_parse():
+  for fileFormat in Formats:
+    for test in parse(fileFormat):
+      print('test')
+      pp.pprint(test)
+      assert test['passed']
 
-def test_html():
-  for test in parse('html', 'html'):
-    for i, line in enumerate(test['generatedContent']):
-      assert line == test['correctContent'][i]
-  for test in parse('xml_doc', 'xml'):
-    for i, line in enumerate(test['generatedContent']):
-      assert line == test['correctContent'][i]
+def test_fetchandparse():
+  for serviceName in services.getServices():
+    service = services.getService(serviceName)
+    fileFormat = services.getServiceFormat(serviceName)
+    files = fetchFiles(serviceName)
+    for test in parse(fileFormat):
+      print('test')
+      pp.pprint(test)
+      assert test['passed']
+
+# def test_a():
+#   fetchFiles('gdocs')
+#   assert 1 == 2
