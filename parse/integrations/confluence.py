@@ -21,7 +21,7 @@ def listFiles(accountInfo, after=False, number=500):
   # Create API object
   connect = ConfluenceAPI(accountInfo['username'], accountInfo['password'], 'https://' + accountInfo['siteDomain'] + '.atlassian.net/wiki/')
   # Get latest file info
-  page = connect.get_content_by_id('294914', expand='childTypes.all,operations,history,metadata.currentuser')
+  page = connect.get_content_by_id('294914', expand='childTypes.all,operations,history,history.lastUpdated,metadata.currentuser')
   pp.pprint(page)
   # # Get latest visible content from confluence instance
   # page = connect.get_content_by_id('294914', expand='body.view,childTypes.all,operations,history,metadata.currentuser')
@@ -41,7 +41,7 @@ def getFile(accountInfo, fileID):
   # Create API object
   connect = ConfluenceAPI(accountInfo['username'], accountInfo['password'], 'https://' + accountInfo['siteDomain'] + '.atlassian.net/wiki/')
   # Get latest visible content from confluence instance
-  page = connect.get_content_by_id(fileID, expand='body.view,childTypes.all,operations,history,metadata.currentuser')
+  page = connect.get_content_by_id(fileID, expand='body.view,childTypes.all,operations,history,history.lastUpdated,metadata.currentuser')
   # Convert to file info
   f = fileToAlgolia(page, accountInfo)
   return f
@@ -53,8 +53,8 @@ def fileToAlgolia(page, accountInfo):
     'rawID': page['id'],
     'mimeType': 'html',
     'title': page['title'],
-    'created': page['history']['createdDate'],
-    'modified': page['history']['createdDate'], # @TODO: find actual modified!
+    'created': page['history']['createdDate'], # @TODO: Check this is in the right format
+    'modified': page['history']['lastUpdated']['when'], # @TODO: Check this is in the right format
     'source': accountInfo['accountID']
   }
   return f
