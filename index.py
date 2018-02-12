@@ -434,7 +434,7 @@ def startIndexing():
 
 """Below here is stuff for testing"""
 
-indexAll()
+# indexAll()
 
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
 # accountInfo = {
