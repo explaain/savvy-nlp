@@ -4,7 +4,8 @@ import pprint
 import operator
 from collections import Counter
 from wordfreq import word_frequency
-from . import search, phrases, drives
+from . import search, phrases
+# from parse.integrations import kloudless_integration as kloudlessDrives
 pp = pprint.PrettyPrinter(indent=4)
 
 commonWords = phrases.commonWords()
@@ -71,7 +72,7 @@ def getResults(data):
     re.sub(phrase, '', content)
 
   algoliaCards = search.compound(organisationID, user, algoliaQuery)
-  # fileCards = drives.search({}, driveQuery)
+  # fileCards = kloudlessDrives.search({}, driveQuery)
   cards = algoliaCards # + fileCards
   for card in cards:
     score = 0
@@ -80,7 +81,7 @@ def getResults(data):
       score = getMatchScore(text, content)
     if len(text) < 2 and 'file' in card['card']:
       text = ''
-      # text = drives.getContent('', '', card['card']['file'].get('id'))
+      # text = kloudlessDrives.getContentForCards('', '', card['card']['file'].get('id'))
       score = 10000000
     else:
       text = ''

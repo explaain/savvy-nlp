@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 
-from . import drives
+from . import kloudless as kloudlessDrives
 
-drives.search('', '', ' ')
+kloudlessDrives.search('', '', ' ')

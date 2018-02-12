@@ -1,0 +1,1073 @@
+
+DATED
+    2017
+    THE SUBSCRIBING INVESTORS
+    and
+    THE EXISTING INVESTOR
+    and
+    THE FOUNDERS
+    and
+        THE COMPANY
+    SEED INVESTMENT AGREEMENT
+        RELATING TO ASK PRODUCTS LTD
+THIS AGREEMENT is made on 2017
+BETWEEN
+    1: The persons whose names and addresses are set out in part 1 of schedule 1 (toget...
+    2: PI LABS II LIMITED PARTNERSHIP (company number LP017411) acting by its general m...
+    3: The persons whose names and addresses are set out in part 2 of schedule 1 (toget...
+    4: ASK PRODUCTS LTD (company number 10515556) whose registered office is at Flat 17...
+INTRODUCTION
+    The Subscribing Investors wish to subscribe for shares in the capital of the Com...
+AGREED TERMS
+6: Definitions
+    6.1: In this agreement, unless the context otherwise requires, the words and expressi...
+    6.2: " Act " means the Companies Act 2006;
+    6.3: " A Shares " means the A shares of £0.00001 each in the capital of the Company f...
+    6.4: " Board " means the board of directors of the Company as constituted from time t...
+    6.5: " Business " means AI Property Management Software, as more fully described in t...
+    6.6: " Business Day " means a day on which the English clearing banks are ordinarily ...
+    6.7: " Business Plan " means the business plan for the Company in the agreed form;
+    6.8: " Claim(s) " means any claim(s) for breach of any Warranty;
+    6.9: " Company Intellectual Property " means all Intellectual Property which is owned...
+    6.10: " Completion " means any of First Completion, Second Completion, Third Completio...
+    6.11: " Deed of Adherence " means the deed of adherence substantially in the form set ...
+    6.12: " Disclosed " means fairly disclosed to the Subscribing Investors in the Disclos...
+    6.13: " Disclosure Schedule " means the schedule of disclosures set out in schedule 7;
+    6.14: " Encumbrance " means any mortgage, charge, security interest, lien, pledge, ass...
+    6.15: " Existing Agreement " means the seed investment agreement relating to the Compa...
+    6.16: " Fifth Completion " means the performance by the parties of their respective ob...
+    6.17: " Fifth Completion Date " means [ 1 September 2018 ] or such other date agreed i...
+    6.18: " Fifth Completion Shares " means the shares subscribed by the Subscribing Inves...
+    6.19: " First Completion " means the performance by the parties of their respective ob...
+    6.20: " First Completion Date " means the date on which First Completion occurs in acc...
+    6.21: " First Completion Shares " means the shares subscribed by the Subscribing Inves...
+    6.22: " Fourth Completion " means the performance by the parties of their respective o...
+    6.23: " Fourth Completion Date " means [ 1 June 2018 ] or such other date agreed in wr...
+    6.24: " Fourth Completion Shares " means the shares subscribed by the Subscribing Inve...
+    6.25: " Intellectual Property " means copyright, trade marks, service marks, trade, bu...
+    6.26: " Investor Director " means the director appointed by the Investors pursuant to ...
+    6.27: " Investor Majority " means the holders of more than 50% of the Shares from time...
+    6.28: " Investor Majority Consent " means the prior written consent of an Investor Maj...
+    6.29: " Investor Super Majority " means the holders of more than 75% of the Shares fro...
+    6.30: " Investor Super Majority Consent " means the prior written consent of an Invest...
+    6.31: " Investors " means the Subscribing Investors, the Existing Investor and any oth...
+    6.32: " Key Employee " means any employee who is or was during the Period employed by ...
+    6.33: at management grade; or
+    6.34: in a senior capacity, including all software developers other than junior develo...
+    6.35: " New Articles " means the new articles of association of the Company in the agr...
+    6.36: " New Shares " means the First Completion Shares, the Second Completion Shares, ...
+    6.37: " Period " means the period of two years immediately preceding the Termination D...
+    6.38: " Second Completion " means completion by the parties of their respective obliga...
+    6.39: " Second Completion Date " means [ 1 March 2018 ] or such other date agreed in w...
+    6.40: " Second Completion Shares " means the shares subscribed by the Subscribing Inve...
+    6.41: " Seed Preferred Shares " means the seed preferred shares of £0.00001 each in th...
+    6.42: " Service Agreements " means the service agreements to be entered into between t...
+    6.43: " Shareholders " means each of the Founders and the Existing Investor and the ot...
+    6.44: " Share Option Plan " means the share option plan of the Company as maintained p...
+    6.45: " Share Option Pool " has the meaning given in clause 7;
+    6.46: " Shares " means the A Shares and the Seed Preferred Shares;
+    6.47: " Subscription Price " means £[16.58] per New Shares;
+    6.48: " Taxation " means all forms of taxation, duties, rates, levies, contributions, ...
+    6.49: " Taxing Authority " means HM Revenue & Customs and any other governmental, stat...
+    6.50: " Termination Date " means the date upon which a Founder concerned ceases to be ...
+    6.51: " Third Completion " means the performance by the parties of their respective ob...
+    6.52: " Third Completion Date " means [ 8 March 2018 ] or such other date agreed in wr...
+    6.53: " Third Completion Shares " means the shares subscribed by the Subscribing Inves...
+    6.54: " Warranties " means the warranties given pursuant to clause 9 (references to a ...
+    6.55: " Warrantors " means the Founders and the Company.
+7: Interpretation
+    7.1: Words and expressions which are defined in the Act shall have the meanings attri...
+    7.2: The clause and paragraph headings used in this agreement are inserted for ease o...
+    7.3: References to persons shall include unincorporated associations and partnerships...
+    7.4: References to documents " in the agreed form " are to documents in terms agreed ...
+    7.5: References to a " party " or " parties " means a party or the parties to this ag...
+    7.6: References to those of the parties that are individuals include their respective...
+    7.7: References to the word " include " or " including " (or any similar term) are no...
+    7.8: Except where the context specifically requires otherwise, words importing indivi...
+    7.9: References to statutory provisions or enactments shall include references to any...
+8: Subscriptions
+    8.1: Subject to the provisions of clause 4, each of the relevant Subscribing Investor...
+        (1)
+        (2)
+        (3)
+            Subscribing Investor
+        No. and class of First Completion Shares
+        Total subscription monies (£)
+            David Newnes
+            2,379 A Shares
+            39,452.74
+            Faisal Butt
+            1,587 A Shares
+            26,318.41
+            PiLabs
+            4,523 Seed Preferred Shares
+            75,008.30
+            Mike Bristow
+            159 A Shares
+            2,636.82
+            Deepak Jalan
+            397 A Shares
+            6,583.75
+            Total
+            9,045
+            150,000.02
+    8.2: Subject to the provisions of clause 5, each of the relevant Subscribing Investor...
+        (1)
+        (2)
+        (3)
+            Subscribing Investor
+        No. and class of Second Completion Shares
+        Total subscription monies (£)
+            David Newnes
+            2,379 A Shares
+            39,452.74
+            Faisal Butt
+            1,587 A Shares
+            26,318.41
+            Mike Bristow
+            159 A Shares
+            2,636.82
+            Deepak Jalan
+            397 A Shares
+            6,583.75
+            Total
+            4,522
+            74,991.72
+    8.3: Subject to the provisions of clause 6, each of the relevant Subscribing Investor...
+        (1)
+        (2)
+        (3)
+            Subscribing Investor
+        No. and class of Third Completion Shares
+        Total subscription monies (£)
+            Colin Stokes
+            1,006 A Shares
+            16,683.26
+            James Caan
+            2,513 A Shares
+            41,674.96
+            Veer Mehta
+            101 A Shares
+            1,674.96
+            Total
+            3,620
+            60,033.18
+    8.4: Subject to the provisions of clause 7, each of the relevant Subscribing Investor...
+        (1)
+        (2)
+        (3)
+            Subscribing Investor
+        No. and class of Fourth Completion Shares
+        Total subscription monies (£)
+            David Newnes
+            2,145 A Shares
+            35,572.14
+            Faisal Butt
+            1,429 A Shares
+            23,698.18
+            Colin Stokes
+            1,005 A Shares
+            16,666.67
+            Mike Bristow
+            143 A Shares
+            2,371.48
+            James Caan
+            2,513 A Shares
+            41,674.96
+            Deepak Jalan
+            358 A Shares
+            5,936.99
+            Veer Mehta
+            101 A Shares
+            1,674.96
+            Total
+            7,694
+            127,595.38
+    8.5: Subject to the provisions of clause 8, each of the relevant Subscribing Investor...
+        (1)
+        (2)
+        (3)
+            Subscribing Investor
+        No. and class of Fifth Completion Shares
+        Total subscription monies (£)
+            David Newnes
+            2,143 A Shares
+            35,538.98
+            Faisal Butt
+            1,429 A Shares
+            23,698.18
+            Colin Stokes
+            1,005 A Shares
+            16,666.67
+            Mike Bristow
+            143 A Shares
+            2,371.48
+            James Caan
+            2,513 A Shares
+            41,674.96
+            Deepak Jalan
+            358 A Shares
+            5,936.99
+            Veer Mehta
+            101 A Shares
+            1,674.96
+            Total
+            7,692
+            127,562.22
+    8.6: Each of the Founders and the Existing Investor irrevocably waives or will procur...
+    8.7: Each party to this agreement warrants to each of the other parties that:
+        8.7.1: it has the power and authority to enter into and perform its obligations under t...
+        8.7.2: when executed, its obligations under this agreement will be binding on it; and
+        8.7.3: execution and delivery of, and performance by it of its obligations under this a...
+9: First Completion
+    9.1: Subject to the conditions set out in schedule 4 being satisfied or waived by Inv...
+    9.2: The following events shall occur on the First Completion Date:
+        9.2.1: each of the relevant Subscribing Investors shall pay the sum set out against its...
+        9.2.2: a meeting of the Board shall be held at which the Company shall:
+            9.2.2.1: subject to the receipt of the relevant subscription monies from a Subscribing In...
+                9.2.2.1.1: issue the relevant First Completion Shares credited as fully paid to such Subscr...
+                9.2.2.1.2: execute and deliver to such Subscribing Investor a certificate for the relevant ...
+            9.2.2.2: appoint David Newnes as the Investor Director;
+            9.2.2.3: pass any such other resolutions as may be required to carry out the obligations ...
+        9.2.3: the Company and each of the Founders shall enter into the Service Agreements.
+    9.3: [Within 90 days of the date of this Agreement, the Company shall procure that it...
+10: Second Completion
+    10.1: Second Completion of the subscription by the relevant Subscribing Investors of t...
+    10.2: The following events shall occur on the Second Completion Date:
+        10.2.1: each of the relevant Subscribing Investors shall pay the sum set out against its...
+        10.2.2: a meeting of the Board shall be held at which the Company shall:
+            10.2.2.1: subject to the receipt of the relevant subscription monies from a Subscribing In...
+                10.2.2.1.1: issue the relevant Second Completion Shares credited as fully paid to such Subsc...
+                10.2.2.1.2: execute and deliver to such Subscribing Investor a certificate for the relevant ...
+            10.2.2.2: pass any such other resolutions as may be required to carry out the obligations ...
+    10.3: Third Completion
+        10.3.1: Third Completion of the subscription by the relevant Subscribing Investors of th...
+        10.3.2: The following events shall occur on the Third Completion Date:
+            10.3.2.1: each of the relevant Subscribing Investors shall pay the sum set out against its...
+            10.3.2.2: a meeting of the Board shall be held at which the Company shall:
+                10.3.2.2.1: subject to the receipt of the relevant subscription monies from a Subscribing In...
+                    10.3.2.2.1.1: issue the relevant Third Completion Shares credited as fully paid to such Subscr...
+                    10.3.2.2.1.2: execute and deliver to such Subscribing Investor a certificate for the relevant ...
+                10.3.2.2.2: pass any such other resolutions as may be required to carry out the obligations ...
+    10.4: Fourth Completion
+        10.4.1: Fourth Completion of the subscription by the relevant Subscribing Investors of t...
+        10.4.2: The following events shall occur on the Fourth Completion Date:
+            10.4.2.1: each of the relevant Subscribing Investors shall pay the sum set out against its...
+            10.4.2.2: a meeting of the Board shall be held at which the Company shall:
+                10.4.2.2.1: subject to the receipt of the relevant subscription monies from a Subscribing In...
+                    10.4.2.2.1.1: issue the relevant Fourth Completion Shares credited as fully paid to such Subsc...
+                    10.4.2.2.1.2: execute and deliver to such Subscribing Investor a certificate for the relevant ...
+                10.4.2.2.2: pass any such other resolutions as may be required to carry out the obligations ...
+    10.5: Fifth Completion
+        10.5.1: Fifth Completion of the subscription by the relevant Subscribing Investors of th...
+        10.5.2: The following events shall occur on the Fifth Completion Date:
+            10.5.2.1: each of the relevant Subscribing Investors shall pay the sum set out against its...
+            10.5.2.2: a meeting of the Board shall be held at which the Company shall:
+                10.5.2.2.1: subject to the receipt of the relevant subscription monies from a Subscribing In...
+                    10.5.2.2.1.1: issue the relevant Fifth Completion Shares credited as fully paid to such Subscr...
+                    10.5.2.2.1.2: execute and deliver to such Subscribing Investor a certificate for the relevant ...
+            pass any such other resolutions as may be required to carry out the obligations ...
+    10.6: Warranties
+        10.6.1: The Warrantors acknowledge that the Subscribing Investors have been induced to e...
+        10.6.2: The Warrantors jointly and severally warrant to the Subscribing Investors that e...
+            10.6.2.1: the matters Disclosed; and
+            10.6.2.2: any exceptions expressly provided for under this Agreement.
+        10.6.3: Each Warranty is a separate and independent warranty, and, save as otherwise exp...
+        10.6.4: The rights of the Subscribing Investors in respect of any breach of any of the W...
+        10.6.5: The Subscribing Investors’ rights and remedies in respect of any breach of any o...
+        10.6.6: No information relating to the Company of which any of the Subscribing Investors...
+        10.6.7: The Subscribing Investors may claim in respect of any breach of the Warranties, ...
+        10.6.8: Any information supplied by or on behalf of the Company or its other officers, e...
+        10.6.9: Where any Warranty is qualified by the expression " so far as the Warrantors are...
+        10.6.10: The Subscribing Investors agree among themselves that the following provisions s...
+            10.6.10.1: no Claim shall be brought by any of the Subscribing Investors without Investor M...
+            10.6.10.2: the costs incurred by any Subscribing Investors in bringing a Claim shall be bor...
+            10.6.10.3: any damages obtained as a result of any Claim will, after deduction of all costs...
+                Any Subscribing Investor shall be entitled to waive its right to bring and/or pa...
+    10.7: Limitations on warranty claims
+        10.7.1: The limitations set out in this clause 10 shall not apply to any Claim which is:
+            10.7.1.1: the consequence of fraud, dishonesty, wilful concealment or wilful misrepresenta...
+            10.7.1.2: which is a result of a breach of warranty statement 1 (share capital) of schedul...
+        10.7.2: The Warrantors shall be under no liability under the Warranties to the extent th...
+        10.7.3: No Claim may be made against the Warrantors unless written notice of such Claim ...
+        10.7.4: The aggregate liability of the Warrantors in respect of all and any Claims shall...
+            10.7.4.1: in the case of the Company, an amount equal to the aggregate amount subscribed b...
+            10.7.4.2: in the case of each of the Founders, £25,000 (inclusive of any costs of recovery...
+        10.7.5: The Warrantors shall not be liable in respect of any Claim unless the aggregate ...
+        10.7.6: The Warrantors shall not be liable for any Claim if the alleged breach which is ...
+        10.7.7: Nothing in this agreement shall prejudice the Subscribing Investor's duty under ...
+    10.8: Employee Share Option Plan
+        10.8.1: The Company shall maintain a Share Option Plan in a form acceptable to the Inves...
+        10.8.2: The Share Option Plan shall provide that each option granted or restricted stock...
+    10.9: The Board
+        10.9.1: The members of the Board immediately following First Completion shall be each of...
+        10.9.2: For so long as the Investors hold Shares, they shall have the collective right, ...
+            10.9.2.1: appoint and maintain in office such natural person as an Investor Majority may f...
+            10.9.2.2: appoint a representative to attend as an observer at each and any meeting of the...
+        David Newness shall be deemed to be the Investor Director appointed pursuant to ...
+            10.9.1: Appointment and removal of the Investor Director or an observer in accordance wi...
+            10.9.2: For so long as a Founder holds Shares, such Founder shall have the right to appo...
+            10.9.3: The quorum at any Board meeting shall be two directors who must include at least...
+                10.9.3.1: there shall be no Investor Director in office for the time being; or
+                10.9.3.2: the Investor Director has in respect of a particular Board meeting, or part of s...
+        in which case the quorum shall not require the presence of the Investor Director...
+        Article 11(2) of the Model Articles shall not apply to the Company.
+            10.9.1: The Company shall send to the Investor Director and any observer appointed:
+                10.9.1.1: reasonable advance notice of each meeting of the Board (being not fewer than fiv...
+                10.9.1.2: as soon as practicable after each meeting of the Board (or committee of the Boar...
+            10.9.2: Save without the consent of the Investor Director, no business shall be transact...
+    10.10: Information Rights
+        10.10.1: The Company shall for each quarter prepare management accounts (in a form approv...
+        10.10.2: The Company shall at least 30 days prior to the end of each financial year prepa...
+        10.10.3: The unaudited accounts of the Company in respect of each accounting period shall...
+        10.10.4: The Company shall provide the Investors promptly with such other information con...
+        10.10.5: The Investors shall be at liberty from time to time to make such disclosure to i...
+    10.11: Matters requiring Investor Majority Consent or Investor Super Majority Consent
+        10.11.1: Each of the Shareholders (who are a party to this agreement) shall exercise all ...
+            10.11.1.1: an Investor Super Majority, the Company shall not effect any of the matters refe...
+            10.11.1.2: the Investor Director, the Company shall not effect any of the matters referred ...
+        10.11.2: As a separate obligation, severable from the obligations in clause 14.1, the Com...
+            10.11.2.1: an Investor Super Majority, the Company shall not effect any of the matters refe...
+        the Investor Director, the Company shall not effect any of the matters referred ...
+    10.12: Business undertakings
+        10.12.1: The Founders will promote the best interests of the Company and ensure that the ...
+        10.12.2: The Company shall apply the proceeds of the subscription by the Subscribing Inve...
+    10.13: Restrictive covenants
+        10.13.1: For the purpose of assuring to the Investors the value of the Business and the f...
+            10.13.1.1: while he is a director or employee of, or a consultant to, the Company carry on ...
+            10.13.1.2: during the period of 12 months commencing on the Termination Date:
+                10.13.1.2.1: within the United Kingdom carry on or be concerned, engaged or interested direct...
+                10.13.1.2.2: either on his own behalf or in any other capacity whatsoever directly or indirec...
+                10.13.1.2.3: either on his own behalf or in any other capacity whatsoever directly or indirec...
+                10.13.1.2.4: either on his own behalf or in any other capacity whatsoever directly or indirec...
+                10.13.1.2.5: either on his own behalf or in any other capacity whatsoever directly or indirec...
+            10.13.1.3: at any time after the Termination Date represent himself as being in any way cur...
+        10.13.2: Each of the restrictions contained in each paragraph of clause 16.1 is separate ...
+        Intellectual property
+            10.13.1: Any discovery, invention, secret process or improvement in procedure made or dis...
+            10.13.2: Each of the Founders (whether before or after his ceasing to be a Shareholder in...
+    10.14: Further issue and transfer of shares
+        10.14.1: The Company shall not issue any shares or equity securities (as defined in secti...
+        10.14.2: The Deed of Adherence shall be in favour of the Company, the Investors and any o...
+    10.15: Confidentiality and announcements
+        10.15.1: Subject to clause 13.5, each of the parties agrees to keep secret and confidenti...
+        10.15.2: Except in accordance with clause 13.5, the parties shall not make any public ann...
+    10.16: Effect of ceasing to hold shares
+        A party shall cease to be a party to this agreement for the purpose of receiving...
+    10.17: Entire agreement
+        10.17.1: This agreement and the documents referred to or incorporated in it constitute th...
+        10.17.2: Each of the parties acknowledges and agrees that it has not entered into this ag...
+        10.17.3: Without limiting the generality of the foregoing, each of the parties irrevocabl...
+        10.17.4: Each of the parties acknowledges and agrees that the only cause of action availa...
+        10.17.5: Nothing contained in this agreement or in any other document referred to or inco...
+        10.17.6: Without limiting the generality of this clause 20, the parties (or those of them...
+    10.18: Variation
+        Any variation of this agreement is valid only if it is in writing and signed by ...
+    10.19: Assignment and transfer
+        10.19.1: Subject to clause 22.2, this agreement is personal to the parties and no party s...
+        10.19.2: The Investors may each assign or transfer any or all of its rights (but not its ...
+    10.20: Rights of third parties
+        10.20.1: Subject to clause 23.2, this agreement does not confer any rights on any person ...
+        10.20.2: The general partner of a Subscribing Investor or the management company authoris...
+    10.21: Conflict between agreements
+        Subject to any applicable law, in the event of any ambiguity or conflict between...
+    10.22: Counterparts
+        10.22.1: This agreement may be executed in any number of counterparts, each of which shal...
+        10.22.2: The exchange of a fully executed version of this Agreement (in counterparts or o...
+    10.23: Notices
+        10.23.1: Any communication and/or information to be given in connection with this agreeme...
+            10.23.1.1: to any company which is a party at its registered office; or
+            10.23.1.2: to any individual who is a party or a Subscribing Investor at the address of tha...
+        (or in each such case such other address as the recipient may notify to the othe...
+            10.23.1: A communication sent according to clause 26.1 shall be deemed to have been recei...
+                10.23.1.1: if delivered by hand, at the time of delivery; or
+                10.23.1.2: if sent by pre-paid first class post, on the second day after posting; or
+                10.23.1.3: if sent by fax, email or other electronic communication, at the time of completi...
+        except that if a communication is received between 5.30pm on a Business Day and ...
+            10.23.1: If a notice just sent by email is not acknowledged or replied to within 2 Busine...
+    10.24: Governing law
+        This agreement (and any dispute or claim relating to it or its subject matter (i...
+    10.25: Jurisdiction
+        The parties irrevocably agree that the courts of England and Wales shall have ex...
+        Part 1: The Subscribing Investors
+            Name
+            Address
+                David Julian Newnes
+            North Farm, Brailsford, Ashbourne, Derbyshire,  DE6 3BE
+                Faisal Butt
+                93 Clifton Road, Kingston Upon Thames KT2 6PL
+                    Colin Stokes
+                        63a Goodwin Avenue, Whitstable, Kent CT5 2RA
+                    The Existing Investor
+            Anova House, Wickhurst Lane, Broadbridge Heath, Horsham, West Sussex RH12 3LZ
+                Mike Bristow
+                35 Cleveland Road, London SW13 0AA
+                    James Caan
+            c/- Hamilton Bradshaw Limited, 3 rd Floor, 60 Sloane Avenue, London SW3 3DD
+                Deepak Jalan
+            c/- Hamilton Bradshaw Limited, 3rd Floor, 60 Sloane Avenue, London SW3 3DD
+                Veer Mehta
+            147 Albury Drive, Harrow, HA5 3RJ, London
+            Part 2: The Founders
+                Name
+                Address
+                    Thomas Shrive
+                Flat 17, 99 Park Road, London, United Kingdom, SW19 2HU
+                    Samuel Tassell
+                20 Creswell Place, Cawston, Rugby, Warwickshire CV22 7GZ
+        Particulars of the Company
+            Registered number: 10515556
+            Registered office: Flat 17, 99 Park Road, London, United Kingdom, SW19 2HU
+            Directors: Thomas Shrive
+            Samuel Tassell
+            Secretary: n/a
+            Accounting reference date: 31 December
+            Charges: None
+            Issued share capital: £1.085 comprising of 108,500 A Shares of £0.00001 each
+        Part 1: Members of the Company - pre-First Completion
+            Member
+                Number  of A Shares held
+                Thomas Shrive
+                    50,000
+                Samuel Tassell
+                    50,000
+                    Pi Labs Manager Limited
+                    8,500
+            Sub-total
+                108,500
+                Employee Option Share Pool
+                    12,100
+                    Total
+                    120,600
+            Part 2: Members of the Company - post-First Completion
+                Member
+                    Number of A Shares held
+                    Number of Seed Preferred Shares held
+                    Number of options over A Shares held
+                Thomas Shrive
+                50,000
+                0
+                0
+                Samuel Tassell
+                50,000
+                0
+                0
+                    Pi Labs Manager Limited
+                8,500
+                4,523
+                0
+                    David Newnes
+                2,379
+                0
+                3,063
+                    Faisal Butt
+                1,587
+                0
+                0
+                    Colin Stokes
+                0
+                0
+                3,063
+                    Mike Bristow
+                159
+                0
+                0
+                    James Caan
+                0
+                0
+                0
+                    Deepak Jalan
+                397
+                0
+                0
+                    Veer Mehta
+                0
+                0
+                0
+                    David Golding
+                0
+                0
+                3,063
+                Employee Option Share Pool
+                0
+                0
+                2,911
+                    Sub-total
+                113,022
+                4,523
+                12,100
+                    Total
+                129,645
+            Part 3: Members of the Company - post-Second Completion
+                Member
+                    Number of A Shares held
+                    Number of Seed Preferred Shares held
+                    Number of options over A Shares held
+                    Thomas Shrive
+                        50,000
+                        0
+                        0
+                    Samuel Tassell
+                        50,000
+                        0
+                        0
+                    Pi Labs Manager Limited
+                        8,500
+                        4,523
+                        0
+                    David Newnes
+                        4,758
+                        0
+                        3,063
+                    Faisal Butt
+                        3,174
+                        0
+                        0
+                    Colin Stokes
+                        0
+                        0
+                        3,063
+                    Mike Bristow
+                        318
+                        0
+                        0
+                    James Caan
+                        0
+                        0
+                        0
+                    Deepak Jalan
+                        794
+                        0
+                        0
+                    Veer Mehta
+                        0
+                        0
+                        0
+                    David Golding
+                        0
+                        0
+                        3,063
+                    Employee Option Share Pool
+                        0
+                        0
+                        2,911
+                Sub-total
+                    117,544
+                    4,523
+                    12,100
+                Total
+                134,167
+            Part 4: Members of the Company - post-Third Completion
+                Member
+                    Number of A Shares held
+                    Number of Seed Preferred Shares held
+                    Number of options over A Shares held
+                    Thomas Shrive
+                        50,000
+                        0
+                        0
+                    Samuel Tassell
+                        50,000
+                        0
+                        0
+                    Pi Labs Manager Limited
+                        8,500
+                        4,523
+                        0
+                    David Newnes
+                        4,758
+                        0
+                        3,063
+                    Faisal Butt
+                        3,174
+                        0
+                        0
+                    Colin Stokes
+                        1,006
+                        0
+                        3,063
+                    Mike Bristow
+                        318
+                        0
+                        0
+                    James Caan
+                        2,513
+                        0
+                        0
+                    Deepak Jalan
+                        794
+                        0
+                        0
+                    Veer Mehta
+                        101
+                        0
+                        0
+                    David Golding
+                        0
+                        0
+                        3,063
+                    Employee Option Share Pool
+                        0
+                        0
+                        2,911
+                Sub-total
+                    121,164
+                    4,523
+                    12,100
+                Total
+                137,787
+            Part 5: Members of the Company - post-Fourth Completion
+                Member
+                    Number of A Shares held
+                    Number of Seed Preferred Shares held
+                    Number of options over A Shares held
+                    Thomas Shrive
+                        50,000
+                        0
+                        0
+                    Samuel Tassell
+                        50,000
+                        0
+                        0
+                    Pi Labs Manager Limited
+                        8,500
+                        4,523
+                        0
+                    David Newnes
+                        6,903
+                        0
+                        3,063
+                    Faisal Butt
+                        4,603
+                        0
+                        0
+                    Colin Stokes
+                        2,011
+                        0
+                        3,063
+                    Mike Bristow
+                        461
+                        0
+                        0
+                    James Caan
+                        5,026
+                        0
+                        0
+                    Deepak Jalan
+                        1,152
+                        0
+                        0
+                    Veer Mehta
+                        202
+                        0
+                        0
+                    David Golding
+                        0
+                        0
+                        3,063
+                    Employee Option Share Pool
+                        0
+                        0
+                        2,911
+                Sub-total
+                    128,858
+                    4,523
+                    12,100
+                Total
+                145,481
+            Part 6: Members of the Company - post-Fifth Completion
+                Member
+                    Number of A Shares held
+                    Number of Seed Preferred Shares held
+                    Number of options over A Shares held
+                    Thomas Shrive
+                        50,000
+                        0
+                        0
+                    Samuel Tassell
+                        50,000
+                        0
+                        0
+                    Pi Labs Manager Limited
+                        8,500
+                        4,523
+                        0
+                    David Newnes
+                        9,046
+                        0
+                        3,063
+                    Faisal Butt
+                        6,032
+                        0
+                        0
+                    Colin Stokes
+                        3,016
+                        0
+                        3,063
+                    Mike Bristow
+                        604
+                        0
+                        0
+                    James Caan
+                        7,539
+                        0
+                        0
+                    Deepak Jalan
+                        1,510
+                        0
+                        0
+                    Veer Mehta
+                        303
+                        0
+                        0
+                    David Golding
+                        0
+                        0
+                        3,063
+                    Employee Option Share Pool
+                        0
+                        0
+                        2,911
+                Sub-total
+                    136,550
+                    4,523
+                    12,100
+                Total
+                153,173
+        Conditions to First Completion
+            10.25.1: The completion of due diligence and anti-money laundering checks of the Subscrib...
+            10.25.2: The delivery to the Subscribing Investors of:
+                10.25.2.1: the Service Agreements duly executed by the Company and each of the Founders;
+                10.25.2.2: the Business Plan;
+                10.25.2.3: a shareholder’s resolution approving:
+                    10.25.2.3.1: the adoption of the New Articles; and
+                    10.25.2.3.2: the issue of the New Shares and dis-application of pre-emption rights in respect...
+            Warranties
+                10.25.1: Share capital
+                All of the shares set out in part 1 of schedule 3 are fully paid and comprise th...
+                    10.25.1: Group structure
+                The Company does not have any subsidiary companies nor has it at any time been t...
+                    10.25.1: Information
+                The information contained or referred to in schedules 2 and 3 is true, complete ...
+                    10.25.1: Business Plan
+                The Business Plan has been diligently prepared and the Company believes that it ...
+                    10.25.1: Agreements, commitments and liabilities
+                The Company:
+                    10.25.1: has no material capital commitments, liabilities, loans or borrowings;
+                    10.25.2: is not a party to any contract, arrangement or commitment (whether in respect of...
+                    10.25.3: is not a party to any agreement which is or may become terminable as a result of...
+                    10.25.4: is not a party to any agreement in respect of any real property; or
+                    10.25.5: is not in default of any agreement or arrangement to which it is a party.
+                    10.25.6: Intellectual Property
+                        10.25.6.1: In respect of all Company Intellectual Property other than standard, off-the-she...
+                            10.25.6.1.1: the Company is the sole legal and beneficial owner, free of licence, royalty, re...
+                            10.25.6.1.2: the Company has licences from third parties which are fully adequate to enable  ...
+                        10.25.6.2: [All software platforms relevant to the Company’s software are fully licenced to...
+                        10.25.6.3: So far as the Warrantors are aware, the Company has taken all steps necessary or...
+                        10.25.6.4: [All Intellectual Property, which is or, so far as the Warrantors are aware, is ...
+                            10.25.6.4.1: is (or in the case of applications will be) legally and beneficially vested excl...
+                            10.25.6.4.2: is licensed to the Company by third parties by way of an agreement and/or licenc...
+                        10.25.6.5: No actions, claims or allegations with respect to any Company Intellectual Prope...
+                            10.25.6.5.1: alleging breach, infringement, misuse or misappropriation by the Company, any Fo...
+                            10.25.6.5.2: otherwise challenging the use by the Company or any third party of any technolog...
+                            10.25.6.5.3: challenging the ownership by the Company, validity or effectiveness of any Compa...
+                            10.25.6.5.4: alleging that the activities or proposed activities of any employee or consultan...
+                and, so far as the Company is aware, there are not any facts, matters or circums...
+                    10.25.1: The licences, agreements and arrangements entered into by the Company in relatio...
+                    10.25.2: Employment and consultancy arrangements
+                        10.25.2.1: The Company has entered into contracts of service or for services for all direct...
+                        10.25.2.2: There are no agreements or arrangements (whether legally enforceable or not) for...
+                        10.25.2.3: There are no outstanding claims or, so far as the Company is aware, anticipated ...
+                    10.25.3: Contracts with connected persons
+                        10.25.3.1: There are no loans made by the Company to any of its directors or shareholders a...
+                        10.25.3.2: There are no existing contracts or arrangements or former contracts or arrangeme...
+                Section 1122 of the Corporation Tax Act 2010 shall apply to determine whether on...
+                    10.25.1: Assets and debts
+                All assets used by and all debts due to the Company or which have otherwise been...
+                    10.25.1: Litigation
+                Neither the Company nor, so far as the Company is aware, any person for whose ac...
+                    10.25.1: Taxation
+                        10.25.1.1: The Company has duly paid all Taxation for which it is liable and there are no c...
+                        10.25.1.2: All directors or employees of the Company who have received any securities or in...
+                    10.25.2: Statutory and legal requirements
+                        10.25.2.1: All statutory, municipal, governmental, court and other requirements applicable ...
+                        10.25.2.2: The records (including computer records) statutory books, registers, minute book...
+                    10.25.3: Insurance
+                The Company maintains appropriate and suitable insurance policies of a company f...
+                    10.25.1: all premiums have been duly paid to date;
+                    10.25.2: all the policies are in full force and effect and are not voidable on account of...
+                    10.25.3: there are no circumstances which would or might give rise to any claim and no in...
+        Part 1: Matters requiring Investor Super Majority Consent
+            10.25.1: Permit or cause to be proposed any alteration to the rights attaching to its sha...
+            10.25.2: Create, allot, issue, buy-in or redeem any share or loan capital or grant or agr...
+            10.25.3: Permit or cause to be proposed any amendment to the New Articles.
+            10.25.4: Propose or pay any dividend or propose or make any other distribution (as define...
+            10.25.5: Subscribe or otherwise acquire, or dispose of any shares in the capital of any o...
+            10.25.6: Acquire the whole or part of the undertaking of any other person or dispose of t...
+            10.25.7: Permit the Company to cease, or propose to cease, to carry on its business or pe...
+            10.25.8: Permit the Company or any of its directors (i) to take any step to place the Com...
+            10.25.9: Adopt a detailed operating and capital budget and cash flow forecast in respect ...
+                10.25.9.1: Enter into or give or permit or suffer to subsist any guarantee of or indemnity ...
+                10.25.9.2: Deal in any way (including the acquisition or disposal, whether outright or by w...
+                10.25.9.3: Make any material change to the nature of the Business or the jurisdiction where...
+                10.25.9.4: Establish any new branch, agency, trading establishment or business or close any...
+                10.25.9.5: Engage any employee or consultant either (i) on terms that either his contract c...
+                10.25.9.6: Enter into any loan, borrowings or advance of any nature or give any credit (oth...
+                10.25.9.7: Create or permit the creation of or suffer to subsist any Encumbrance (other tha...
+                10.25.9.8: Establish or amend any profit-sharing, share option, bonus or other incentive sc...
+                10.25.9.9: Enter into or vary either any unusual or onerous contract or any other material ...
+            Part 2: Matters requiring Investor Director consent
+                10.25.1: Incur any capital expenditure in relation to any item exceeding £20,000.
+                10.25.2: Dispose of any asset of a capital nature having a book or market value greater t...
+                10.25.3: Enter into or vary either any unusual or onerous contract or any other material ...
+                    10.25.3.1: Make any change to:
+                        10.25.3.1.1: its auditors;
+                        10.25.3.1.2: its bankers or the terms of the mandate given to such bankers in relation to its...
+                        10.25.3.1.3: its accounting reference date; or
+                        10.25.3.1.4: its accounting policies, bases or methods from those set out in the Accounts and...
+                10.25.4: Mortgage or charge or permit the creation of or suffer to subsist any mortgage o...
+                10.25.5: Conduct any litigation material to the Company, save for the collection of debts...
+                10.25.6: Other than where expressly contemplated by this agreement or the Service Agreeme...
+        Disclosure Schedule
+            Warranty reference
+            Disclosure
+                8.2
+                The Company is party to intellectual property rights assignments with the Founde...
+                [●]
+                [●]
+        Deed of Adherence
+            THIS DEED is made on 201 ∙
+            BY [ ]
+        INTRODUCTION
+            (A) By a subscription for shares of even date herewith [                        ...
+            (B) This deed is entered into in compliance with the terms of clause 17 of an ag...
+        AGREED TERMS
+            1. Words and expressions used in this deed shall have the same meaning as is giv...
+            2. The Subscriber hereby agrees to assume the benefit of the rights under the In...
+            3. The Subscriber hereby agrees to be bound by the Investment Agreement in all r...
+            4. This deed is made for the benefit of:
+            (a) the parties to the Investment Agreement; and
+                (b) any other person or persons who may after the date of the Investment Agreeme...
+                and this deed shall be irrevocable without the consent of the Company acting on ...
+            5. Neither the Company nor any of the Founders:
+                (a) makes any representation or warranty or assumes any responsibility with resp...
+                (b) makes any representation or warranty or assumes any responsibility with resp...
+                (c) assumes any responsibility for the financial condition of the Company or any...
+                and any and all conditions and warranties, whether express or implied by law or ...
+                6. This deed shall be governed by and construed in accordance with the laws of E...
+            This deed of adherence has been executed and delivered as a deed on the date sho...
+            EXECUTED as DEED by )
+            [Subscriber] )
+            This agreement has been executed on the date shown on the first page.
+                Executed as a deed by
+                ASK PRODUCTS LTD
+                    )
+                    )
+                    acting by
+                    )
+                    _____________________, a director
+                    )
+                    in the presence of:
+                    )
+                    Director
+                    Witness Signature
+                    )
+                    Witness Name
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by THOMAS SHRIVE
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by SAMUEL TASSELL
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                Executed as a deed by PI LABS II LIMITED PARTNERSHIP , acting by its general man...
+                    )
+                    )
+                    acting by
+                    )
+                    ____________________ a director
+                    )
+                    in the presence of:
+                    )
+                    Director
+                    Witness Signature
+                    )
+                    Witness Name
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by DAVID JULIAN NEWNES
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by FAISAL BUTT
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by COLIN STOKES
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by MIKE BRISTOW
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by JAMES CAAN
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by DEEPAK JALAN
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
+                    Executed and delivered as
+                    )
+                    A Deed by VEER MEHTA
+                    )
+                    )
+                    in the presence of
+                    )
+                    Witness Name
+                    )
+                    )
+                    Witness Signature
+                    )
+                    )
+                    Address
+                    )
+                    )
+                    )
+                    Occupation
+                    )
