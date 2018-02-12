@@ -2,7 +2,7 @@
 import pprint, datetime, sched, time, json, requests
 from random import *
 from algoliasearch import algoliasearch
-from parse.integrations import kloudless_integration as kloudlessDrives, confluence
+from parse import services
 import xmljson
 import firebase_admin
 from firebase_admin import credentials as firebaseCredentials
@@ -20,7 +20,7 @@ mp = Mixpanel('e3b4939c1ae819d65712679199dfce7e')
 cf = CloudFlare.CloudFlare(email='jeremy@explaain.com', token='ada07cb1af04e826fa34ffecd06f954ee5e93')
 
 # Decides whether we're in testing mode or not
-Testing = True
+Testing = False
 
 # Decide what to print out:
 toPrint = {
@@ -37,6 +37,8 @@ algoliaOrgsIndex = client.init_index('organisations') if not Testing else client
 algoliaSourcesIndex = client.init_index('sources')
 algoliaUsersIndex = client.init_index('users')
 
+
+DefaultLastModified = 0 # Temporary
 
 
 def algoliaGetFilesIndexName(organisationID: str):
@@ -55,18 +57,6 @@ def browseAlgolia(index, params=False):
     return [hit for hit in index.browse_all(params)]
   else:
     return [hit for hit in index.browse_all()]
-
-def getService(accountInfo):
-  services = {
-    'kloudless': kloudlessDrives,
-    'confluence': confluence
-  }
-  if 'superService' in accountInfo and accountInfo['superService'] in services:
-    return services[accountInfo['superService']]
-  elif 'service' in accountInfo and accountInfo['service'] in services:
-    return services[accountInfo['service']]
-  else:
-    return False
 
 def getGoogleEntities(text: str):
   url = 'https://language.googleapis.com/v1/documents:analyzeEntities'
@@ -222,100 +212,121 @@ def addSource(data: dict):
   while numIndexed == 0 and numAttempts < 20:
     time.sleep(10)
     numAttempts += 1
-    numIndexed = indexFiles(accountInfo, False, True)
+    numIndexed = indexFiles(accountInfo, True)
   return source
 
 def listSources():
   return browseAlgolia(algoliaSourcesIndex)
 
 def indexAll():
-  """Indexes all files since last memory update""" # Currently, all sources had the same Last Update Time stored
+  """Indexes all files that have been updated since their own lastUpdated value"""
   sources = listSources()
-  memory = open('memory.txt','r')
-  lastRefreshTime = datetime.datetime.strptime(memory.read().splitlines()[0], '%Y-%m-%d %H:%M:%S.%f')
-  print(lastRefreshTime)
-  thisRefreshTime = str(datetime.datetime.now())
   mp.track('admin', 'Beginning Global Index', {
-    'lastRefreshTime': lastRefreshTime,
-    'thisRefreshTime': thisRefreshTime,
     'accounts': sources,
     'numberOfAccounts': len(sources)
   })
   indexed = []
   for source in sources:
     print(source)
-    accountID = source['id']
-    if 'lastSynced' in source:
-      source['lastRefreshTime'] = source['lastSynced']
-      source['thisRefreshTime'] = str(datetime.datetime.now())
+    accountID = source['objectID']
     organisationID = source['organisationID']
-    accountInfo = {
-      'organisationID': organisationID,
-      'accountID': accountID
-    }
-    num = indexFiles(accountInfo, after = source['lastRefreshTime'] if 'lastRefreshTime' in source else lastRefreshTime)
+    accountInfo =  source
+    accountInfo['accountID'] = accountID
+    num = indexFiles(accountInfo)
     indexed.append({
       'organisationID': organisationID,
       'accountID': accountID,
       'numberOfFiles': num
     })
     algoliaSourcesIndex.save_object(source)
-  memory = open('memory.txt','w') # Happens now so that incomplete indexing doesn't overwrite lastRefreshTime
-  memory.write(thisRefreshTime)
   mp.track('admin', 'Completed Global Index', {
-    'lastRefreshTime': lastRefreshTime,
-    'thisRefreshTime': thisRefreshTime,
     'accounts': indexed,
     'numberOfAccounts': len(indexed)
   })
 
-def indexFiles(accountInfo, after, allFiles=False):
+def indexFiles(accountInfo, allFiles=False):
   """Indexes files from a query based on criteria given"""
-  print(accountInfo)
-  print(after)
-  print(allFiles)
-  service = getService(accountInfo)
-  if allFiles:
-    print('Mytest 1')
-    files = service.listFiles(accountInfo)
-  else:
-    files = service.listFiles(accountInfo, after=after)
-  pp.pprint([f['title'] for f in files])
-  pp.pprint(files)
-
-  for f in files:
-    indexFile(accountInfo, f['objectID']) # We index them again because they seem to first come in with their original names e.g. "Untitled document"
+  print('indexFiles')
+  serviceData = services.getService(accountInfo=accountInfo)
+  if not serviceData or 'module' not in serviceData:
+    return False
+  service = serviceData['module']
+  files = service.listFiles(accountInfo)
+  filesTracker = {
+    'indexing': [],
+    'notIndexing': []
+  }
+  algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
+  indexedFiles = algoliaFilesIndex.get_objects([f['objectID'] for f in files])
+  # print('actualFiles')
+  # pp.pprint(files)
+  # print('indexedFiles')
+  # pp.pprint(indexedFiles)
+  for f in files[:10]:
+    indexedFileArray = [iFile for iFile in indexedFiles['results'] if iFile and iFile['objectID'] == f['objectID']]
+    indexedFile = indexedFileArray[0] if len(indexedFileArray) else None
+    if not indexedFile or 'modified' not in indexedFile or indexedFile['modified'] < f['modified']:
+      filesTracker['indexing'].append({
+        'title': f['title'],
+        'modified': f['modified'],
+        'lastIndexed': indexedFile['modified'] if indexedFile and 'modified' in indexedFile else 'Never!',
+        'service': f['service'],
+      })
+      indexFile(accountInfo, f['objectID'], actualFile=f)
+    else:
+      filesTracker['notIndexing'].append({
+        'title': f['title'],
+        'modified': f['modified'],
+        'lastIndexed': indexedFile['modified'],
+        'service': f['service'],
+      })
+  pp.pprint(filesTracker)
   if len(files):
     other = {
-      'onlyFilesModifiedAfter': after,
-      'allFiles': allFiles,
+      # 'onlyFilesModifiedAfter': after,
+      'allFiles': allFiles, # allFiles doesn't currently do anything!
       'numberOfFiles': len(files)
     }
     mp.track('admin', 'Files Indexed', {**accountInfo, **other})
   return len(files)
 
-def indexFile(accountInfo, fileID: str):
-  service = getService(accountInfo)
-  f = service.getFile(accountInfo, fileID=fileID)
-  if f is not None:
-    algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
-    algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
-    algoliaFilesIndex.add_object(f)
-    createFileCard(accountInfo, f)
+def indexFile(accountInfo: dict, fileID: str, actualFile=None):
+  serviceData = services.getService(accountInfo=accountInfo)
+  if not serviceData or 'module' not in serviceData:
+    return False
+  service = serviceData['module']
+  if actualFile:
+    f = actualFile
+  else:
+    f = service.getFile(accountInfo, fileID=fileID)
+  if f is None:
+    return False
+  algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
+  algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
+  algoliaFilesIndex.add_object(f)
+  createFileCard(accountInfo, f)
+  # Update service data with fileType to get service format
+  serviceData = services.getService(accountInfo=accountInfo, specificFile=f)
+  if 'format' in serviceData:
+    print('format!')
     cardsCreated = indexFileContent(accountInfo, f)
+  else:
+    print('No format')
+    cardsCreated = 0
 
-    allFiles = browseAlgolia(algoliaFilesIndex)
-    allCards = browseAlgolia(algoliaCardsIndex)
-    allFileCards = browseAlgolia(algoliaCardsIndex, { 'filters': 'type:"p"' })
-    other = {
-      'cardsCreated': cardsCreated,
-      'totalOrgFiles': len(allFiles),
-      'totalOrgCards': len(allCards),
-      'totalOrgFileCards': len(allFileCards)
-    }
-    mp.track('admin', 'File Indexed', {**f, **other})
+  # allFiles = browseAlgolia(algoliaFilesIndex)
+  # allCards = browseAlgolia(algoliaCardsIndex)
+  # allFileCards = browseAlgolia(algoliaCardsIndex, { 'filters': 'type:"p"' })
+  other = {
+    'cardsCreated': cardsCreated,
+    # 'totalOrgFiles': len(allFiles),
+    # 'totalOrgCards': len(allCards),
+    # 'totalOrgFileCards': len(allFileCards)
+  }
+  mp.track('admin', 'File Indexed', {**f, **other})
 
 def indexFileContent(accountInfo, f):
+  print('indexFileContent')
   if not Testing:
     print(f)
     # Delete all chunks from file
@@ -328,7 +339,10 @@ def indexFileContent(accountInfo, f):
     print('Deleted')
 
   # Create new cards
-  service = getService(accountInfo)
+  print('accountInfo')
+  print(accountInfo)
+  serviceData = services.getService(accountInfo=accountInfo, specificFile=f)
+  service = serviceData['module']
   contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
   cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
   print('Number of Cards:', len(cards))
@@ -420,17 +434,23 @@ def startIndexing():
 
 """Below here is stuff for testing"""
 
+indexAll()
+
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
-# accountInfo = {'organisationID': 'explaain', 'accountID': 282782204}
+# accountInfo = {
+#   'organisationID': 'explaain',
+#   'accountID': '282782204',
+#   'superService': 'kloudless',
+# }
 # kloudlessDrives.listFiles(accountInfo)
 
-# indexFiles(accountInfo, False, True)
+# indexFiles(accountInfo)
 
 # indexAll()
 # indexFiles({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
-# }, allFiles=True, after=None)
+# }, allFiles=True)
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
@@ -453,14 +473,14 @@ def startIndexing():
 # }, 'FtORrzfQkKOM6NOR_ZgkDcBmP258Sne-HAMXW32x2F29Xr1VGyK2JKsqCq0eu704P')
 # indexFileContent({'objectID': 'FVNDMMXfVj99RqJMyz1xiFpk63kKA44NqCKEKimaUF1F63QxFJmvnRuuGKN2JyLXY', 'title': 'Policy Tracker for GE2017.com', 'modified': '1499418614', 'created': 'null'})
 
-indexFile({
-  'username': 'admin',
-  'password': 'h3110w0r1d',
-  'siteDomain': 'explaain',
-  'accountID': 'https://explaain.atlassian.net/wiki/',
-  'service': 'confluence',
-  'organisationID': 'explaain',
-}, '1572866')
+# indexFile({
+#   'username': 'admin',
+#   'password': 'h3110w0r1d',
+#   'siteDomain': 'explaain',
+#   'accountID': 'https://explaain.atlassian.net/wiki/',
+#   'service': 'confluence',
+#   'organisationID': 'explaain',
+# }, '1572866')
 
 # xmlstring = open('parse/sample3.xml').read()
 # # print(xmlstring)

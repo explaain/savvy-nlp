@@ -1,6 +1,6 @@
 # Uses https://github.com/pushrodtechnology/PythonConfluenceAPI
 
-import pprint, sys
+import pprint, sys, dateutil.parser as dp
 from PythonConfluenceAPI import ConfluenceAPI
 from .formats import html
 
@@ -21,20 +21,10 @@ def listFiles(accountInfo, after=False, number=500):
   # Create API object
   connect = ConfluenceAPI(accountInfo['username'], accountInfo['password'], 'https://' + accountInfo['siteDomain'] + '.atlassian.net/wiki/')
   # Get latest file info
-  page = connect.get_content_by_id('294914', expand='childTypes.all,operations,history,history.lastUpdated,metadata.currentuser')
-  pp.pprint(page)
-  # # Get latest visible content from confluence instance
-  # page = connect.get_content_by_id('294914', expand='body.view,childTypes.all,operations,history,metadata.currentuser')
-  # pp.pprint(page)
-  # body = page.get('body')
-  # compatible_print("{} - {} ({})".format(page.get("space", {}).get("key", "???"),
-  #                                               page.get("title", "(No title)"),
-  #                                               page.get("id", "(No ID!?)")))
-  # content = page.get("body", {}).get("view", {}).get("value", "No content.")
-  # print('content1')
-  # pp.pprint(content)
-  # pp.pprint(page)
-  return page
+  response = connect.get_content(expand='childTypes.all,operations,history,history.lastUpdated,metadata.currentuser')
+  pp.pprint(response)
+  files = [confluenceToFile(page, accountInfo) for page in response['results']]
+  return files
 
 def getFile(accountInfo, fileID):
   """Returns complete exported file data"""
@@ -43,19 +33,20 @@ def getFile(accountInfo, fileID):
   # Get latest visible content from confluence instance
   page = connect.get_content_by_id(fileID, expand='body.view,childTypes.all,operations,history,history.lastUpdated,metadata.currentuser')
   # Convert to file info
-  f = fileToAlgolia(page, accountInfo)
+  f = confluenceToFile(page, accountInfo)
   return f
 
-def fileToAlgolia(page, accountInfo):
+def confluenceToFile(page, accountInfo):
   f = {
     'objectID': page['id'],
     'url': page['_links']['self'],
     'rawID': page['id'],
     'mimeType': 'html',
     'title': page['title'],
-    'created': page['history']['createdDate'], # @TODO: Check this is in the right format
-    'modified': page['history']['lastUpdated']['when'], # @TODO: Check this is in the right format
-    'source': accountInfo['accountID']
+    'created': int(dp.parse(page['history']['createdDate']).strftime('%s')),
+    'modified': int(dp.parse(page['history']['lastUpdated']['when']).strftime('%s')),
+    'source': accountInfo['accountID'],
+    'service': 'confluence'
   }
   return f
 

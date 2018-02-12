@@ -1,4 +1,5 @@
 import os, json, pprint
+import index
 from parse import services
 from parse.integrations import kloudless_integration as kloudlessDrives, confluence
 from parse.integrations.formats import html, xml_doc as xml, csv
@@ -6,19 +7,24 @@ from parse.integrations.formats import html, xml_doc as xml, csv
 pp = pprint.PrettyPrinter(indent=4)
 
 TestAccountInfo = {
-  'gdocs': {
+  'kloudless': {
     'organisationID': 'explaain',
     'accountID': '282782204',
+    'superService': 'kloudless',
   },
-  'gsheets': {
-    'organisationID': 'explaain',
-    'accountID': '282782204',
-  },
+  # 'gsheets': {
+  #   'organisationID': 'explaain',
+  #   'accountID': '282782204',
+  #   'superService': 'kloudless',
+  #   'service': 'gdocs',
+  # },
   'confluence': {
+    'organisationID': 'explaain',
     'accountID': 'https://explaain.atlassian.net/wiki/',
     'username': 'admin',
     'password': 'h3110w0r1d',
     'siteDomain': 'explaain',
+    'service': 'confluence',
   }
 }
 
@@ -79,18 +85,21 @@ def parseAndTestFileFromFolder(formatModule, filename: str, directories: dict):
   return parseAndTestFileFromContent(formatModule, filename, content, directories)
 
 def fetchContentFromFiles(serviceName: str):
-  serviceData = services.getService(serviceName)
+  serviceData = services.getService(serviceName=serviceName)
+  integrationName = serviceData['superService'] if 'superService' in serviceData and serviceData['superService'] else serviceName
+  print('integrationName')
+  print(integrationName)
   service = serviceData['module']
   print('service')
   print(service)
-  print('TestAccountInfo[serviceName]')
-  print(TestAccountInfo[serviceName])
-  files = service.listFiles(TestAccountInfo[serviceName])
+  print('TestAccountInfo[integrationName]')
+  print(TestAccountInfo[integrationName])
+  files = service.listFiles(TestAccountInfo[integrationName])
   print('files')
   print(files)
   contentFromFiles = [{
     'title': f['title'],
-    'content': service.getFileContent(TestAccountInfo[serviceName], f['objectID']),
+    'content': service.getFileContent(TestAccountInfo[integrationName], f['objectID']),
   } for f in files if 'objectID' in f and f['objectID'] in TestFilesToFetch[serviceName]]
   return contentFromFiles
 
@@ -115,10 +124,16 @@ def test_parse():
       pp.pprint(test)
       assert test['passed']
 
-def test_fetchandparse():
-  for serviceName in services.getServices():
-    service = services.getService(serviceName)
+def test_fetchAndParse():
+  for serviceName in TestFilesToFetch:
+    print('serviceName')
+    print(serviceName)
+    service = services.getService(serviceName=serviceName)
+    print('service')
+    print(service)
     formatName = services.getServiceFormat(serviceName)
+    print('formatName')
+    print(formatName)
     directories = formatToDirectories(formatName)
     for content in fetchContentFromFiles(serviceName):
       print('content111')
@@ -129,6 +144,6 @@ def test_fetchandparse():
       pp.pprint(test)
       assert test['passed']
 
-# def test_a():
-#   fetchContentFromFiles('gdocs')
-#   assert 1 == 2
+def test_indexAll():
+  for integrationName in TestAccountInfo:
+    index.indexFiles(TestAccountInfo[integrationName])

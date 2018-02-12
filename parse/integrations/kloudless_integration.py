@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import re, io, pprint, itertools, zipfile, untangle
+import re, io, pprint, itertools, zipfile, untangle, time
 from collections import OrderedDict
 import xmljson
 from . import kloudless_gdocs as gdocs, kloudless_gsheets as gsheets
@@ -26,12 +26,13 @@ def listFiles(accountInfo, after=False, number=500):
     recent = account.recent.all(page_size=number, after=after)
   else:
     recent = account.recent.all(page_size=number)
-  print('Number of Files:', len(recent))
-  print('files: ', '\n'.join(list(map(lambda x: x['name'], recent))))
-  files = [fileToAlgolia(f, accountInfo) for f in recent]
+  # print('Number of Files:', len(recent))
+  # print('files: ', '\n'.join(list(map(lambda x: x['name'], recent))))
+  files = [kloudlessToFile(f, accountInfo) for f in recent]
   return files
 
 def getFile(accountInfo, fileID):
+  print('getFile')
   account = getAccount(accountInfo['accountID'])
   f = {}
   try:
@@ -39,9 +40,7 @@ def getFile(accountInfo, fileID):
     # Starting to add author info but need to fix permissions issue - team admin access?
     # print("f['owner']['id']", f['owner']['id'])
     # author = account.users.retrieve(id=f['owner']['id'])
-    f = fileToAlgolia(f, accountInfo)
-    print('file:')
-    pp.pprint(f)
+    f = kloudlessToFile(f, accountInfo)
   except Exception as e:
     f = None
     print('Error getting file: "' + fileID + '"', e)
@@ -57,52 +56,33 @@ def getFileUrl(id, fileType):
   }
   return (roots[fileType] if fileType in roots else 'https://drive.google.com/file/d/') + id
 
-def fileToAlgolia(f, accountInfo):
-  print('fileToAlgolia')
-  print(f)
-  pp.pprint(accountInfo)
-  return {
+def kloudlessToFile(f, accountInfo):
+  serviceData = getServiceByFileType(f['mime_type'])
+  algoliaFile = {
     'objectID': f['id'],
     'url': getFileUrl(f['raw_id'], f['mime_type']),
     'rawID': f['raw_id'],
     'mimeType': f['mime_type'],
     'title': f['name'],
-    'created': f['created'],
-    'modified': f['modified'],
-    'source': accountInfo['accountID']
+    'created': time.mktime(f['created'].timetuple()) if f['created'] else None,
+    'modified': time.mktime(f['modified'].timetuple()) if f['modified'] else None,
+    'source': accountInfo['accountID'],
+    'superService': 'kloudless',
+    'service': serviceData['service'] if serviceData and 'service' in serviceData else None
   }
-
-# Delete this soon if its being commented out doesn't break anything!
-# def fileToCard(f):
-#   name = f['name']
-#   card = {
-#     'card': {
-#       'content': {},
-#       'file': {
-#         'id': f['id'],
-#         'url': getFileUrl(f['raw_id'], f['mime_type']),
-#         'title': f['name'],
-#         'folder': 'Google Drive'
-#       },
-#       'objectID': f['id'][:12],
-#       'highlight': True
-#     }
-#   }
-#   return card
+  return algoliaFile
 
 def getExportedFileData(accountInfo, fileID):
+  print('getExportedFileData')
   fileData = getFile(accountInfo, fileID)
   if not fileData:
     return None
-  servicesByFileType = {
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': gdocs,
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': gsheets
-  }
   fileType = fileData['mimeType']
-  if fileType not in servicesByFileType:
+  serviceData = getServiceByFileType(fileType)
+  if not serviceData or 'module' not in serviceData:
     return None
+  driveService = serviceData['module']
   account = getAccount(accountInfo['accountID'])
-  driveService = servicesByFileType[fileType]
   exportParams = driveService.getExportParams(fileData)
   print('exportParams')
   print(exportParams)
@@ -110,6 +90,8 @@ def getExportedFileData(accountInfo, fileID):
     exportedFile = account.files.retrieve(fileID)
   elif exportParams['type'] == 'raw':
     exportedFile = account.raw(raw_uri = exportParams['raw_uri'] if 'raw_uri' in exportParams else '', raw_method=exportParams['raw_method'] if 'raw_method' in exportParams else '')
+  print('exportedFile')
+  print(exportedFile)
   return {
     'exportedFile': exportedFile,
     'driveService': driveService
@@ -117,13 +99,25 @@ def getExportedFileData(accountInfo, fileID):
 
 def getFileContent(accountInfo, fileID):
   exportedFileData = getExportedFileData(accountInfo, fileID)
-  content = exportedFileData['driveService'].fileToContent(exportedFileData['exportedFile'])
-  return content
+  return exportedFileData['driveService'].fileToContent(exportedFileData['exportedFile']) if exportedFileData else None
 
 def getContentForCards(accountInfo, fileID):
   exportedFileData = getExportedFileData(accountInfo, fileID)
-  return exportedFileData['driveService'].fileToCardData(eexportedFileData['exportedFile'])
+  return exportedFileData['driveService'].fileToCardData(exportedFileData['exportedFile']) if exportedFileData else None
 
+def getServiceByFileType(fileType):
+  servicesByFileType = {
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
+      'service': 'gdocs',
+      'module': gdocs,
+    },
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+      'service': 'gsheets',
+      'module': gsheets,
+    },
+  }
+  driveService = servicesByFileType[fileType] if fileType in servicesByFileType else None
+  return driveService
 
 
 
