@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pprint, datetime, sched, time, json, requests
+import pprint, datetime, sched, time, calendar, json, requests
 from random import *
 from algoliasearch import algoliasearch
 from parse import services
@@ -218,8 +218,8 @@ def addSource(data: dict):
 def listSources():
   return browseAlgolia(algoliaSourcesIndex)
 
-def indexAll():
-  """Indexes all files that have been updated since their own lastUpdated value"""
+def indexAll(includingLastXSeconds=0):
+  """Indexes all files from all sources that have been updated since their own lastUpdated value"""
   sources = listSources()
   mp.track('admin', 'Beginning Global Index', {
     'accounts': sources,
@@ -232,7 +232,7 @@ def indexAll():
     organisationID = source['organisationID']
     accountInfo =  source
     accountInfo['accountID'] = accountID
-    num = indexFiles(accountInfo)
+    num = indexFiles(accountInfo, includingLastXSeconds=includingLastXSeconds)
     indexed.append({
       'organisationID': organisationID,
       'accountID': accountID,
@@ -244,8 +244,8 @@ def indexAll():
     'numberOfAccounts': len(indexed)
   })
 
-def indexFiles(accountInfo, allFiles=False):
-  """Indexes files from a query based on criteria given"""
+def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
+  """Indexes all files from a single source that have been updated since their own lastUpdated value"""
   print('indexFiles')
   serviceData = services.getService(accountInfo=accountInfo)
   if not serviceData or 'module' not in serviceData:
@@ -265,7 +265,7 @@ def indexFiles(accountInfo, allFiles=False):
   for f in files:
     indexedFileArray = [iFile for iFile in indexedFiles['results'] if iFile and iFile['objectID'] == f['objectID']]
     indexedFile = indexedFileArray[0] if len(indexedFileArray) else None
-    if not indexedFile or 'modified' not in indexedFile or indexedFile['modified'] < f['modified']:
+    if not indexedFile or 'modified' not in indexedFile or indexedFile['modified'] < f['modified'] or calendar.timegm(time.gmtime()) - includingLastXSeconds < f['modified']:
       filesTracker['indexing'].append({
         'title': f['title'],
         'modified': f['modified'],
@@ -303,7 +303,8 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     return False
   algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
-  algoliaFilesIndex.add_object(f)
+  if not Testing:
+    algoliaFilesIndex.add_object(f)
   createFileCard(accountInfo, f)
   # Update service data with fileType to get service format
   serviceData = services.getService(accountInfo=accountInfo, specificFile=f)
@@ -327,7 +328,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
 
 def indexFileContent(accountInfo, f):
   print('indexFileContent')
-  if not Testing:
+  if not Testing and 'objectID' in f and len(f['objectID']): # Avoids a blank objectID deleting all cards in index
     print(f)
     # Delete all chunks from file
     params = {
@@ -344,7 +345,9 @@ def indexFileContent(accountInfo, f):
   serviceData = services.getService(accountInfo=accountInfo, specificFile=f)
   service = serviceData['module']
   contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
-  cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
+  if not Testing:
+    cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
+  algoliaCardsIndex.add_objects(cards)
   print('Number of Cards:', len(cards))
   if toPrint['cardsCreated']:
     pp.pprint(cards)
@@ -385,8 +388,13 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       'entityTypes': entityTypes,
       'created': f['created'],
       'modified': f['modified'],
-      'index': i
+      'index': i,
+      'source': accountInfo['accountID'],
     }
+    if 'service' in accountInfo:
+      card['service'] = accountInfo['service']
+    if 'superService' in accountInfo:
+      card['superService'] = accountInfo['superService']
     if 'title' in chunk:
       card['title'] = chunk['title']
       if len(parentContext) > 1 and parentContext[0] == 'AGREED TERMS':
@@ -403,7 +411,7 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
   cardIDs = []
   try:
-    if Testing:
+    if Testing or True:
       cardIDs = { 'objectIDs': [randint(1, 1000000000000) for c in cards] } # Use this when testing to avoid using up Algolia operations!!
     else:
       cardIDs = algoliaCardsIndex.add_objects(cards)
@@ -426,7 +434,7 @@ def reIndex():
   s.enter(60 * minsInterval, 1, reIndex)
 
 def startIndexing():
-  indexAll()
+  indexAll(includingLastXSeconds=345600)
   s.enter(60 * minsInterval, 1, reIndex)
   s.run()
 
@@ -434,7 +442,7 @@ def startIndexing():
 
 """Below here is stuff for testing"""
 
-# indexAll()
+# indexAll(includingLastXSeconds=1000)
 
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
 # accountInfo = {
@@ -453,7 +461,8 @@ def startIndexing():
 # }, allFiles=True)
 # indexFile({
 #   'organisationID': 'explaain',
-#   'accountID': '282782204'
+#   'accountID': '282782204',
+#   'superService': 'kloudless',
 # }, 'FXWHwSyZjCQfgFJEEij7NoRWkIhVyI48LZqYMOwOTmmJkWbXQJ43VPdDKUQVH6DoY')
 # indexFile({
 #   'organisationID': 'explaain',
