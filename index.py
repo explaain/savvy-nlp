@@ -316,7 +316,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     cardsCreated = 0
   f['cardsCreated'] = cardsCreated
   mp.track('admin', 'File Indexed', f)
-  print('File Indexed with ' + cardsCreated + ' cards: ' + f['title'])
+  print('File Indexed with ' + str(cardsCreated) + ' cards: ' + (f['title'] if 'title' in f else ''))
 
 def indexFileContent(accountInfo, f):
   print('indexFileContent')
