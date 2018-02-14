@@ -314,17 +314,9 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   else:
     print('No format')
     cardsCreated = 0
-
-  # allFiles = browseAlgolia(algoliaFilesIndex)
-  # allCards = browseAlgolia(algoliaCardsIndex)
-  # allFileCards = browseAlgolia(algoliaCardsIndex, { 'filters': 'type:"p"' })
-  other = {
-    'cardsCreated': cardsCreated,
-    # 'totalOrgFiles': len(allFiles),
-    # 'totalOrgCards': len(allCards),
-    # 'totalOrgFileCards': len(allFileCards)
-  }
-  mp.track('admin', 'File Indexed', {**f, **other})
+  f['cardsCreated'] = cardsCreated
+  mp.track('admin', 'File Indexed', f)
+  print('File Indexed with ' + cardsCreated + ' cards: ' + f['title'])
 
 def indexFileContent(accountInfo, f):
   print('indexFileContent')
