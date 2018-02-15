@@ -228,7 +228,7 @@ def indexAll(includingLastXSeconds=0):
   indexed = []
   for source in sources:
     print(source)
-    accountID = source['objectID']
+    accountID = source['accountID'] if 'accountID' in source else source['objectID']
     organisationID = source['organisationID']
     accountInfo =  source
     accountInfo['accountID'] = accountID
@@ -276,9 +276,9 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
     else:
       filesTracker['notIndexing'].append({
         'title': f['title'],
-        'modified': f['modified'],
-        'lastIndexed': indexedFile['modified'],
-        'service': f['service'],
+        # 'modified': f['modified'],
+        # 'lastIndexed': indexedFile['modified'],
+        # 'service': f['service'],
       })
   pp.pprint(filesTracker)
   if len(files):
@@ -303,18 +303,23 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     return False
   algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
+  try:
+    oldFile = algoliaFilesIndex.get_object(f['objectID'])
+  except Exception as e:
+    oldFile = None
   if not Testing:
     algoliaFilesIndex.add_object(f)
   createFileCard(accountInfo, f)
   # Update service data with fileType to get service format
   serviceData = services.getService(accountInfo=accountInfo, specificFile=f)
-  if 'format' in serviceData:
+  if 'format' in serviceData and serviceData['format']:
     print('format!')
     cardsCreated = indexFileContent(accountInfo, f)
   else:
     print('No format')
     cardsCreated = 0
   f['cardsCreated'] = cardsCreated
+  notifyChanges(oldFile, f)
   mp.track('admin', 'File Indexed', f)
   print('File Indexed with ' + str(cardsCreated) + ' cards: ' + (f['title'] if 'title' in f else ''))
 
@@ -352,11 +357,19 @@ def createFileCard(accountInfo, f):
     'title': f['title'],
     'fileID': f['objectID'],
     'fileUrl': f['url'],
-    'fileType': f['mimeType'],
+    'fileType': f['mimeType'] if 'mimeType' in f else f['fileType'] if 'fileType' in f else None,
     'fileTitle': f['title'],
     'created': f['created'],
     'modified': f['modified'],
+    'service': f['service'],
+    'source': f['source'],
   }
+  if 'description' in f and f['description']:
+    card['description'] = f['description']
+  if 'createdBy' in f and f['createdBy']:
+    card['createdBy'] = f['createdBy']
+  if 'integrationFields' in f and f['integrationFields']:
+    card['integrationFields'] = f['integrationFields']
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
   if not Testing:
     algoliaCardsIndex.add_object(card)
@@ -417,6 +430,26 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
     'allCards': allCards # Cards passed up that should continue being passed
   }
 
+def notifyChanges(oldFile, newFile):
+  print('notifyChanges')
+  pp.pprint(oldFile)
+  pp.pprint(newFile)
+  if newFile['service'] == 'sifter':
+    if oldFile:
+      oldStatus = oldFile['integrationFields']['status']
+      newStatus = newFile['integrationFields']['status']
+      if oldStatus in ['Opened', 'Reopened'] and newStatus not in ['Opened', 'Reopened']:
+        print('good!')
+        requests.post('https://savvy-api--live.herokuapp.com/notify/send', json={
+          "recipient": {
+            "email": newFile['createdBy']
+          },
+          "type": "CARD_UPDATED",
+          "payload": {
+            "message": "✅ An issue you submitted is now resolved!\n\n> *" + newFile['title'] + "*\n> " + newFile['description'][:200] + ('...' if len(newFile['description']) > 200 else '') + "\n\n_Click here to view it on Sifter: " + newFile['url'] + " _"
+          }
+        })
+
 
 s = sched.scheduler(time.time, time.sleep)
 minsInterval = 10
@@ -426,15 +459,25 @@ def reIndex():
   s.enter(60 * minsInterval, 1, reIndex)
 
 def startIndexing():
-  indexAll(includingLastXSeconds=5184000)
+  indexAll(includingLastXSeconds=0)
   s.enter(60 * minsInterval, 1, reIndex)
   s.run()
 
 
+# requests.post('https://savvy-api--live.herokuapp.com/notify/send', json={
+#   "recipient": {
+#     "email": "jeremy@heysavvy.com"
+#   },
+#   "type": "CARD_UPDATED",
+#   "payload": {
+#     "message": "An issue on 🐞 Sifter has been resolved! Here it is: \n\n> *This is a testing issue*\n\nClick here to view it on Sifter: https://savvy.sifterapp.com/projects/50281/issues/4314315"
+#   }
+# })
+
 
 """Below here is stuff for testing"""
 
-# indexAll(includingLastXSeconds=1000)
+# indexAll(includingLastXSeconds=10000)
 
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
 # accountInfo = {

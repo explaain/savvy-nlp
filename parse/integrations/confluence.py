@@ -6,18 +6,18 @@ from .formats import html
 
 pp = pprint.PrettyPrinter(indent=4)
 
-def listAccounts():
+def listAccounts(): # Probably don't need this?
   return None
 
-def getAccount(accountID):
+def getAccount(accountID): # Probably don't need this?
   return None
 
-def compatible_print(msg):
+def compatible_print(msg): # Probably don't need this?
     sys.stdout.write("{}\n".format(msg))
     sys.stdout.flush()
 
 
-def listFiles(accountInfo, after=False, number=500):
+def listFiles(accountInfo, after=False, number=500): # 'after' and 'number' don't do anything!
   # Create API object
   connect = ConfluenceAPI(accountInfo['username'], accountInfo['password'], 'https://' + accountInfo['siteDomain'] + '.atlassian.net/wiki/')
   # Get latest file info

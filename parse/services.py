@@ -1,10 +1,11 @@
 import pprint, sys
-from parse.integrations import kloudless_integration as kloudlessDrives, confluence
+from parse.integrations import kloudless_integration as kloudlessDrives, confluence, sifter
 
 pp = pprint.PrettyPrinter(indent=4)
 
 Integrations = {
   'confluence': {
+    'name': 'Confluence',
     'superService': False,
     'format': 'html',
     'module': confluence
@@ -14,14 +15,22 @@ Integrations = {
     'module': kloudlessDrives,
     'services': {
       'gdocs': {
+        'name': 'Google Docs',
         'format': 'xml_doc',
         'module': kloudlessDrives
       },
       'gsheets': {
+        'name': 'Google Sheets',
         'format': 'csv',
         'module': kloudlessDrives
       }
     }
+  },
+  'sifter': {
+    'name': 'Sifter',
+    'superService': False,
+    'format': None,
+    'module': sifter
   }
 }
 
