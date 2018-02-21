@@ -280,7 +280,8 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
         # 'lastIndexed': indexedFile['modified'],
         # 'service': f['service'],
       })
-  pp.pprint(filesTracker)
+  print('indexing:')
+  pp.pprint(filesTracker['indexing'])
   if len(files):
     other = {
       # 'onlyFilesModifiedAfter': after,
@@ -446,7 +447,7 @@ def notifyChanges(oldFile, newFile):
           },
           "type": "CARD_UPDATED",
           "payload": {
-            "message": "✅ An issue you submitted is now resolved!\n\n> *" + newFile['title'] + "*\n> " + newFile['description'][:200] + ('...' if len(newFile['description']) > 200 else '') + "\n\n_Click here to view it on Sifter: " + newFile['url'] + " _"
+``            "message": "✅ An issue you submitted is now resolved!\n\n>*" + newFile['title'] + "*\n>" + newFile['description'][:200] + ('...' if len(newFile['description']) > 200 else '') + "\n\n_Click here to view it on Sifter: " + newFile['url'] + " _"
           }
         })
 
