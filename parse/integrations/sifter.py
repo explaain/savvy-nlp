@@ -14,7 +14,7 @@ def listFiles(accountInfo, after=False, number=500): # 'after' and 'number' don'
   issues = []
   for project in projects:
     projectID = project['url'].split('/')[-1]
-    r = requests.get('https://savvy.sifterapp.com/api/projects/' + projectID + '/issues', headers={'X-Sifter-Token': accountInfo['token']})
+    r = requests.get('https://' + accountInfo['accountID'] + '/api/projects' + projectID + '/issues', headers={'X-Sifter-Token': accountInfo['token']})
     sifterIssues = json.loads(r.content)['issues'] # Only 100 per page! @TODO: sort out
     issues += [sifterToFile(sifterIssue, accountInfo, projectID) for sifterIssue in sifterIssues]
   pp.pprint(issues)
@@ -27,7 +27,7 @@ def getFile(accountInfo, fileID):
   issue = None
   for project in projects:
     projectID = project['url'].split('/')[-1]
-    r = requests.get('https://savvy.sifterapp.com/api/projects/' + projectID + '/issues/' + fileID, headers={'X-Sifter-Token': accountInfo['token']})
+    r = requests.get('https://' + accountInfo['accountID'] + '/api/projects' + projectID + '/issues/' + fileID, headers={'X-Sifter-Token': accountInfo['token']})
     if r.status_code == 200:
       sifterIssue = json.loads(r.content)['issue']
       issue = sifterToFile(sifterIssue, accountInfo, projectID)
