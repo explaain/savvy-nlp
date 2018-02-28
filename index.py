@@ -1,6 +1,7 @@
+# @TODO: Sort out organisationID and the difference between organisation['objectID'] and organisation['name']
+
 #!/usr/bin/env python
-import pprint, datetime, sched, time, calendar, json, requests
-from random import *
+import pprint, datetime, sched, time, calendar, json, requests, random
 from algoliasearch import algoliasearch
 from parse import services
 import xmljson
@@ -251,7 +252,12 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   if not serviceData or 'module' not in serviceData:
     return False
   service = serviceData['module']
-  files = service.listFiles(accountInfo)
+  try:
+    files = service.listFiles(accountInfo)
+  except Exception as e:
+    files = None
+  if not files or not len(files):
+    return None
   filesTracker = {
     'indexing': [],
     'notIndexing': []
@@ -274,12 +280,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
       })
       indexFile(accountInfo, f['objectID'], actualFile=f)
     else:
-      filesTracker['notIndexing'].append({
-        'title': f['title'],
-        # 'modified': f['modified'],
-        # 'lastIndexed': indexedFile['modified'],
-        # 'service': f['service'],
-      })
+      filesTracker['notIndexing'].append({ 'title': f['title'] })
   print('indexing:')
   pp.pprint(filesTracker['indexing'])
   if len(files):
@@ -299,7 +300,10 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   if actualFile:
     f = actualFile
   else:
-    f = service.getFile(accountInfo, fileID=fileID)
+    try:
+      f = service.getFile(accountInfo, fileID=fileID)
+    except Exception as e:
+      f = None
   if f is None:
     return False
   algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
@@ -342,7 +346,12 @@ def indexFileContent(accountInfo, f):
   print(accountInfo)
   serviceData = services.getService(accountInfo=accountInfo, specificFile=f)
   service = serviceData['module']
-  contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
+  try:
+    contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
+  except Exception as e:
+    contentArray = None
+  if not contentArray:
+    return False
   if not Testing:
     cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
   algoliaCardsIndex.add_objects(cards)
