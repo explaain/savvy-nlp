@@ -4,6 +4,7 @@ asn1crypto==0.23.0
 astroid==1.6.0
 attrs==17.4.0
 Automat==0.6.0
+bugsnag==3.4.1
 cachetools==2.0.1
 certifi==2018.1.18
 cffi==1.11.2
@@ -75,6 +76,7 @@ untangle==1.1.1
 urllib3==1.22
 w3lib==1.18.0
 wcwidth==0.1.7
+WebOb==1.7.4
 Werkzeug==0.12.2
 wordfreq==1.6.1
 wrapt==1.10.11
