@@ -1,11 +1,17 @@
 #!/usr/bin/env python
-import os
+import bugsnag, os, pprint
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 import index
 import cards
 from parse import parse
 
+bugsnag.configure(
+api_key="d0731cc66b977d432f6e328d4952c168",
+project_root="savvy/savvy-1",
+)
+
+pp = pprint.PrettyPrinter(indent=4)
 
 from algoliasearch import algoliasearch
 client = algoliasearch.Client('D3AE3TSULH', '88bd0a77faff65d4ace510fbf172a4e1') # This API key allows everything
