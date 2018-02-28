@@ -62,7 +62,7 @@ def kloudlessToFile(f, accountInfo):
     'objectID': f['id'],
     'url': getFileUrl(f['raw_id'], f['mime_type']),
     'rawID': f['raw_id'],
-    'mimeType': f['mime_type'],
+    'fileType': f['mime_type'],
     'title': f['name'],
     'created': time.mktime(f['created'].timetuple()) if f['created'] else None,
     'modified': time.mktime(f['modified'].timetuple()) if f['modified'] else None,

@@ -41,7 +41,7 @@ def confluenceToFile(page, accountInfo):
     'objectID': page['id'],
     'url': page['_links']['self'],
     'rawID': page['id'],
-    'mimeType': 'html',
+    'fileType': 'html',
     'title': page['title'],
     'created': int(dp.parse(page['history']['createdDate']).strftime('%s')),
     'modified': int(dp.parse(page['history']['lastUpdated']['when']).strftime('%s')),

@@ -40,7 +40,6 @@ def getIntegrations():
 def getServices():
   services = {}
   for i in Integrations:
-    print(i)
     if Integrations[i]['superService']:
       for j in Integrations[i]['services']:
         services[j] = Integrations[i]['services'][j]
@@ -57,8 +56,11 @@ def getService(accountInfo=None, serviceName=None, superServiceName=None, specif
     if 'superService' in accountInfo:
       superServiceName = accountInfo['superService']
   service = services[serviceName] if serviceName in services else Integrations[superServiceName] if superServiceName and superServiceName in Integrations else None
-  if specificFile and 'mimeType' in specificFile and not serviceName:
-    tempService = service['module'].getServiceByFileType(specificFile['mimeType'])
+  # Convert mimeType to fileType (for legacy cards)
+  if specificFile and 'mimeType' in specificFile and 'fileType' not in specificFile:
+    specificFile['fileType'] = specificFile['mimeType']
+  if specificFile and 'fileType' in specificFile and not serviceName:
+    tempService = service['module'].getServiceByFileType(specificFile['fileType'])
     if tempService and 'service' in tempService:
       service = services[tempService['service']]
   return service

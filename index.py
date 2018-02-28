@@ -367,7 +367,7 @@ def createFileCard(accountInfo, f):
     'title': f['title'],
     'fileID': f['objectID'],
     'fileUrl': f['url'],
-    'fileType': f['mimeType'] if 'mimeType' in f else f['fileType'] if 'fileType' in f else None,
+    'fileType': f['fileType'] if 'fileType' in f else f['mimeType'] if 'mimeType' in f else None,
     'fileTitle': f['title'],
     'created': f['created'],
     'modified': f['modified'],
@@ -397,7 +397,7 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       'content': chunk['content'],
       'fileID': f['objectID'],
       'fileUrl': f['url'],
-      'fileType': f['mimeType'],
+      'fileType': f['fileType'] if 'fileType' in f else f['mimeType'] if 'mimeType' in f else None,
       'fileTitle': f['title'],
       'context': parentContext,
       'entityTypes': entityTypes,
@@ -460,6 +460,124 @@ def notifyChanges(oldFile, newFile):
           }
         })
 
+def saveCard(card: dict, author:dict):
+  # @TODO: Figure out whether sometimes an update will delete a field but it'll be automatically put back in
+  if not author or 'organisationID' not in author or 'objectID' not in author:
+    return None
+  organisationID = author['organisationID']
+  algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
+  card['verified'] = 'role' in author and author['role'] in ['manager', 'admin']
+  if not card['verified']:
+    card = splitPendingCardContent(card)
+  if 'objectID' in card:
+    # Retrieve existing card
+    try:
+      existingCard = algoliaCardsIndex.get_object(card['objectID'])
+    except Exception as e:
+      existingCard = None
+    if existingCard:
+      # Fill in any blanks in card from existingCard
+      for key in existingCard:
+        if key not in card and key != 'pendingContent':
+          card[key] = existingCard[key]
+      if 'pendingContent' in existingCard:
+        if 'pendingContent' in card:
+          for key in existingCard['pendingContent']:
+            if key not in card['pendingContent']:
+              card['pendingContent'][key] = existingCard['pendingContent'][key]
+        else:
+          card['pendingContent'] = existingCard['pendingContent']
+  # Complete card
+  else:
+    if 'created' not in card:
+      card['created'] = calendar.timegm(time.gmtime())
+    if 'creatorID' not in card and author:
+      card['creatorID'] = author['objectID']
+      if 'name' in author:
+        card['creator'] = author['name']
+  card['organisationID'] = organisationID
+  card['modified'] = calendar.timegm(time.gmtime())
+  card['modifierID'] = author['objectID']
+  card['modifier'] = author['name']
+
+  # @TODO: Account for the fact that the service data may have updated since the last index - fetch this as well as existingCard?
+  # Save to service
+  if 'service' in card and card['service']:
+    serviceData = services.getService(serviceName=card['service'])
+    service = serviceData['module']
+    if 'source' in card and card['source']:
+      source = algoliaSourcesIndex.get_object(card['source'])
+    else:
+      sources = browseAlgolia(algoliaSourcesIndex, {
+        'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
+      })
+      source = sources[0]
+    if ('type' in card and card['type'] == 'file'):
+      # @TODO: Account for the fact that the Sifter API currently doesn't let us update issues, so it always creates a new one
+      try:
+        serviceCard = service.saveFile(source, card)
+      except Exception as e:
+        serviceCard = {}
+      # Assemble final card
+      for key in serviceCard:
+        card[key] = serviceCard[key]
+    else:
+      print('Card is a service card but type is not "file" - we don\'t support editing individual lines of files yet')
+  # Save to Savvy
+  print('card')
+  pp.pprint(card)
+  if not Testing:
+    savedResult = algoliaCardsIndex.add_object(card)
+    card['objectID'] = savedResult['objectID']
+    mp.track(author['objectID'] if author and 'objectID' in author else 'admin', 'Card Saved', card)
+  return card
+
+def splitCardContent(card):
+  nonContentKeys = ['objectID', 'created', 'creator', 'creatorID', 'organisationID', 'type', 'fileID', 'fileUrl', 'fileType', 'fileTitle', 'service', 'source', 'verified']
+  content = card
+  nonContent = {}
+  for key in nonContentKeys:
+    if key in card:
+      nonContent[key] = card[key]
+    content.pop(key, None)
+  return {
+    'content': content,
+    'nonContent': nonContent
+  }
+
+def splitPendingCardContent(card):
+  cardSplit = splitCardContent(card)
+  splitCard = cardSplit['nonContent']
+  splitCard['pendingContent'] = cardSplit['content']
+  return splitCard
+
+
+# words = open('dictionaryWords.txt').read().split('\n')
+#
+#
+# pp.pprint(saveCard({
+#   'type': 'file',
+#   # 'objectID': '316928880',
+#   'title': 'Testing Title: ' + random.choice(words),
+#   'description': 'Testing Description: ' + random.choice(words),
+#   # 'fileID': f['objectID'],
+#   # 'fileUrl': f['url'],
+#   # 'fileType': f['fileType'] if 'fileType' in f else f['mimeType'] if 'mimeType' in f else None,
+#   # 'fileTitle': f['title'],
+#   # 'created': f['created'],
+#   # 'service': 'sifter',
+#   # 'source': 'explaain.sifterapp.com',
+#   # 'integrationFields': {
+#   #   'projectID': '50455',
+#   #   'priority': 'High',
+#   # }
+# },
+# author = {
+#   'objectID': '124356',
+#   'name': 'Jeremy Evans',
+#   'organisationID': 'explaain',
+#   'role': 'member',
+# }))
 
 s = sched.scheduler(time.time, time.sleep)
 minsInterval = 10
