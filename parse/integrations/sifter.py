@@ -5,8 +5,6 @@ import pprint, json, requests, dateutil.parser as dp
 pp = pprint.PrettyPrinter(indent=4)
 
 def listFiles(accountInfo, after=False, number=500): # 'after' and 'number' don't do anything!
-  print(accountInfo['accountID'])
-  print(accountInfo['accountID'])
   p = requests.get('https://' + accountInfo['accountID'] + '/api/projects',
     headers = {'X-Sifter-Token': accountInfo['token']})
   print(p.content)
@@ -14,11 +12,11 @@ def listFiles(accountInfo, after=False, number=500): # 'after' and 'number' don'
   pp.pprint(projects)
   issues = []
   for project in projects:
-    projectID = project['url'].split('/')[-1]
-    r = requests.get('https://' + accountInfo['accountID'] + '/api/projects' + projectID + '/issues',
+    project['id'] = project['url'].split('/')[-1]
+    r = requests.get('https://' + accountInfo['accountID'] + '/api/projects' + project['id'] + '/issues',
       headers = {'X-Sifter-Token': accountInfo['token']})
     sifterIssues = json.loads(r.content)['issues'] # Only 100 per page! @TODO: sort out
-    issues += [sifterToFile(sifterIssue, accountInfo, projectID) for sifterIssue in sifterIssues]
+    issues += [sifterToFile(sifterIssue, accountInfo, project) for sifterIssue in sifterIssues]
   pp.pprint(issues)
   return issues
 
@@ -77,7 +75,7 @@ def sifterToFile(issue, accountInfo, project):
     'fileUrl': issue['url'], # Duplicate of 'url' (safer to have both for now)
     'source': accountInfo['accountID'],
     'service': 'sifter',
-    'createdBy': issue['opener_email'],
+    'createdBy': issue['opener_email'], # @TODO: This needs to be matched with Savvy users!!!
     'integrationFields': {
       'projectID': project['id'],
       'projectName': project['name'],

@@ -1,5 +1,5 @@
 import pprint, sys
-from parse.integrations import kloudless_integration as kloudlessDrives, confluence, sifter
+from parse.integrations import kloudless_integration as kloudlessDrives, confluence, sifter, zoho_bugtracker
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -31,7 +31,13 @@ Integrations = {
     'superService': False,
     'format': None,
     'module': sifter
-  }
+  },
+  'zoho': {
+    'name': 'Zoho',
+    'superService': False,
+    'format': None,
+    'module': zoho_bugtracker
+  },
 }
 
 def getIntegrations():
