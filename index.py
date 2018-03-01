@@ -487,18 +487,30 @@ def saveCard(card: dict, author:dict):
               card['pendingContent'][key] = existingCard['pendingContent'][key]
         else:
           card['pendingContent'] = existingCard['pendingContent']
+      if 'pendingContent' in card:
+        pendingKeys = [key for key in card['pendingContent']]
+        for key in pendingKeys:
+          if fieldsEqual(card['pendingContent'][key], existingCard[key] if key in existingCard else None):
+            del(card['pendingContent'][key])
+      # Allow higher users to overwrite pending changes
+      if card['verified']:
+        for key in card:
+          if (key not in existingCard or card[key] != existingCard[key]) and key in card['pendingContent']:
+            del(card['pendingContent'][key])
   # Complete card
   else:
-    if 'created' not in card:
-      card['created'] = calendar.timegm(time.gmtime())
-    if 'creatorID' not in card and author:
-      card['creatorID'] = author['objectID']
-      if 'name' in author:
-        card['creator'] = author['name']
+    card['created'] = calendar.timegm(time.gmtime())
+    card['creatorID'] = author['objectID']
+    if 'name' in author:
+      card['creator'] = author['name']
   card['organisationID'] = organisationID
   card['modified'] = calendar.timegm(time.gmtime())
   card['modifierID'] = author['objectID']
-  card['modifier'] = author['name']
+  if 'name' in author:
+    card['modifier'] = author['name']
+  if not 'creatorID' in card and 'authorID' in card:
+    card['creatorID'] = card['authorID']
+    del(card['authorID'])
 
   # @TODO: Account for the fact that the service data may have updated since the last index - fetch this as well as existingCard?
   # Save to service
@@ -533,7 +545,7 @@ def saveCard(card: dict, author:dict):
   return card
 
 def splitCardContent(card):
-  nonContentKeys = ['objectID', 'created', 'creator', 'creatorID', 'organisationID', 'type', 'fileID', 'fileUrl', 'fileType', 'fileTitle', 'service', 'source', 'verified']
+  nonContentKeys = ['pendingContent', 'objectID', 'created', 'creator', 'creatorID', 'organisationID', 'type', 'fileID', 'fileUrl', 'fileType', 'fileTitle', 'service', 'source', 'verified']
   content = card
   nonContent = {}
   for key in nonContentKeys:
@@ -548,8 +560,16 @@ def splitCardContent(card):
 def splitPendingCardContent(card):
   cardSplit = splitCardContent(card)
   splitCard = cardSplit['nonContent']
-  splitCard['pendingContent'] = cardSplit['content']
+  if 'pendingContent' not in splitCard:
+    splitCard['pendingContent'] = {}
+  for key in cardSplit['content']:
+    splitCard['pendingContent'][key] = cardSplit['content'][key]
   return splitCard
+
+def fieldsEqual(a, b):
+  "Returns whether a and b are equal or if they're both essentially None"
+  typesOfNone = [None, '', [None], ['']]
+  return a == b or (a in typesOfNone and b in typesOfNone)
 
 
 # words = open('dictionaryWords.txt').read().split('\n')

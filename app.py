@@ -55,7 +55,7 @@ def get_results():
 
 @app.route('/save-card', methods=['POST'])
 def save_card():
-  print('Starting to get user data!')
+  print('Starting to save card!')
   pp.pprint(request.json['card'])
   pp.pprint(request.json['author'])
   card = index.saveCard(request.json['card'], request.json['author'])
