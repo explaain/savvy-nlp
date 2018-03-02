@@ -12,11 +12,12 @@ def listFiles(accountInfo):
   issues = []
   for project in projects:
     bugsLink = project['link']['bug']['url']
+    project['id'] = project['id_string']
     r = requests.get(bugsLink,
       params = {'authtoken': accountInfo['token']})
     zohoBugs = json.loads(r.content)['bugs'] # Only 100 per page! @TODO: sort out
     # pp.pprint(zohoBugs)
-    issues += [zohoToFile(bug, accountInfo, project) for bug in zohoBugs]
+    issues += [zohoToFile(zohoBug, accountInfo, project) for zohoBug in zohoBugs]
   pp.pprint(issues)
   return issues
 
@@ -26,12 +27,15 @@ def getFile(accountInfo, fileID):
   projects = json.loads(p.content)['projects']
   issue = None
   for project in projects:
+    pp.pprint(project)
     bugsLink = project['link']['bug']['url']
+    project['id'] = project['id_string']
     r = requests.get(bugsLink + fileID + '/',
       params = {'authtoken': accountInfo['token']})
     if r.status_code == 200:
-      sifterIssue = json.loads(r.content)['bugs'][0]
-      issue = zohoToFile(sifterIssue, accountInfo, project)
+      zohoBug = json.loads(r.content)['bugs'][0]
+      pp.pprint(zohoBug)
+      issue = zohoToFile(zohoBug, accountInfo, project)
   pp.pprint(issue)
   return issue
 
@@ -64,7 +68,7 @@ def saveFile(accountInfo, fileData):
 def zohoToFile(bug, accountInfo, project):
   f = {
     'objectID': bug.get('id_string', None),
-    'url': bug['link']['self']['url'] if 'link' in bug else None,
+    'url': 'https://bugtracker.zoho.eu/portal/' + accountInfo['accountID'] + '/#buginfo/' + project['id'] + '/' + bug['id_string'],
     'title': bug.get('title', None),
     'description': bug.get('description', None),
     'created': bug.get('created_time_long', None) / 1000,
@@ -72,7 +76,7 @@ def zohoToFile(bug, accountInfo, project):
     'fileID': bug.get('id_string', None), # Duplicate of 'objectID' (safer to have both for now)
     'fileTitle': bug.get('title', None), # Duplicate of 'title' (safer to have both for now)
     'fileType': 'web',
-    'fileUrl': bug['link']['self']['url'] if 'link' in bug else None, # Duplicate of 'url' (safer to have both for now)
+    'fileUrl': 'https://bugtracker.zoho.eu/portal/' + accountInfo['accountID'] + '/#buginfo/' + project['id'] + '/' + bug['id_string'], # Duplicate of 'url' (safer to have both for now)
     'source': accountInfo['accountID'],
     'service': 'zoho',
     'creator': bug.get('reported_person', None), # @TODO: This needs to be matched with Savvy users!!!
@@ -138,7 +142,7 @@ def fileToSifter(f, accountInfo):
 #   "objectID": "bugtracker.zoho.eu/portal/savvy"
 # })
 
-#
+
 # getFile({
 #   "service": "zoho",
 #   "organisationID": "explaain",
@@ -148,20 +152,3 @@ def fileToSifter(f, accountInfo):
 #   "email": "jeremy@heysavvy.com",
 #   "objectID": "bugtracker.zoho.eu/portal/savvy"
 # }, '29670000000014017')
-
-
-
-
-
-
-
-# listFiles({
-#   'service': 'sifter',
-#   'organisationID': 'explaain',
-#   'superService': False,
-#   'accountID': 'savvy',
-#   'objectID': 'sifter-savvy',
-#   'token': '16b6caf289218da7fd6a1bcae4696870'
-# }
-# # , '4313159'
-# )

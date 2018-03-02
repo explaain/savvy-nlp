@@ -271,7 +271,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   for f in files:
     indexedFileArray = [iFile for iFile in indexedFiles['results'] if iFile and iFile['objectID'] == f['objectID']]
     indexedFile = indexedFileArray[0] if len(indexedFileArray) else None
-    if not indexedFile or 'modified' not in indexedFile or indexedFile['modified'] < f['modified'] or calendar.timegm(time.gmtime()) - includingLastXSeconds < f['modified']:
+    if allFiles or not indexedFile or 'modified' not in indexedFile or indexedFile['modified'] < f['modified'] or calendar.timegm(time.gmtime()) - includingLastXSeconds < f['modified']:
       filesTracker['indexing'].append({
         'title': f['title'],
         'modified': f['modified'],
@@ -466,7 +466,7 @@ def saveCard(card: dict, author:dict):
     return None
   organisationID = author['organisationID']
   algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
-  card['verified'] = 'role' in author and author['role'] in ['manager', 'admin']
+  card['verified'] = getVerified(author)
   if not card['verified']:
     card = splitPendingCardContent(card)
   if 'objectID' in card:
@@ -542,10 +542,35 @@ def saveCard(card: dict, author:dict):
     savedResult = algoliaCardsIndex.add_object(card)
     card['objectID'] = savedResult['objectID']
     mp.track(author['objectID'] if author and 'objectID' in author else 'admin', 'Card Saved', card)
-  return card
+  return { 'success': True, 'card': card }
+
+def deleteCard(card, author):
+  if not 'objectID' in card or not author or 'organisationID' not in author or 'objectID' not in author:
+    return None
+  organisationID = author['organisationID']
+  algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
+  verified = getVerified(author)
+  if verified:
+    try:
+      algoliaCardsIndex.delete_object(card['objectID'])
+      return { 'success': True, 'card': None }
+    except Exception as e:
+      return { 'success': False, 'error': 'Couldn\'t delete card' }
+  else:
+    try:
+      card = algoliaCardsIndex.get_object(card['objectID'])
+      card['pendingDelete'] = True
+      algoliaCardsIndex.save_object(card)
+      return { 'success': True, 'card': card }
+    except Exception as e:
+      return { 'success': False, 'error': 'Couldn\'t set card to be pending deletion' }
+
+def getVerified(author):
+  verified = 'role' in author and author['role'] in ['manager', 'admin']
+  return verified
 
 def splitCardContent(card):
-  nonContentKeys = ['pendingContent', 'objectID', 'created', 'creator', 'creatorID', 'organisationID', 'type', 'fileID', 'fileUrl', 'fileType', 'fileTitle', 'service', 'source', 'verified']
+  nonContentKeys = ['pendingContent', 'pendingDelete', 'objectID', 'created', 'creator', 'creatorID', 'organisationID', 'type', 'fileID', 'fileUrl', 'fileType', 'fileTitle', 'service', 'source', 'verified']
   content = card
   nonContent = {}
   for key in nonContentKeys:
@@ -572,14 +597,15 @@ def fieldsEqual(a, b):
   return a == b or (a in typesOfNone and b in typesOfNone)
 
 
-# words = open('dictionaryWords.txt').read().split('\n')
-#
-#
+words = open('dictionaryWords.txt').read().split('\n')
+
+
 # pp.pprint(saveCard({
-#   'type': 'file',
-#   # 'objectID': '316928880',
-#   'title': 'Testing Title: ' + random.choice(words),
-#   'description': 'Testing Description: ' + random.choice(words),
+#   'objectID': '356300620',
+#   'pendingDelete': False,
+#   # 'type': 'file',
+#   # 'title': 'Testing Title: ' + random.choice(words),
+#   # 'description': 'Testing Description: ' + random.choice(words),
 #   # 'fileID': f['objectID'],
 #   # 'fileUrl': f['url'],
 #   # 'fileType': f['fileType'] if 'fileType' in f else f['mimeType'] if 'mimeType' in f else None,
@@ -598,6 +624,18 @@ def fieldsEqual(a, b):
 #   'organisationID': 'explaain',
 #   'role': 'member',
 # }))
+
+# pp.pprint(deleteCard({
+#   'objectID': '317709421',
+# },
+# author = {
+#   'objectID': '124356',
+#   'name': 'Jeremy Evans',
+#   'organisationID': 'explaain',
+#   'role': 'manager',
+# }))
+
+
 
 s = sched.scheduler(time.time, time.sleep)
 minsInterval = 10
@@ -629,13 +667,17 @@ def startIndexing():
 
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
 # accountInfo = {
-#   'organisationID': 'explaain',
-#   'accountID': '282782204',
-#   'superService': 'kloudless',
+#   "service": "zoho",
+#   "organisationID": "explaain",
+#   "superService": False,
+#   "accountID": "savvy",
+#   "token": "1461d2e158c6e83ffa4a45e4e32c9c01",
+#   "email": "jeremy@heysavvy.com",
+#   "objectID": "bugtracker.zoho.eu/portal/savvy"
 # }
-# kloudlessDrives.listFiles(accountInfo)
-
-# indexFiles(accountInfo)
+# # kloudlessDrives.listFiles(accountInfo)
+#
+# indexFiles(accountInfo, allFiles=True)
 
 # indexAll()
 # indexFiles({

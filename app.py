@@ -58,8 +58,16 @@ def save_card():
   print('Starting to save card!')
   pp.pprint(request.json['card'])
   pp.pprint(request.json['author'])
-  card = index.saveCard(request.json['card'], request.json['author'])
-  return jsonify({'card': card})
+  result = index.saveCard(request.json['card'], request.json['author'])
+  return jsonify(result)
+
+@app.route('/delete-card', methods=['POST'])
+def delete_card():
+  print('Starting to delete card!')
+  pp.pprint(request.json['card'])
+  pp.pprint(request.json['author'])
+  result = index.deleteCard(request.json['card'], request.json['author'])
+  return jsonify(result)
 
 @app.route('/generate-card-data', methods=['POST'])
 def generate_card_data():
