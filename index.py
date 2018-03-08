@@ -491,6 +491,7 @@ def saveCard(card: dict, author:dict):
               del(card['pendingContent'][key])
   # Complete card
   else:
+    existingCard = None
     card['created'] = calendar.timegm(time.gmtime())
     card['creatorID'] = author['objectID']
     if 'name' in author:
