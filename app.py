@@ -56,17 +56,25 @@ def get_results():
 @app.route('/save-card', methods=['POST'])
 def save_card():
   print('Starting to save card!')
-  pp.pprint(request.json['card'])
-  pp.pprint(request.json['author'])
+  pp.pprint(request.json)
   result = index.saveCard(request.json['card'], request.json['author'])
+  pp.pprint(result)
   return jsonify(result)
 
 @app.route('/delete-card', methods=['POST'])
 def delete_card():
   print('Starting to delete card!')
-  pp.pprint(request.json['card'])
-  pp.pprint(request.json['author'])
+  pp.pprint(request.json)
   result = index.deleteCard(request.json['card'], request.json['author'])
+  pp.pprint(result)
+  return jsonify(result)
+
+@app.route('/verify-card', methods=['POST'])
+def verify_card():
+  print('Starting to verify card!')
+  pp.pprint(request.json)
+  result = index.verify(request.json['objectID'], request.json['author'], prop = request.json['prop'] if 'prop' in request.json else None, approve = request.json['approve'] if 'approve' in request.json else None)
+  pp.pprint(result)
   return jsonify(result)
 
 @app.route('/generate-card-data', methods=['POST'])

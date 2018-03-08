@@ -250,13 +250,17 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   print('indexFiles')
   serviceData = services.getService(accountInfo=accountInfo)
   if not serviceData or 'module' not in serviceData:
+    print('No module defined')
     return False
   service = serviceData['module']
   try:
+    print(service)
     files = service.listFiles(accountInfo)
   except Exception as e:
+    print(e)
     files = None
   if not files or not len(files):
+    print('No files retrieved')
     return None
   filesTracker = {
     'indexing': [],
@@ -265,7 +269,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
   indexedFiles = algoliaFilesIndex.get_objects([f['objectID'] for f in files])
   # print('actualFiles')
-  # pp.pprint(files)
+  pp.pprint(files)
   # print('indexedFiles')
   # pp.pprint(indexedFiles)
   for f in files:
@@ -286,7 +290,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   if len(files):
     other = {
       # 'onlyFilesModifiedAfter': after,
-      'allFiles': allFiles, # allFiles doesn't currently do anything!
+      'allFiles': allFiles,
       'numberOfFiles': len(files)
     }
     mp.track('admin', 'Files Indexed', {**accountInfo, **other})
@@ -440,35 +444,21 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
     'allCards': allCards # Cards passed up that should continue being passed
   }
 
-def notifyChanges(oldFile, newFile):
-  print('notifyChanges')
-  pp.pprint(oldFile)
-  pp.pprint(newFile)
-  if newFile['service'] == 'sifter':
-    if oldFile:
-      oldStatus = oldFile['integrationFields']['status']
-      newStatus = newFile['integrationFields']['status']
-      if oldStatus in ['Opened', 'Reopened'] and newStatus not in ['Opened', 'Reopened']:
-        print('good!')
-        requests.post('https://savvy-api--live.herokuapp.com/notify/send', json={
-          "recipient": {
-            "email": newFile['createdBy']
-          },
-          "type": "CARD_UPDATED",
-          "payload": {
-            "message": "✅ An issue you submitted is now resolved!\n\n>*" + newFile['title'] + "*\n>" + newFile['description'][:200] + ('...' if len(newFile['description']) > 200 else '') + "\n\n_Click here to view it on Sifter: " + newFile['url'] + " _"
-          }
-        })
-
 def saveCard(card: dict, author:dict):
   # @TODO: Figure out whether sometimes an update will delete a field but it'll be automatically put back in
   if not author or 'organisationID' not in author or 'objectID' not in author:
     return None
   organisationID = author['organisationID']
   algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
-  card['verified'] = getVerified(author)
-  if not card['verified']:
+  keysToRemove = ['_highlightResult']
+  for key in keysToRemove:
+    if key in card:
+      del(card[key])
+  verified = authorIsSavvy(card, author)
+  if not verified:
     card = splitPendingCardContent(card)
+    print('splitPendingCardContent')
+    pp.pprint(splitPendingCardContent)
   if 'objectID' in card:
     # Retrieve existing card
     try:
@@ -482,21 +472,23 @@ def saveCard(card: dict, author:dict):
           card[key] = existingCard[key]
       if 'pendingContent' in existingCard:
         if 'pendingContent' in card:
-          for key in existingCard['pendingContent']:
-            if key not in card['pendingContent']:
-              card['pendingContent'][key] = existingCard['pendingContent'][key]
+          # Only replaces if card['pendingContent'] is a dict
+          if card['pendingContent']:
+            for key in existingCard['pendingContent']:
+              if key not in card['pendingContent']:
+                card['pendingContent'][key] = existingCard['pendingContent'][key]
         else:
           card['pendingContent'] = existingCard['pendingContent']
-      if 'pendingContent' in card:
+      if 'pendingContent' in card and card['pendingContent']:
         pendingKeys = [key for key in card['pendingContent']]
         for key in pendingKeys:
           if fieldsEqual(card['pendingContent'][key], existingCard[key] if key in existingCard else None):
             del(card['pendingContent'][key])
-      # Allow higher users to overwrite pending changes
-      if card['verified']:
-        for key in card:
-          if (key not in existingCard or card[key] != existingCard[key]) and key in card['pendingContent']:
-            del(card['pendingContent'][key])
+        # Allow higher users to overwrite pending changes
+        if verified:
+          for key in card:
+            if (key not in existingCard or card[key] != existingCard[key]) and key in card['pendingContent']:
+              del(card['pendingContent'][key])
   # Complete card
   else:
     card['created'] = calendar.timegm(time.gmtime())
@@ -518,7 +510,10 @@ def saveCard(card: dict, author:dict):
     serviceData = services.getService(serviceName=card['service'])
     service = serviceData['module']
     if 'source' in card and card['source']:
-      source = algoliaSourcesIndex.get_object(card['source'])
+      try:
+        source = algoliaSourcesIndex.get_object(card['source'])
+      except Exception as e:
+        source = None
     else:
       sources = browseAlgolia(algoliaSourcesIndex, {
         'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
@@ -542,6 +537,7 @@ def saveCard(card: dict, author:dict):
     savedResult = algoliaCardsIndex.add_object(card)
     card['objectID'] = savedResult['objectID']
     mp.track(author['objectID'] if author and 'objectID' in author else 'admin', 'Card Saved', card)
+  notifyChanges(existingCard, card)
   return { 'success': True, 'card': card }
 
 def deleteCard(card, author):
@@ -549,24 +545,73 @@ def deleteCard(card, author):
     return None
   organisationID = author['organisationID']
   algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
-  verified = getVerified(author)
+  verified = authorIsSavvy(card, author)
   if verified:
+    if 'service' in card and card['service']:
+      serviceData = services.getService(serviceName=card['service'])
+      service = serviceData['module']
+      if 'source' in card and card['source']:
+        source = algoliaSourcesIndex.get_object(card['source'])
+      else:
+        sources = browseAlgolia(algoliaSourcesIndex, {
+          'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
+        })
+        source = sources[0]
+      if ('type' in card and card['type'] == 'file'):
+        # @TODO: Account for the fact that the Sifter API currently doesn't let us delete issues
+        try:
+          serviceCard = service.deleteFile(source, card)
+        except Exception as e:
+          serviceCard = {}
     try:
       algoliaCardsIndex.delete_object(card['objectID'])
+      notifyChanges(card, None)
       return { 'success': True, 'card': None }
     except Exception as e:
       return { 'success': False, 'error': 'Couldn\'t delete card' }
   else:
     try:
-      card = algoliaCardsIndex.get_object(card['objectID'])
+      existingCard = algoliaCardsIndex.get_object(card['objectID'])
+      card = dict(existingCard)
       card['pendingDelete'] = True
       algoliaCardsIndex.save_object(card)
+      notifyChanges(existingCard, card)
       return { 'success': True, 'card': card }
     except Exception as e:
       return { 'success': False, 'error': 'Couldn\'t set card to be pending deletion' }
 
-def getVerified(author):
-  verified = 'role' in author and author['role'] in ['manager', 'admin']
+def verify(objectID: dict, author: dict, prop: str = None, approve: bool = True):
+  organisationID = author['organisationID']
+  algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
+  try:
+    existingCard = algoliaCardsIndex.get_object(objectID)
+  except Exception as e:
+    return { 'success': False, 'error': 'Card could not be found' }
+  card = dict(existingCard)
+  if 'pendingContent' not in card:
+    return { 'success': False, 'error': 'No pending content to verify!' }
+  if not prop:
+    # Verifying whole card
+    if approve:
+      for key in card['pendingContent']:
+        card[key] = card['pendingContent'][key]
+    else:
+      card['pendingContent'] = None
+  elif type(prop) is str:
+    # Verifying card (root) property
+    if prop in card['pendingContent']:
+      if approve:
+        card[prop] = card['pendingContent'][prop]
+      else:
+        card['pendingContent'][prop] = None
+    else:
+      return { 'success': False, 'error': 'Property ' + prop + ' is not in pending content!' }
+  else:
+    return { 'success': False, 'error': 'Don\'t (yet) understand how to process when prop is: ' + json.dumps(prop) }
+  return saveCard(card, author)
+
+def authorIsSavvy(card, author):
+  verified = ('role' in author and author['role'] == 'admin') or 'topics' not in card or ('topics' in author and type(author['topics']) == 'list' and [topic in card['topics'] for topic in author])
   return verified
 
 def splitCardContent(card):
@@ -595,6 +640,34 @@ def fieldsEqual(a, b):
   "Returns whether a and b are equal or if they're both essentially None"
   typesOfNone = [None, '', [None], ['']]
   return a == b or (a in typesOfNone and b in typesOfNone)
+
+
+def notifyChanges(oldFile, newFile):
+  print('notifyChanges')
+  pp.pprint(oldFile)
+  pp.pprint(newFile)
+  if 'pendingContent' in newFile and ('pendingContent' not in oldFile or oldFile['pendingContent'] != newFile['pendingContent']):
+    # Changes to pendingContent
+    recipient = {
+      "emails": []
+    }
+  if newFile['service'] == 'sifter':
+    if oldFile:
+      oldStatus = oldFile['integrationFields']['status']
+      newStatus = newFile['integrationFields']['status']
+      if oldStatus in ['Opened', 'Reopened'] and newStatus not in ['Opened', 'Reopened']:
+        print('good!')
+        # requests.post('https://savvy-api--live.herokuapp.com/notify/send', json={
+        requests.post('http://localhost:5000/notify/send', json={
+          "recipient": {
+            "emails": [newFile['createdBy']]
+          },
+          "type": "CARD_UPDATED",
+          "payload": {
+            "message": "✅ An issue you submitted is now resolved!\n\n>*" + newFile['title'] + "*\n>" + newFile['description'][:200] + ('...' if len(newFile['description']) > 200 else '') + "\n\n_Click here to view it on Sifter: " + newFile['url'] + " _"
+          }
+        })
+
 
 
 words = open('dictionaryWords.txt').read().split('\n')
@@ -678,6 +751,15 @@ def startIndexing():
 # # kloudlessDrives.listFiles(accountInfo)
 #
 # indexFiles(accountInfo, allFiles=True)
+# accountInfo = {
+#   "service": "sifter",
+#   "organisationID": "explaain",
+#   "superService": False,
+#   "accountID": "explaain.sifterapp.com",
+#   "token": "8c66dfd53afd38f2cb1548fcaac1c9e5",
+#   "objectID": "explaain.sifterapp.com"
+# }
+# indexFiles(accountInfo)
 
 # indexAll()
 # indexFiles({

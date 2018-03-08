@@ -12,10 +12,14 @@ def listFiles(accountInfo, after=False, number=500): # 'after' and 'number' don'
   pp.pprint(projects)
   issues = []
   for project in projects:
+    print(1)
     project['id'] = project['url'].split('/')[-1]
+    print(2)
     r = requests.get('https://' + accountInfo['accountID'] + '/api/projects' + project['id'] + '/issues',
       headers = {'X-Sifter-Token': accountInfo['token']})
+    print(r.content)
     sifterIssues = json.loads(r.content)['issues'] # Only 100 per page! @TODO: sort out
+    pp.pprint(sifterIssues)
     issues += [sifterToFile(sifterIssue, accountInfo, project) for sifterIssue in sifterIssues]
   pp.pprint(issues)
   return issues
@@ -60,6 +64,8 @@ def saveFile(accountInfo, fileData):
   savedFile = sifterToFile(savedIssue, accountInfo, project)
   return savedFile
 
+def deleteFile(f):
+  return None
 
 def sifterToFile(issue, accountInfo, project):
   f = {

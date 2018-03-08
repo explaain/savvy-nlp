@@ -64,6 +64,8 @@ def saveFile(accountInfo, fileData):
   # savedFile = zohoToFile(savedIssue, accountInfo, project)
   # return savedFile
 
+def deleteFile(f):
+  return None
 
 def zohoToFile(bug, accountInfo, project):
   f = {
