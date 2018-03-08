@@ -569,6 +569,7 @@ def deleteCard(card, author):
       notifyChanges(card, None)
       return { 'success': True, 'card': None }
     except Exception as e:
+      print(e)
       return { 'success': False, 'error': 'Couldn\'t delete card' }
   else:
     try:
@@ -647,13 +648,13 @@ def notifyChanges(oldFile, newFile):
   print('notifyChanges')
   pp.pprint(oldFile)
   pp.pprint(newFile)
-  if 'pendingContent' in newFile and ('pendingContent' not in oldFile or oldFile['pendingContent'] != newFile['pendingContent']):
+  if oldFile and newFile and type(newFile) == 'dict' and 'pendingContent' in newFile and (not oldFile or type(oldFile) != 'dict' or 'pendingContent' not in oldFile or oldFile['pendingContent'] != newFile['pendingContent']):
     # Changes to pendingContent
     recipient = {
       "emails": []
     }
-  if newFile['service'] == 'sifter':
-    if oldFile:
+  if newFile and type(newFile) == 'dict' and newFile['service'] == 'sifter':
+    if oldFile and type(oldFile) == 'dict':
       oldStatus = oldFile['integrationFields']['status']
       newStatus = newFile['integrationFields']['status']
       if oldStatus in ['Opened', 'Reopened'] and newStatus not in ['Opened', 'Reopened']:
