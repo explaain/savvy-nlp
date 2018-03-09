@@ -454,41 +454,43 @@ def saveCard(card: dict, author:dict):
   for key in keysToRemove:
     if key in card:
       del(card[key])
-  verified = authorIsSavvy(card, author)
-  if not verified:
-    card = splitPendingCardContent(card)
-    print('splitPendingCardContent')
-    pp.pprint(splitPendingCardContent)
+  existingCard = None
   if 'objectID' in card:
     # Retrieve existing card
     try:
       existingCard = algoliaCardsIndex.get_object(card['objectID'])
     except Exception as e:
-      existingCard = None
-    if existingCard:
-      # Fill in any blanks in card from existingCard
-      for key in existingCard:
-        if key not in card and key != 'pendingContent':
-          card[key] = existingCard[key]
-      if 'pendingContent' in existingCard:
-        if 'pendingContent' in card:
-          # Only replaces if card['pendingContent'] is a dict
-          if card['pendingContent']:
-            for key in existingCard['pendingContent']:
-              if key not in card['pendingContent']:
-                card['pendingContent'][key] = existingCard['pendingContent'][key]
-        else:
-          card['pendingContent'] = existingCard['pendingContent']
+      print(e)
+      print('objectID provided but no existing card found')
+  verified = authorIsSavvy(existingCard if existingCard else card, author)
+  if not verified:
+    card = splitPendingCardContent(card)
+    print('splitPendingCardContent')
+    pp.pprint(splitPendingCardContent)
+  if existingCard:
+    # Fill in any blanks in card from existingCard
+    for key in existingCard:
+      if key not in card and key != 'pendingContent':
+        card[key] = existingCard[key]
+    if 'pendingContent' in existingCard and existingCard['pendingContent']:
       if 'pendingContent' in card and card['pendingContent']:
-        pendingKeys = [key for key in card['pendingContent']]
-        for key in pendingKeys:
-          if fieldsEqual(card['pendingContent'][key], existingCard[key] if key in existingCard else None):
+        # Only replaces if card['pendingContent'] is a dict
+        if card['pendingContent']:
+          for key in existingCard['pendingContent']:
+            if key not in card['pendingContent']:
+              card['pendingContent'][key] = existingCard['pendingContent'][key]
+      else:
+        card['pendingContent'] = existingCard['pendingContent']
+    if 'pendingContent' in card and card['pendingContent']:
+      pendingKeys = [key for key in card['pendingContent']]
+      for key in pendingKeys:
+        if fieldsEqual(card['pendingContent'][key], existingCard[key] if key in existingCard else None):
+          del(card['pendingContent'][key])
+      # Allow higher users to overwrite pending changes
+      if verified:
+        for key in card:
+          if (key not in existingCard or card[key] != existingCard[key]) and key in card['pendingContent']:
             del(card['pendingContent'][key])
-        # Allow higher users to overwrite pending changes
-        if verified:
-          for key in card:
-            if (key not in existingCard or card[key] != existingCard[key]) and key in card['pendingContent']:
-              del(card['pendingContent'][key])
   # Complete card
   else:
     existingCard = None
@@ -542,11 +544,17 @@ def saveCard(card: dict, author:dict):
   return { 'success': True, 'card': card }
 
 def deleteCard(card, author):
-  if not 'objectID' in card or not author or 'organisationID' not in author or 'objectID' not in author:
-    return None
+  if not 'objectID':
+    return { 'success': False, 'error': 'Card has no objectID' }
+  if not author or 'organisationID' not in author or 'objectID' not in author:
+    return { 'success': False, 'error': 'No author with correct details' }
   organisationID = author['organisationID']
   algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
-  verified = authorIsSavvy(card, author)
+  try:
+    existingCard = algoliaCardsIndex.get_object(card['objectID'])
+  except Exception as e:
+    existingCard = None
+  verified = authorIsSavvy(existingCard, author)
   if verified:
     if 'service' in card and card['service']:
       serviceData = services.getService(serviceName=card['service'])
@@ -590,6 +598,7 @@ def verify(objectID: dict, author: dict, prop: str = None, approve: bool = True)
   except Exception as e:
     return { 'success': False, 'error': 'Card could not be found' }
   card = dict(existingCard)
+
   if 'pendingContent' not in card:
     return { 'success': False, 'error': 'No pending content to verify!' }
   if not prop:
@@ -597,23 +606,36 @@ def verify(objectID: dict, author: dict, prop: str = None, approve: bool = True)
     if approve:
       for key in card['pendingContent']:
         card[key] = card['pendingContent'][key]
-    else:
-      card['pendingContent'] = None
+    card['pendingContent'] = None
   elif type(prop) is str:
     # Verifying card (root) property
     if prop in card['pendingContent']:
       if approve:
         card[prop] = card['pendingContent'][prop]
-      else:
-        card['pendingContent'][prop] = None
+      card['pendingContent'][prop] = None
     else:
       return { 'success': False, 'error': 'Property ' + prop + ' is not in pending content!' }
   else:
     return { 'success': False, 'error': 'Don\'t (yet) understand how to process when prop is: ' + json.dumps(prop) }
+  print('card', card)
   return saveCard(card, author)
 
 def authorIsSavvy(card, author):
-  verified = ('role' in author and author['role'] == 'admin') or 'topics' not in card or ('topics' in author and type(author['topics']) == 'list' and [topic in card['topics'] for topic in author])
+  print('Is Author Savvy?')
+  pp.pprint(card)
+  pp.pprint(author)
+  userIsAnAdmin = ('role' in author and author['role'] == 'admin')
+  print('userIsAnAdmin', userIsAnAdmin)
+  cardExists = card and type(card) is dict
+  print('cardExists', cardExists)
+  print(type(card))
+  cardHasNoTopics = 'topics' not in card or not card['topics'] or not len(card['topics'])
+  print('cardHasNoTopics', cardHasNoTopics)
+  authorHasACardTopic = 'topics' in author and type(author['topics']) is list and 'topics' in card and len([topic for topic in author['topics'] if topic in card['topics']])
+  print('authorHasACardTopic', authorHasACardTopic)
+
+  verified = userIsAnAdmin or (cardExists and (cardHasNoTopics or authorHasACardTopic))
+  print(verified)
   return verified
 
 def splitCardContent(card):
@@ -632,7 +654,7 @@ def splitCardContent(card):
 def splitPendingCardContent(card):
   cardSplit = splitCardContent(card)
   splitCard = cardSplit['nonContent']
-  if 'pendingContent' not in splitCard:
+  if 'pendingContent' not in splitCard or not splitCard['pendingContent']:
     splitCard['pendingContent'] = {}
   for key in cardSplit['content']:
     splitCard['pendingContent'][key] = cardSplit['content'][key]
@@ -648,12 +670,12 @@ def notifyChanges(oldFile, newFile):
   print('notifyChanges')
   pp.pprint(oldFile)
   pp.pprint(newFile)
-  if oldFile and newFile and type(newFile) == 'dict' and 'pendingContent' in newFile and (not oldFile or type(oldFile) != 'dict' or 'pendingContent' not in oldFile or oldFile['pendingContent'] != newFile['pendingContent']):
+  if oldFile and newFile and type(newFile) is dict and 'pendingContent' in newFile and (not oldFile or type(oldFile) is not dict or 'pendingContent' not in oldFile or oldFile['pendingContent'] != newFile['pendingContent']):
     # Changes to pendingContent
     recipient = {
       "emails": []
     }
-  if newFile and type(newFile) == 'dict' and newFile['service'] == 'sifter':
+  if newFile and type(newFile) is dict and newFile['service'] == 'sifter':
     if oldFile and type(oldFile) == 'dict':
       oldStatus = oldFile['integrationFields']['status']
       newStatus = newFile['integrationFields']['status']
