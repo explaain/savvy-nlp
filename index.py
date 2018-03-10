@@ -3,7 +3,7 @@
 #!/usr/bin/env python
 import pprint, datetime, sched, time, calendar, json, requests, random
 from algoliasearch import algoliasearch
-from parse import services, entities
+from parse import services, entityNlp
 import xmljson
 import firebase_admin
 from firebase_admin import credentials as firebaseCredentials
