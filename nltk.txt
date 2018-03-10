@@ -17,3 +17,6 @@ maxent_ne_chunker
 punkt
 snowball_data
 averaged_perceptron_tagger
+word_tokenize
+pos_tag
+ne_chunk
