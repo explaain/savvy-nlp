@@ -1,15 +1,16 @@
 #!/usr/bin/env python
-import bugsnag, os, pprint
+import os, pprint
+# import bugsnag, os, pprint
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 import index
 import cards
 from parse import parse
 
-bugsnag.configure(
-api_key="d0731cc66b977d432f6e328d4952c168",
-project_root="savvy/savvy-1",
-)
+# bugsnag.configure(
+# api_key="d0731cc66b977d432f6e328d4952c168",
+# project_root="savvy/savvy-1",
+# )
 
 pp = pprint.PrettyPrinter(indent=4)
 
