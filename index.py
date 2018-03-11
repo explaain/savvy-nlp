@@ -59,24 +59,8 @@ def browseAlgolia(index, params=False):
   else:
     return [hit for hit in index.browse_all()]
 
-def getGoogleEntities(text: str):
-  url = 'https://language.googleapis.com/v1/documents:analyzeEntities'
-  params = {"key": "AIzaSyB_IsxgaENfscrFRx9LX_-bdzVAqGRwpN8"}
-  data = {
-    # "encodingType": "UTF8",
-    "document": {
-      "type": "PLAIN_TEXT",
-      "content": text
-    }
-  }
-  res = requests.post(url, params=params, json=data)
-  entities = json.loads(res.text)['entities'] if 'entities' in json.loads(res.text) else []
-  return entities
-
 def getEntityTypes(text: str):
   try:
-    # entities = getGoogleEntities(text)
-    # entityTypes = [entity['type'].capitalize() for entity in entities if 'type' in entity and entity['type'] not in ['UNKNOWN', 'OTHER']]
     entityTypes = entityNlp.getEntityTypes(text)
   except Exception as e:
     print('tried to get entities')
@@ -275,7 +259,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
   indexedFiles = algoliaFilesIndex.get_objects([f['objectID'] for f in files])
   # print('actualFiles')
-  pp.pprint(files)
+  # pp.pprint(files)
   # print('indexedFiles')
   # pp.pprint(indexedFiles)
   for f in files:
@@ -344,7 +328,7 @@ def indexFileContent(accountInfo, f):
   print('indexFileContent')
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
   if not Testing and 'objectID' in f and len(f['objectID']): # Avoids a blank objectID deleting all cards in index
-    print(f)
+    # print(f)
     # Delete all chunks from file
     params = {
       'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
@@ -366,8 +350,6 @@ def indexFileContent(accountInfo, f):
   if not contentArray:
     return False
   cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
-  print('CARDS!!!!!')
-  pp.pprint(cards)
   if not Testing:
     try:
       algoliaCardsIndex.add_objects(cards)
@@ -407,11 +389,16 @@ def createFileCard(accountInfo, f):
 
 
 def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
-  print('createCardsFromContentArray')
+  # print('createCardsFromContentArray')
   cards = []
   allCards = []
   for i, chunk in enumerate(contentArray):
-    entityTypes = getEntityTypes((chunk['title'] if 'title' in chunk else '') + chunk['content']) # Should this include text from context as well?
+    allRelevantText = ' '.join([chunk[key] for key in ['title', 'content'] if key in chunk])
+    if 'cells' in chunk:
+      allRelevantText += ' ' + ' '.join([cell['content'] for cell in chunk['cells']])
+    print('allRelevantText')
+    print(allRelevantText)
+    entityTypes = getEntityTypes(allRelevantText)
     card = {
       'type': 'p',
       'description': chunk['content'],
@@ -424,10 +411,9 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       'created': f['created'],
       'modified': f['modified'],
       'index': i,
+      'service': f['service'],
       'source': accountInfo['accountID'],
     }
-    print('card')
-    print(card)
     if 'service' in accountInfo:
       card['service'] = accountInfo['service']
     if 'superService' in accountInfo:
@@ -453,8 +439,6 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
   # try:
     # if Testing:
   cardIDs = { 'objectIDs': [random.randint(1, 1000000000000) for c in cards] } # Use this when testing to avoid using up Algolia operations!!
-  print('cardIDs')
-  pp.pprint(cardIDs)
     # else:
     #   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
     #   cardIDs = algoliaCardsIndex.add_objects(cards)
@@ -489,8 +473,6 @@ def saveCard(card: dict, author:dict):
   verified = authorIsSavvy(existingCard if existingCard else card, author)
   if not verified:
     card = splitPendingCardContent(card)
-    print('splitPendingCardContent')
-    pp.pprint(splitPendingCardContent)
   if existingCard:
     # Fill in any blanks in card from existingCard
     for key in existingCard:
@@ -774,6 +756,7 @@ def startIndexing():
   s.enter(60 * minsInterval, 1, reIndex)
   s.run()
 
+# indexAll()
 
 # requests.post('https://savvy-api--live.herokuapp.com/notify/send', json={
 #   "recipient": {
@@ -826,8 +809,9 @@ def startIndexing():
 # }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
 # indexFile({
 #   'organisationID': 'explaain',
-#   'accountID': '282782204'
-# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
+#   'accountID': '282782204',
+#   'superService': 'kloudless',
+# }, 'Ffz0GtHAtp2qbiNN-mGtZmI1dsC6Uh60QN3jJ-sOvN8dIP39UXcRkKu42D1e7Jti_')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'

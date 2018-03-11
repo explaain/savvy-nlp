@@ -13,7 +13,7 @@ def getContentArray(csvContent):
   # [{'content': 'Table', 'allRankings': {}, 'otherContext': {}, 'ranking': 20, 'chunks':
   contentArray = [{'content': row[0], 'allRankings': {}, 'otherContext': {}, 'ranking': 10,
      'cells': [
-      {'content': addColon(firstRow[i]) + ' ' + cell, 'label': firstRow[i], 'value': cell} for i, cell in enumerate(row) if cell and len(cell)
+      {'content': labelPlusValue(firstRow[i], cell), 'label': firstRow[i], 'value': cell} for i, cell in enumerate(row) if cell and len(cell)
     ]
      # 'chunks': [
       # {'content': addColon(firstRow[i]) + ' ' + cell, 'label': firstRow[i], 'value': cell, 'allRankings': {}, 'otherContext': {}, 'ranking': 0} for i, cell in enumerate(row) if cell and len(cell)
@@ -29,6 +29,14 @@ def getContentArray(csvContent):
 
 def addColon(text):
   return text + ':' if not text.endswith(':') else text
+
+def labelPlusValue(text1, text2):
+  if not text2 or not len(text2):
+    return ''
+  elif text1 and len(text1):
+    return addColon(text1) + ' ' + text2
+  else:
+    return text2
 
 def chunksToPrint(chunks, layer = 0):
   printArray = []

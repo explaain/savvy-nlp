@@ -5,12 +5,11 @@ def getEntityTypes(text: str = ''):
   chunks = ne_chunk(pos_tag(word_tokenize(text)))
   entities = []
   for chunk in chunks:
-    print(chunk)
     try:
       entity = chunk.label()
     except Exception as e:
       entity = None
-    if entity:
+    if entity and entity not in ['GPE']:
     # if entity and entity not in entities:
       entities.append(entity)
   # print(entities)

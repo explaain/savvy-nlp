@@ -2,3 +2,4 @@
 tests/generatedHierarchies
 tests/generatedScores
 .cache/
+.idea/*
