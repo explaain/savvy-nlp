@@ -1,11 +1,4 @@
 from nltk import word_tokenize, pos_tag, ne_chunk
-sentence = "Mark and John are working at Google."
-# chunks = ne_chunk(pos_tag(word_tokenize(sentence)))
-# print(chunks)
-# print(chunks[0].label())
-# print(chunks[0].leaves())
-# print(chunks[0][0])
-# print(chunks[1])
 
 def getEntityTypes(text: str = ''):
   print('getEntityTypes', text)
@@ -23,4 +16,4 @@ def getEntityTypes(text: str = ''):
   # print(entities)
   return entities
 
-print(getEntityTypes('testing this is Jeremy'))
+# print(getEntityTypes('testing this is Jeremy'))

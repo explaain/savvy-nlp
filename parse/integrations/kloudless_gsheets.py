@@ -18,5 +18,5 @@ def fileToContent(exportedFile):
 
 def fileToCardData(exportedFile):
   content = fileToContent(exportedFile)
-  contentArray = csv.getContentArray(csvContent)
+  contentArray = csv.getContentArray(content)
   return contentArray

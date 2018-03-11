@@ -74,8 +74,14 @@ def getGoogleEntities(text: str):
   return entities
 
 def getEntityTypes(text: str):
-  entities = getGoogleEntities(text)
-  entityTypes = [entity['type'].capitalize() for entity in entities if 'type' in entity and entity['type'] not in ['UNKNOWN', 'OTHER']]
+  try:
+    # entities = getGoogleEntities(text)
+    # entityTypes = [entity['type'].capitalize() for entity in entities if 'type' in entity and entity['type'] not in ['UNKNOWN', 'OTHER']]
+    entityTypes = entityNlp.getEntityTypes(text)
+  except Exception as e:
+    print('tried to get entities')
+    print(e)
+    entityTypes = []
   return entityTypes
 
 def serveUserData(idToken: str):
@@ -307,6 +313,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     try:
       f = service.getFile(accountInfo, fileID=fileID)
     except Exception as e:
+      print(e)
       f = None
   if f is None:
     return False
@@ -315,6 +322,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   try:
     oldFile = algoliaFilesIndex.get_object(f['objectID'])
   except Exception as e:
+    print(e)
     oldFile = None
   if not Testing:
     algoliaFilesIndex.add_object(f)
@@ -334,13 +342,13 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
 
 def indexFileContent(accountInfo, f):
   print('indexFileContent')
+  algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
   if not Testing and 'objectID' in f and len(f['objectID']): # Avoids a blank objectID deleting all cards in index
     print(f)
     # Delete all chunks from file
     params = {
       'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
     }
-    algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
     algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
 
     print('Deleted')
@@ -353,12 +361,19 @@ def indexFileContent(accountInfo, f):
   try:
     contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
   except Exception as e:
+    print(e)
     contentArray = None
   if not contentArray:
     return False
+  cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
+  print('CARDS!!!!!')
+  pp.pprint(cards)
   if not Testing:
-    cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
-  algoliaCardsIndex.add_objects(cards)
+    try:
+      algoliaCardsIndex.add_objects(cards)
+    except Exception as e:
+      print(e)
+      print('Something went wrong saving cards to Algolia!')
   print('Number of Cards:', len(cards))
   if toPrint['cardsCreated']:
     pp.pprint(cards)
@@ -392,13 +407,14 @@ def createFileCard(accountInfo, f):
 
 
 def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
+  print('createCardsFromContentArray')
   cards = []
   allCards = []
   for i, chunk in enumerate(contentArray):
     entityTypes = getEntityTypes((chunk['title'] if 'title' in chunk else '') + chunk['content']) # Should this include text from context as well?
     card = {
       'type': 'p',
-      'content': chunk['content'],
+      'description': chunk['content'],
       'fileID': f['objectID'],
       'fileUrl': f['url'],
       'fileType': f['fileType'] if 'fileType' in f else f['mimeType'] if 'mimeType' in f else None,
@@ -410,6 +426,8 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       'index': i,
       'source': accountInfo['accountID'],
     }
+    print('card')
+    print(card)
     if 'service' in accountInfo:
       card['service'] = accountInfo['service']
     if 'superService' in accountInfo:
@@ -418,25 +436,31 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       card['title'] = chunk['title']
       if len(parentContext) > 1 and parentContext[0] == 'AGREED TERMS':
         card['title'] = 'Clause ' + card['title'] # Hack for Clauses in Contract
+    for key in ['cells', 'label', 'value', 'entry']:
+      if key in chunk:
+        card[key] = chunk[key]
     if 'chunks' in chunk:
+      print('chunks!!!!')
       context = parentContext + [chunk['content']]
       subdata = createCardsFromContentArray(accountInfo, chunk['chunks'], f, context)
       subcards = subdata['cards']
       allCards += subdata['allCards']
       card['listItems'] = [c['objectID'] for c in subcards]
-      card['listCards'] = [c['content'] for c in subcards]
+      card['listCards'] = [c['description'] for c in subcards]
     cards.append(card)
     allCards.append(card)
-  algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
   cardIDs = []
-  try:
-    if Testing or True:
-      cardIDs = { 'objectIDs': [randint(1, 1000000000000) for c in cards] } # Use this when testing to avoid using up Algolia operations!!
-    else:
-      cardIDs = algoliaCardsIndex.add_objects(cards)
-  except Exception as e:
-    print('Something went wrong saving this card to Algolia:' + f['title'])
-    print(e)
+  # try:
+    # if Testing:
+  cardIDs = { 'objectIDs': [random.randint(1, 1000000000000) for c in cards] } # Use this when testing to avoid using up Algolia operations!!
+  print('cardIDs')
+  pp.pprint(cardIDs)
+    # else:
+    #   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
+    #   cardIDs = algoliaCardsIndex.add_objects(cards)
+  # except Exception as e:
+  #   print('Something went wrong saving this card to Algolia:' + f['title'])
+  #   print(e)
   for i, objectID in enumerate(cardIDs['objectIDs']):
     cards[i]['objectID'] = objectID
   return {
@@ -516,6 +540,7 @@ def saveCard(card: dict, author:dict):
       try:
         source = algoliaSourcesIndex.get_object(card['source'])
       except Exception as e:
+        print(e)
         source = None
     else:
       sources = browseAlgolia(algoliaSourcesIndex, {
@@ -527,6 +552,7 @@ def saveCard(card: dict, author:dict):
       try:
         serviceCard = service.saveFile(source, card)
       except Exception as e:
+        print(e)
         serviceCard = {}
       # Assemble final card
       for key in serviceCard:
@@ -553,6 +579,7 @@ def deleteCard(card, author):
   try:
     existingCard = algoliaCardsIndex.get_object(card['objectID'])
   except Exception as e:
+    print(e)
     existingCard = None
   verified = authorIsSavvy(existingCard, author)
   if verified:
@@ -571,6 +598,7 @@ def deleteCard(card, author):
         try:
           serviceCard = service.deleteFile(source, card)
         except Exception as e:
+          print(e)
           serviceCard = {}
     try:
       algoliaCardsIndex.delete_object(card['objectID'])
@@ -762,6 +790,7 @@ def startIndexing():
 
 # indexAll(includingLastXSeconds=10000)
 
+
 # accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
 # accountInfo = {
 #   "service": "zoho",
@@ -794,7 +823,7 @@ def startIndexing():
 #   'organisationID': 'explaain',
 #   'accountID': '282782204',
 #   'superService': 'kloudless',
-# }, 'FXWHwSyZjCQfgFJEEij7NoRWkIhVyI48LZqYMOwOTmmJkWbXQJ43VPdDKUQVH6DoY')
+# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'

@@ -12,12 +12,12 @@ TestAccountInfo = {
     'accountID': '282782204',
     'superService': 'kloudless',
   },
-  # 'gsheets': {
-  #   'organisationID': 'explaain',
-  #   'accountID': '282782204',
-  #   'superService': 'kloudless',
-  #   'service': 'gdocs',
-  # },
+  'gsheets': {
+    'organisationID': 'explaain',
+    'accountID': '282782204',
+    'superService': 'kloudless',
+    'service': 'gdocs',
+  },
   'confluence': {
     'organisationID': 'explaain',
     'accountID': 'https://explaain.atlassian.net/wiki/',
@@ -30,16 +30,19 @@ TestAccountInfo = {
 
 TestFilesToFetch = {
   'gdocs': [
-    'FS1864iLNT6VttUFpOrGziWMoAqIyx3CZM6wV5jfUKPoE3qCHI0_eh3RELL7I5HIU',
-    'F1UVWb2gWfAQZO4FbkhySjqnnu6W2YVHAh2qAVb-bbleYPrNzGv-Re5xozb8UNKXi',
+    # 'FS1864iLNT6VttUFpOrGziWMoAqIyx3CZM6wV5jfUKPoE3qCHI0_eh3RELL7I5HIU',
+    # 'F1UVWb2gWfAQZO4FbkhySjqnnu6W2YVHAh2qAVb-bbleYPrNzGv-Re5xozb8UNKXi',
+    # 'FyjC21jL7Hy3j55_Ek-d5U_oSk3pt4e7zjAq30HGyD7MoWBYhUjgktG9t6aCzfkce'
   ],
-  'gsheets': [],
+  'gsheets': [
+    'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce',
+  ],
   'confluence': [],
 }
 
 Formats = {
-  'html': html,
-  'xml_doc': xml,
+  # 'html': html,
+  # 'xml_doc': xml,
   'csv': csv,
 }
 FormatFileEndings = {
@@ -54,12 +57,15 @@ def titleToFilename(title: str):
 def getAllFilesInDirectory(directory):
   return os.listdir(directory)
 
-def parseAndTestFileFromContent(formatModule, filename, content, directories: dict):
+def parseAndTestFileFromContent(formatModule, formatName, filename, content, directories: dict):
+  print('parseAndTestFileFromContent', formatModule, filename, content, directories)
+  source = open(directories['source'] + filename.split('.')[:-1][0] + '.' + FormatFileEndings[formatName], 'w')
+  source.write(content)
   contentArray = formatModule.getContentArray(content)
-  print('formatModule')
-  print(formatModule)
-  print('contentArray')
-  print(contentArray)
+  # print('formatModule')
+  # print(formatModule)
+  # print('contentArray')
+  # print(contentArray)
   generatedContent = formatModule.chunksToPrint(contentArray)
   generated = open(directories['generated'] + filename.split('.')[:-1][0] + '.txt', 'w')
   for chunk in generatedContent:
@@ -79,10 +85,10 @@ def parseAndTestFileFromContent(formatModule, filename, content, directories: di
     'correctContent': correctContent,
   }
 
-def parseAndTestFileFromFolder(formatModule, filename: str, directories: dict):
+def parseAndTestFileFromFolder(formatModule, formatName, filename: str, directories: dict):
   testFile = open(directories['source'] + filename, 'r')
   content = testFile.read()
-  return parseAndTestFileFromContent(formatModule, filename, content, directories)
+  return parseAndTestFileFromContent(formatModule, formatName, filename, content, directories)
 
 def fetchContentFromFiles(serviceName: str):
   serviceData = services.getService(serviceName=serviceName)
@@ -115,16 +121,16 @@ def parse(formatName: str):
   formatModule = Formats[formatName]
   sourceFileEnding = FormatFileEndings[formatName]
   directories = formatToDirectories(formatName)
-  return [parseAndTestFileFromFolder(formatModule, filename, directories) for filename in getAllFilesInDirectory(directories['source']) if filename.split('.')[-1] == sourceFileEnding]
+  return [parseAndTestFileFromFolder(formatModule, formatName, filename, directories) for filename in getAllFilesInDirectory(directories['source']) if filename.split('.')[-1] == sourceFileEnding]
 
 def test_parse():
   for fileFormat in Formats:
     for test in parse(fileFormat):
       print('test')
-      pp.pprint(test)
+      # pp.pprint(test)
       assert test['passed']
 
-def test_fetchAndParse():
+def test_fetchAndParse(record_xml_property):
   for serviceName in TestFilesToFetch:
     print('serviceName')
     print(serviceName)
@@ -139,7 +145,7 @@ def test_fetchAndParse():
       print('content111')
       print(content)
       formatModule = Formats[formatName]
-      test = parseAndTestFileFromContent(formatModule, titleToFilename(content['title']), content['content'], directories)
+      test = parseAndTestFileFromContent(formatModule, formatName, titleToFilename(content['title']), content['content'], directories)
       print('test')
       pp.pprint(test)
       assert test['passed']

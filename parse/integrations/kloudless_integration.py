@@ -77,7 +77,7 @@ def getExportedFileData(accountInfo, fileID):
   fileData = getFile(accountInfo, fileID)
   if not fileData:
     return None
-  fileType = fileData['mimeType']
+  fileType = fileData['fileType']
   serviceData = getServiceByFileType(fileType)
   if not serviceData or 'module' not in serviceData:
     return None

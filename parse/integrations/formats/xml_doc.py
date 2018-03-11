@@ -9,7 +9,7 @@ toPrint = {
   'elements': False,
   'arrayOfPars': False,
   'justScores': False,
-  'hierarchies': False,
+  'hierarchies': True,
   'hierarchyText': True
 }
 
@@ -22,15 +22,19 @@ def getContentArray(xmlContent):
     t['ranking'] = sum(t['allRankings'].values())
   textArray = [chunk for chunk in textArray if len(chunk['content'])]
   if toPrint['arrayOfPars']:
+    print('arrayOfPars')
     pp.pprint(textArray)
   if toPrint['justScores']:
+    print('justScores')
     for t in textArray:
       print(t['ranking'], t['content'])
   chunkHierarchy = getChunkHierarchy(textArray)
   chunkHierarchy = completeContent(chunkHierarchy)
   if toPrint['hierarchies']:
+    print('hierarchies')
     pp.pprint(chunkHierarchy)
   if toPrint['hierarchyText']:
+    print('hierarchyText')
     print(chunksToPrint(chunkHierarchy, 0))
   return chunkHierarchy
 
