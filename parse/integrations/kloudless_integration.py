@@ -48,7 +48,6 @@ def getFile(accountInfo, fileID):
 
 
 def getFileUrl(id, fileType):
-  print('getFileUrl', id, fileType)
   roots = {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'https://docs.google.com/document/d/',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'https://docs.google.com/spreadsheets/d/',
@@ -91,8 +90,6 @@ def getExportedFileData(accountInfo, fileID):
     exportedFile = account.files.retrieve(fileID)
   elif exportParams['type'] == 'raw':
     exportedFile = account.raw(raw_uri = exportParams['raw_uri'] if 'raw_uri' in exportParams else '', raw_method=exportParams['raw_method'] if 'raw_method' in exportParams else '')
-  print('exportedFile')
-  print(exportedFile)
   return {
     'exportedFile': exportedFile,
     'driveService': driveService
@@ -110,10 +107,22 @@ def getServiceByFileType(fileType):
   servicesByFileType = {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
       'service': 'gdocs',
+      'format': 'xml_doc',
+      'module': gdocs,
+    },
+    'application/vnd.google-apps.document': {
+      'service': 'gdocs',
+      'format': 'xml_doc',
       'module': gdocs,
     },
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
       'service': 'gsheets',
+      'format': 'csv',
+      'module': gsheets,
+    },
+    'application/vnd.google-apps.spreadsheet': {
+      'service': 'gsheets',
+      'format': 'csv',
       'module': gsheets,
     },
   }
