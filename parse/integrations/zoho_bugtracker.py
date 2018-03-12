@@ -8,7 +8,6 @@ def listFiles(accountInfo):
   p = requests.get('https://projectsapi.zoho.eu/restapi/portal/' + accountInfo['accountID'] + '/projects/',
     params = {'authtoken': accountInfo['token']})
   projects = json.loads(p.content)['projects']
-  pp.pprint(projects)
   issues = []
   for project in projects:
     bugsLink = project['link']['bug']['url']
@@ -16,9 +15,7 @@ def listFiles(accountInfo):
     r = requests.get(bugsLink,
       params = {'authtoken': accountInfo['token']})
     zohoBugs = json.loads(r.content)['bugs'] # Only 100 per page! @TODO: sort out
-    # pp.pprint(zohoBugs)
     issues += [zohoToFile(zohoBug, accountInfo, project) for zohoBug in zohoBugs]
-  pp.pprint(issues)
   return issues
 
 def getFile(accountInfo, fileID):
@@ -27,16 +24,13 @@ def getFile(accountInfo, fileID):
   projects = json.loads(p.content)['projects']
   issue = None
   for project in projects:
-    pp.pprint(project)
     bugsLink = project['link']['bug']['url']
     project['id'] = project['id_string']
     r = requests.get(bugsLink + fileID + '/',
       params = {'authtoken': accountInfo['token']})
     if r.status_code == 200:
       zohoBug = json.loads(r.content)['bugs'][0]
-      pp.pprint(zohoBug)
       issue = zohoToFile(zohoBug, accountInfo, project)
-  pp.pprint(issue)
   return issue
 
 def saveFile(accountInfo, fileData):

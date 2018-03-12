@@ -1,7 +1,7 @@
 from nltk import word_tokenize, pos_tag, ne_chunk
 
 def getEntityTypes(text: str = ''):
-  print('getEntityTypes', text)
+  # print('getEntityTypes', text)
   chunks = ne_chunk(pos_tag(word_tokenize(text)))
   entities = []
   for chunk in chunks:

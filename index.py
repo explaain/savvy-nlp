@@ -396,8 +396,6 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
     allRelevantText = ' '.join([chunk[key] for key in ['title', 'content'] if key in chunk])
     if 'cells' in chunk:
       allRelevantText += ' ' + ' '.join([cell['content'] for cell in chunk['cells']])
-    print('allRelevantText')
-    print(allRelevantText)
     entityTypes = getEntityTypes(allRelevantText)
     card = {
       'type': 'p',
@@ -426,7 +424,6 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       if key in chunk:
         card[key] = chunk[key]
     if 'chunks' in chunk:
-      print('chunks!!!!')
       context = parentContext + [chunk['content']]
       subdata = createCardsFromContentArray(accountInfo, chunk['chunks'], f, context)
       subcards = subdata['cards']
@@ -806,7 +803,7 @@ def startIndexing():
 #   'organisationID': 'explaain',
 #   'accountID': '282782204',
 #   'superService': 'kloudless',
-# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
+# }, 'FIpeUA6-qJgZTLvISKr3n2v0BMmTqXsQN5-GkQ_yR8yOycticQbP2Trz4qdW08xsl')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204',

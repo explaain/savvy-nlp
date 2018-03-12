@@ -20,8 +20,8 @@ def getContentArray(csvContent):
     # ]
     } for row in rows[1:]]
   # }]
-  print('contentArray')
-  print(contentArray)
+  # print('contentArray')
+  # print(contentArray)
   print(len(contentArray))
   pp.pprint(contentArray)
 
