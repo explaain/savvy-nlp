@@ -281,7 +281,8 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
     other = {
       # 'onlyFilesModifiedAfter': after,
       'allFiles': allFiles,
-      'numberOfFiles': len(files)
+      'numberOfFiles': len(files),
+      'filesTracked': len(filesTracker['indexing']),
     }
     mp.track('admin', 'Files Indexed', {**accountInfo, **other})
   return len(files)
