@@ -6,12 +6,6 @@ from .formats import html
 
 pp = pprint.PrettyPrinter(indent=4)
 
-def listAccounts(): # Probably don't need this?
-  return None
-
-def getAccount(accountID): # Probably don't need this?
-  return None
-
 def compatible_print(msg): # Probably don't need this?
     sys.stdout.write("{}\n".format(msg))
     sys.stdout.flush()
