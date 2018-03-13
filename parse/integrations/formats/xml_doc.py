@@ -9,8 +9,8 @@ toPrint = {
   'elements': False,
   'arrayOfPars': False,
   'justScores': False,
-  'hierarchies': True,
-  'hierarchyText': True
+  'hierarchies': False,
+  'hierarchyText': False
 }
 
 def getContentArray(xmlContent):

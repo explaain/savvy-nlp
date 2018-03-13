@@ -65,8 +65,11 @@ def getService(accountInfo=None, serviceName=None, superServiceName=None, specif
   # Convert mimeType to fileType (for legacy cards)
   if specificFile and 'mimeType' in specificFile and 'fileType' not in specificFile:
     specificFile['fileType'] = specificFile['mimeType']
-  if specificFile and 'fileType' in specificFile and not serviceName:
-    tempService = service['module'].getServiceByFileType(specificFile['fileType'])
+  if specificFile and 'fileType' in specificFile:
+    try:
+      tempService = service['module'].getServiceByFileType(specificFile['fileType'])
+    except Exception as e:
+      tempService = None
     if tempService and 'service' in tempService:
       service = services[tempService['service']]
   return service

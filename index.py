@@ -277,7 +277,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
       filesTracker['notIndexing'].append({ 'title': f['title'] })
   print('indexing:')
   pp.pprint(filesTracker['indexing'])
-  if len(files):
+  if not Testing and len(filesTracker['indexing']):
     other = {
       # 'onlyFilesModifiedAfter': after,
       'allFiles': allFiles,
@@ -321,7 +321,8 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     cardsCreated = 0
   f['cardsCreated'] = cardsCreated
   notifyChanges(oldFile, f)
-  mp.track('admin', 'File Indexed', f)
+  if not Testing:
+    mp.track('admin', 'File Indexed', f)
   print('File Indexed with ' + str(cardsCreated) + ' cards: ' + (f['title'] if 'title' in f else ''))
 
 def indexFileContent(accountInfo, f):
