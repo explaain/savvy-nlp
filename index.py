@@ -684,7 +684,7 @@ def notifyChanges(oldFile, newFile):
     recipient = {
       "emails": []
     }
-  if newFile and type(newFile) is dict and newFile['service'] == 'sifter':
+  if newFile and type(newFile) is dict and 'service' in newFile and newFile['service'] == 'sifter':
     if oldFile and type(oldFile) == 'dict':
       oldStatus = oldFile['integrationFields']['status']
       newStatus = newFile['integrationFields']['status']
