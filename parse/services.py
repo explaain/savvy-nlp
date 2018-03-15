@@ -1,5 +1,5 @@
 import pprint, sys
-from parse.integrations import kloudless_integration as kloudlessDrives, confluence, sifter, zoho_bugtracker
+from parse.integrations import kloudless_integration as kloudlessDrives, confluence, sifter, zoho_bugtracker, gsites
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -37,6 +37,12 @@ Integrations = {
     'superService': False,
     'format': None,
     'module': zoho_bugtracker
+  },
+  'gsites': {
+    'name': 'Google Sites',
+    'superService': False,
+    'format': 'html',
+    'module': gsites
   },
 }
 

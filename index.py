@@ -787,12 +787,13 @@ def startIndexing():
 #
 # indexFiles(accountInfo, allFiles=True)
 # accountInfo = {
-#   "service": "sifter",
+#   "service": "gsites",
 #   "organisationID": "explaain",
 #   "superService": False,
-#   "accountID": "explaain.sifterapp.com",
-#   "token": "8c66dfd53afd38f2cb1548fcaac1c9e5",
-#   "objectID": "explaain.sifterapp.com"
+#   "accountID": "https://sites.google.com/explaain.com",
+#   "email": "testsavvy3@gmail.com",
+#   "password": "nakestest9",
+#   "objectID": "https://sites.google.com/explaain.com"
 # }
 # indexFiles(accountInfo)
 
