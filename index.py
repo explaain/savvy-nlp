@@ -70,12 +70,12 @@ def serveUserData(idToken: str):
   try:
     decoded_user = firebaseAuth.verify_id_token(idToken)
     print(decoded_user)
-    uid = decoded_user['uid']
+    firebaseUid = decoded_user['uid']
   except Exception as e:
     print(e)
     return False
   params = {
-    'filters': 'firebase: "' + uid + '"'
+    'filters': 'firebase: "' + firebaseUid + '"'
   }
   res = algoliaUsersIndex.search('', params)
   if 'hits' in res and len(res['hits']):
@@ -96,7 +96,7 @@ def serveUserData(idToken: str):
         del user['_highlightResult']
       print('Found this match by email:', user)
       # Add firebase details and save in db
-      user['firebase'] = uid
+      user['firebase'] = firebaseUid
       algoliaUsersIndex.save_object(user)
       mp.track('admin', 'Added Firebase Details to User', user)
       return user
