@@ -33,6 +33,8 @@ def add_source():
 def get_user():
   print('Starting to get user data!')
   results = index.serveUserData(request.json['idToken'])
+  print('API Returning:')
+  pp.pprint(results)
   return jsonify({'results': results})
 
 @app.route('/set-up-org', methods=['POST'])

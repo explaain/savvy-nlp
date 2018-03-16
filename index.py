@@ -1,5 +1,3 @@
-# @TODO: Sort out organisationID and the difference between organisation['objectID'] and organisation['name']
-
 #!/usr/bin/env python
 import pprint, datetime, sched, time, calendar, json, requests, random
 from algoliasearch import algoliasearch
@@ -70,9 +68,9 @@ def getEntityTypes(text: str):
 
 def serveUserData(idToken: str):
   try:
-    decoded_token = firebaseAuth.verify_id_token(idToken)
-    print(decoded_token)
-    uid = decoded_token['uid']
+    decoded_user = firebaseAuth.verify_id_token(idToken)
+    print(decoded_user)
+    uid = decoded_user['uid']
   except Exception as e:
     print(e)
     return False
@@ -87,11 +85,28 @@ def serveUserData(idToken: str):
     print(user)
     return user
   else:
-    return False
+    if 'email' in decoded_user:
+      # Match user to existing one (e.g. created from Slack) by email
+      params = {
+        'filters': 'emails: "' + decoded_user['email'] + '"'
+      }
+      res = algoliaUsersIndex.search('', params)
+      user = res['hits'][0]
+      if '_highlightResult' in user:
+        del user['_highlightResult']
+      print('Found this match by email:', user)
+      # Add firebase details and save in db
+      user['firebase'] = uid
+      algoliaUsersIndex.save_object(user)
+      mp.track('admin', 'Added Firebase Details to User', user)
+      return user
+    else:
+      return False
 
 def setUpOrg(organisationID: str):
   """For now this just sets up Cards and Files Algolia Indices,
-  Creates algoliaApiKey and saves this to organisations index
+  Creates algoliaApiKey and saves this to organisations index.
+  Currently only called from Slack (savvy-api, slack-interface.js).
   """
   print('Setting Up Organisation', organisationID)
   mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
@@ -101,6 +116,7 @@ def setUpOrg(organisationID: str):
   print(cardsSettings)
   algoliaGetFilesIndex(organisationID).set_settings(filesSettings) # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
   algoliaGetCardsIndex(organisationID).set_settings(cardsSettings)
+  mp.track('admin', 'Org Setup: Indexes Created', { 'organisationID': organisationID })
   apiKeyParams = {
     'acl': ['search', 'browse', 'addObject', 'deleteObject'],
     'indexes': [organisationID + '__*'],
@@ -109,33 +125,57 @@ def setUpOrg(organisationID: str):
   print('apiKeyParams', apiKeyParams)
   algoliaApiKey = client.add_api_key(apiKeyParams)
   print('algoliaApiKey', algoliaApiKey)
+  mp.track('admin', 'Org Setup: API Key Created', { 'organisationID': organisationID })
   searchParams = {
-    'filters': 'name: "' + organisationID + '"'
+    'filters': 'organisationID: "' + organisationID + '"'
   }
   results = {
     'hits': []
   }
   numAttempts = 0
-  while len(results['hits']) == 0 and numAttempts < 20:
+  while len(results['hits']) == 0 and numAttempts < 3:
     time.sleep(5)
     numAttempts += 1
     results = algoliaOrgsIndex.search('', searchParams)
-  if len(results['hits']):
+  if len(results['hits']) and 'objectID' in results['hits'][0]:
     orgObjectID = results['hits'][0]['objectID']
+    objectID = orgObjectID
     print('orgObjectID', orgObjectID)
-    res = algoliaOrgsIndex.partial_update_object({
-      'objectID': orgObjectID,
-      'algolia': {
-        'apiKey': algoliaApiKey['key']
-      }
-    })
-    print(res)
-    allOrgs = browseAlgolia(algoliaOrgsIndex)
-    mp.track('admin', 'Organisation Setup Complete', { 'objectID': orgObjectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
-    print('Organisation Setup Complete', organisationID)
+    try:
+      algoliaOrgsIndex.partial_update_object({
+        'objectID': orgObjectID,
+        'name': organisationID, # Still saving this for now in case of legacy issues
+        'algolia': {
+          'apiKey': algoliaApiKey['key']
+        }
+      })
+      mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': orgObjectID, 'organisationID': organisationID })
+    except Exception as e:
+      print(e)
+      mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
+      print('Organisation Setup Failed')
+      return None
   else:
-    mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID, 'error': 'No organisation with name ' + organisationID + ' found.' })
-    print('Organisation Setup Failed - No organisation with name ' + organisationID + ' found.')
+    try:
+      objectID = organisationID
+      algoliaOrgsIndex.save_object({
+        'objectID': objectID,
+        'organisationID': organisationID,
+        'name': organisationID, # Still saving this for now in case of legacy issues
+        'algolia': {
+          'apiKey': algoliaApiKey['key']
+        }
+      })
+      mp.track('admin', 'Org Setup: New Org Object Created', { 'objectID': organisationID, 'organisationID': organisationID })
+      mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': organisationID, 'organisationID': organisationID })
+    except Exception as e:
+      print(e)
+      mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
+      print('Organisation Setup Failed')
+      return None
+  allOrgs = browseAlgolia(algoliaOrgsIndex)
+  mp.track('admin', 'Organisation Setup Complete', { 'objectID': objectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
+  print('Organisation Setup Complete', organisationID)
 
 def setUpDomain(organisationID: str):
   dnsRecords = [
@@ -193,7 +233,7 @@ def addSource(data: dict):
     'accountID': source['objectID']
   }
 
-  # If either Algolia Indices doesn't exist then create them, create algoliaApiKey and add this to organisations index
+  # If either Algolia Index doesn't exist then create them, create algoliaApiKey and add this to organisations index
   indices = client.list_indexes()
   if not any(i['name'] == algoliaGetFilesIndexName(organisationID) for i in indices['items']) or not any(i['name'] == algoliaGetCardsIndexName(organisationID) for i in indices['items']):
     setUpOrg(organisationID)
@@ -788,12 +828,12 @@ def startIndexing():
 # indexFiles(accountInfo, allFiles=True)
 # accountInfo = {
 #   "service": "gsites",
-#   "organisationID": "explaain",
+#   "organisationID": "financialtimes",
 #   "superService": False,
-#   "accountID": "https://sites.google.com/explaain.com",
+#   "accountID": "https://sites.google.com/ft.com",
 #   "email": "testsavvy3@gmail.com",
 #   "password": "nakestest9",
-#   "objectID": "https://sites.google.com/explaain.com"
+#   "objectID": "https://sites.google.com/ft.com"
 # }
 # indexFiles(accountInfo)
 
