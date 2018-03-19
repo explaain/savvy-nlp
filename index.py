@@ -555,31 +555,37 @@ def saveCard(card: dict, author:dict):
   # @TODO: Account for the fact that the service data may have updated since the last index - fetch this as well as existingCard?
   # Save to service
   if 'service' in card and card['service']:
-    serviceData = services.getService(serviceName=card['service'])
-    service = serviceData['module']
-    if 'source' in card and card['source']:
-      try:
-        source = algoliaSourcesIndex.get_object(card['source'])
-      except Exception as e:
-        print(e)
-        source = None
-    else:
-      sources = browseAlgolia(algoliaSourcesIndex, {
-        'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
-      })
-      source = sources[0]
-    if ('type' in card and card['type'] == 'file'):
+    serviceData = services.getService(serviceName=card['service'], specificCard=card)
+    print('serviceData')
+    print(serviceData)
+    if serviceData and 'module' in serviceData:
+      print('has module')
+      service = serviceData['module']
+      if 'source' in card and card['source']:
+        try:
+          source = algoliaSourcesIndex.get_object(card['source'])
+        except Exception as e:
+          print(e)
+          source = None
+      else:
+        sources = browseAlgolia(algoliaSourcesIndex, {
+          'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
+        })
+        source = sources[0]
       # @TODO: Account for the fact that the Sifter API currently doesn't let us update issues, so it always creates a new one
       try:
-        serviceCard = service.saveFile(source, card)
+        if ('type' in card and card['type'] == 'file'):
+          serviceCard = service.saveFile(source, card)
+        else:
+          print('Saving to integration!')
+          serviceCard = service.saveCard(source, card)
       except Exception as e:
         print(e)
-        serviceCard = {}
+        serviceCard = None
       # Assemble final card
-      for key in serviceCard:
-        card[key] = serviceCard[key]
-    else:
-      print('Card is a service card but type is not "file" - we don\'t support editing individual lines of files yet')
+      if serviceCard and type(serviceCard) is dict:
+        for key in serviceCard:
+          card[key] = serviceCard[key]
   # Save to Savvy
   print('card')
   pp.pprint(card)
@@ -878,3 +884,48 @@ def startIndexing():
 # xmlstring = open('parse/sample3.xml').read()
 # # print(xmlstring)
 # kloudlessDrives.xmlFindText(xmlstring)
+
+
+
+
+
+
+
+
+
+#
+#
+# indexFiles({
+#   'id': 297914432,
+#   'account': 'ycxsavvy@gmail.com',
+#   'active': True,
+#   'service': 'gdrive',
+#   'created': '2018-03-19T12:44:35.215342Z',
+#   'modified': '2018-03-19T12:44:36.638379Z',
+#   'service_name': 'Google Drive',
+#   'admin': False,
+#   'apis': [
+#     'storage'
+#   ],
+#   'effective_scope': 'gdrive:normal.storage.default gdrive:normal.storage.default',
+#   'api': 'meta',
+#   'type': 'account',
+#   'organisationID': 'yc',
+#   'addedBy': 'ycxsavvy@gmail.com',
+#   'superService': 'kloudless',
+#   'googleRawCredentials': {
+#     'client_id': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
+#     'client_secret': '7fU16P8yZL-MHzMItnOw-SR0',
+#     'refresh_token': '1/zs_yDlL6E5xvLOrdsMjU9QweY-BO5CHI2MVW6hMfDME',
+#     'scopes': [
+#       'https://www.googleapis.com/auth/drive.metadata.readonly',
+#       'https://www.googleapis.com/auth/spreadsheets'
+#     ],
+#     'access_token': 'ya29.GluDBVfVhHj7y0EWv2q0IFwHfXZ737PddPa1FvamfVsRdNZOn_NeAjC10Wh92SWXbOGdbr54ULsf7mSEoZcUY3H7aesWzpCex5NaklOxr6vYC-nX4DjEvEn3gnrS',
+#     'token_uri': 'https://accounts.google.com/o/oauth2/token',
+#     'user_agent': None,
+#     'token_expiry': False
+#   },
+#   'accountID': '297914432',
+#   'objectID': '297914432'
+# })

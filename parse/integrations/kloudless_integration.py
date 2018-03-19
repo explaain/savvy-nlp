@@ -83,9 +83,9 @@ def getExportedFileData(accountInfo, fileID):
     return None
   driveService = serviceData['module']
   account = getAccount(accountInfo['accountID'])
-  exportParams = driveService.getExportParams(fileData)
-  print('exportParams')
-  print(exportParams)
+  exportParams = driveService.getExportParams(fileData, 'get')
+  # print('exportParams')
+  # print(exportParams)
   if exportParams['type'] == 'retrieve':
     exportedFile = account.files.retrieve(fileID)
   elif exportParams['type'] == 'raw':
@@ -130,8 +130,22 @@ def getServiceByFileType(fileType):
   return driveService
 
 
+def saveCard(source: dict, card: dict):
+  print('saving!')
+  if 'cells' in card:
+    return gsheets.saveCard(source, card)
+  else:
+    return None
+
 
 # getFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
 # }, 'F1UVWb2gWfAQZO4FbkhySjqnnu6W2YVHAh2qAVb-bbleYPrNzGv-Re5xozb8UNKXi')
+#
+# getExportedFileData({
+#   'organisationID': 'explaain',
+#   'accountID': '282782204'
+# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
+
+# pp.pprint(listAccounts())

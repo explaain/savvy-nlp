@@ -60,20 +60,23 @@ def getServices():
       services[i] = Integrations[i]
   return services
 
-def getService(accountInfo=None, serviceName=None, superServiceName=None, specificFile=None):
+def getService(accountInfo=None, serviceName=None, superServiceName=None, specificCard=None):
   services = getServices()
   if accountInfo:
     if 'service' in accountInfo:
       serviceName = accountInfo['service']
     if 'superService' in accountInfo:
       superServiceName = accountInfo['superService']
+  if serviceName and serviceName == 'gdrive':
+    serviceName = None
+    superServiceName = 'kloudless'
   service = services[serviceName] if serviceName in services else Integrations[superServiceName] if superServiceName and superServiceName in Integrations else None
   # Convert mimeType to fileType (for legacy cards)
-  if specificFile and 'mimeType' in specificFile and 'fileType' not in specificFile:
-    specificFile['fileType'] = specificFile['mimeType']
-  if specificFile and 'fileType' in specificFile:
+  if specificCard and 'mimeType' in specificCard and 'fileType' not in specificCard:
+    specificCard['fileType'] = specificCard['mimeType']
+  if specificCard and 'fileType' in specificCard:
     try:
-      tempService = service['module'].getServiceByFileType(specificFile['fileType'])
+      tempService = service['module'].getServiceByFileType(specificCard['fileType'])
     except Exception as e:
       tempService = None
     if tempService and 'service' in tempService:
