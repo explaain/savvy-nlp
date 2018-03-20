@@ -6,4 +6,4 @@ import index
 #     project_root="savvy/savvy-1",
 # )
 
-index.startIndexing()
+# index.startIndexing()
