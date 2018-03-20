@@ -4,7 +4,7 @@ from .formats import xml_doc as xmlDoc
 
 pp = pprint.PrettyPrinter(indent=1, width=160)
 
-def getExportParams(fileData):
+def getExportParams(fileData, type: str = 'getContent'):
   return {
     'type': 'retrieve'
   }

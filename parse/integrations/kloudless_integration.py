@@ -83,7 +83,7 @@ def getExportedFileData(accountInfo, fileID):
     return None
   driveService = serviceData['module']
   account = getAccount(accountInfo['accountID'])
-  exportParams = driveService.getExportParams(fileData, 'get')
+  exportParams = driveService.getExportParams(fileData, type='getContent')
   # print('exportParams')
   # print(exportParams)
   if exportParams['type'] == 'retrieve':

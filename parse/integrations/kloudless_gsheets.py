@@ -23,12 +23,15 @@ pp = pprint.PrettyPrinter(indent=2, width=200)
 def getExportParams(fileData, type: str = 'getContent'):
   print('fileData')
   print(fileData)
+  print('type')
+  print(type)
   if type == 'getContent':
     return {
       'type': 'raw',
       'raw_uri': '/drive/v2/files/' + fileData['rawID'] + '/export?mimeType=' + urllib.parse.quote_plus('text/csv'),
       'raw_method': 'GET'
     }
+  # This is just for testing, currently
   elif type == 'get':
     return {
       'type': 'raw',
