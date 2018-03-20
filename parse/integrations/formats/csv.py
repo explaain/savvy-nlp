@@ -13,7 +13,7 @@ def getContentArray(csvContent):
   # [{'content': 'Table', 'allRankings': {}, 'otherContext': {}, 'ranking': 20, 'chunks':
   contentArray = [{'content': row[0], 'allRankings': {}, 'otherContext': {}, 'ranking': 10,
      'cells': [
-      {'content': labelPlusValue(firstRow[i], cell), 'label': firstRow[i], 'value': cell} for i, cell in enumerate(row) if cell and len(cell)
+      {'content': labelPlusValue(firstRow[i], cell), 'label': firstRow[i], 'value': cell} for i, cell in enumerate(row)
     ]
      # 'chunks': [
       # {'content': addColon(firstRow[i]) + ' ' + cell, 'label': firstRow[i], 'value': cell, 'allRankings': {}, 'otherContext': {}, 'ranking': 0} for i, cell in enumerate(row) if cell and len(cell)
