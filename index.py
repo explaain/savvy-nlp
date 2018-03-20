@@ -353,7 +353,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     algoliaFilesIndex.add_object(f)
   createFileCard(accountInfo, f)
   # Update service data with fileType to get service format
-  serviceData = services.getService(accountInfo=accountInfo, specificFile=f)
+  serviceData = services.getService(accountInfo=accountInfo, specificCard=f)
   if 'format' in serviceData and serviceData['format']:
     print('format!')
     cardsCreated = indexFileContent(accountInfo, f)
@@ -382,7 +382,7 @@ def indexFileContent(accountInfo, f):
   # Create new cards
   print('accountInfo')
   print(accountInfo)
-  serviceData = services.getService(accountInfo=accountInfo, specificFile=f)
+  serviceData = services.getService(accountInfo=accountInfo, specificCard=f)
   service = serviceData['module']
   try:
     contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
