@@ -893,8 +893,8 @@ def startIndexing():
 
 
 
-#
-#
+# #
+# # indexFiles({
 # indexFile({
 #   'id': 297914432,
 #   'account': 'ycxsavvy@gmail.com',
@@ -928,5 +928,8 @@ def startIndexing():
 #   },
 #   'accountID': '297914432',
 #   'objectID': '297914432'
-# # }, allFiles=True)
-# }, 'F34YseTJTav4m3t9qsfM47EHznoozYSjAZtPKjIc_cAsx2QSUD7OD9gHGjX5sUcL_')
+# # })
+# # }, 'F6YPc2AKLZCV5Cw-xkulsn-kiol39N48MdknZXsMZQiu0tDP3EyBkqerkj2raiLNE')
+
+
+# indexAll()
