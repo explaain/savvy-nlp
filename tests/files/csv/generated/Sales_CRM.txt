@@ -1,802 +1,120 @@
 
 Darren Westlake 
-    Name: Darren Westlake 
-    Email: darren@crowdcube.com
-    Company: Crowdcube
-    Role: Co-Founder and CEO
-    Sector: Internet/Finance
-    Website: https://www.crowdcube.com/
 Joe Pearce 
-    Name: Joe Pearce 
-    Email: joe.pearce@spaceforsuccess.co.uk
-    Company: University of Exeter
-    Role: Business Support Manager
-    Sector: Education
 Tom Carrington Smith 
-    Name: Tom Carrington Smith 
-    Email: tom@charliehr.com
-    Company: Charlie HR
-    Role: Director of Product
-    Sector: Internet/HR
-    Website: https://www.charliehr.com/
 Valerio Magliulo
-    Name: Valerio Magliulo
-    Email: valerio.magliulo@gmail.com
-    Company: Monzo
-    Role: Head of Business
-    Sector: Internet/Finance
-    Website: https://www.monzo.com/
 Mevan Babker 
-    Name: Mevan Babker 
-    Email: mevan@fullfact.com
-    Company: FullFact
-    Role: Product Manager
-    Sector: Charity
-    Website: https://www.fullfact.com/
 Alex Wrottesley 
-    Name: Alex Wrottesley 
-    Email: alex@geovation.com
-    Company: Ordnance Survey
-    Role: Head of Innovation
-    Sector: Information services
-    Website: https://www.geovation.com/
 Josh Ash
-    Name: Josh Ash
-    Email: jjrash37@gmail.com
-    Company: Finimize
-    Role: Head of Marketing
-    Sector: Internet/Finance
-    Website: https://www.finimize.com/
 Louis Sutton
-    Name: Louis Sutton
-    Email: louis.sutton@starling.com
-    Company: Starling Bank
-    Role: Marketing Lead
-    Sector: Internet/Finance
-    Website: https://www.starlingbank.com/
 Adam Lusby 
-    Name: Adam Lusby 
-    Email: adam.lusby@exeter.ac.uk
-    Company: University of Exeter
-    Role: Director of Innovation
-    Sector: Education
 Tom Charman
-    Name: Tom Charman
-    Email: tom@kompasapp.com
-    Company: Kompas
-    Role: CEO
-    Sector: Internet/Travel
 Kent McClymont 
-    Name: Kent McClymont 
-    Email: kent@beamery.com
-    Company: Beamery
-    Role: CTO
-    Sector: Internet/HR
-    Website: https://www.beamery.com/
 Jon Gregory 
-    Name: Jon Gregory 
-    Email: jon.gregory@iflix.com
-    Company: iFlix
-    Role: Global Operations Director
-    Sector: Internet/Entertainment
-    Website: https://www.iflix.com/
 Scott Cain 
-    Name: Scott Cain 
-    Email: scain@futurecities.catapult.org.uk
-    Company: Catapult
-    Role: Chief Business Officer
-    Sector: Third Sector
 Matt Rusk 
-    Name: Matt Rusk 
-    Email: matthew@mgrmusic.com
-    Company: Guitar Lessons
-    Role: CEO
-    Sector: Internet
-    Website: https://mgrmusic.com/
 Ed Gould
-    Name: Ed Gould
-    Email: ed@carswellgould.co.uk
-    Company: Carswell Gould
-    Role: Managing Director
-    Sector: Media/PR
-    Website: https://carswellgould.co.uk/
 Chris Corbishly
-    Name: Chris Corbishly
-    Email: chriscorbishley@forwardpartners.com 
-    Company: Forward Partners
-    Role: Partner
-    Sector: VC
-    Website: https://forwardpartners.com/
 David Odier
-    Name: David Odier
-    Email: david@cremedelacreme.io
-    Company: (Creme da le Creme)
-    Role: Head of International Growth
-    Sector: Internet
-    Website: https://cremedelacreme.io/
 Sam Mottram
-    Name: Sam Mottram
-    Email: mottram_samson@cat.com
-    Company: CAT
-    Role: Head of Small Appliances
-    Sector: Corporate
-    Website: https://www.caterpillar.com/
 Tom Shrive
-    Name: Tom Shrive
-    Email: tom@askporter.com
-    Company: Ask Porter
-    Role: CEO
-    Sector: Internet
-    Website: http://askporter.com/
 Matt Morley
-    Name: Matt Morley
-    Email: matt@heysavvy.com
-    Company: Savvy
-    Role: Co-Founder
-    Sector: Internet
-    Website: https://heysavvy.com/
 Mike Hollingsworth
-    Name: Mike Hollingsworth
-    Email: mrhollingsworthm@strichardscc.com 
-    Company: St Richards 
-    Role: Head of IT
-    Sector: Education
 Bill Earner
-    Name: Bill Earner
-    Email: bill@connectventures.co 
-    Company: Connect Ventures
-    Role: Partner
-    Sector: VC
-    Website: http://www.connectventures.co/
 Joe Pearce
-    Name: Joe Pearce
-    Email: joe.pearce@spaceforsuccess.co.uk 
-    Company: Peninsula Innovations 
-    Role: Head of Business Support
-    Sector: Education
-    Website: https://www.exeter.ac.uk/
 Denise 
-    Name: Denise 
-    Company: Guardian
-    Sector: Media/PR
 Antton Pavey
-    Name: Antton Pavey
-    Company: Flock
-    Role: Business Manager
-    Sector: Internet/Insurance
-    Website: https://www.flockcover.com/
 
-    Company: Decoded
-    Sector: Education
 Mevan Babker
-    Name: Mevan Babker
-    Company: FullFact
-    Sector: Media/PR
 Michael Plumber
-    Name: Michael Plumber
-    Email: michael.plumber@gardners.com
-    Company: Gardners Books
-    Role: Head of internal support
-    Sector: Wholesaler
-    Website: https://www.gardners.com/
 Nick Burton
-    Name: Nick Burton
-    Email: nick.burton@belron.com 
-    Company: Belron
-    Role: Head of Innovation
-    Sector: Corporate
-    Website: https://www.belron.com/
 Yui Kamikawa
-    Name: Yui Kamikawa
-    Email: ykamikawa@coca-cola.com 
-    Company: Coca-Cola
-    Role: Head of Sustainability (EMEA)
-    Sector: Corporate
-    Website: http://www.coca-cola.com/global/
 Josh Ash
-    Name: Josh Ash
-    Company: Finimize 
-    Role: Marketing
-    Sector: Internet
-    Website: https://www.finimize.com/
 Jeremy Rawlinson 
-    Name: Jeremy Rawlinson 
-    Email: jeremy.rawlinson@deliveroo.co.uk
-    Company: Deliveroo
-    Role: Head of Market (EMEA)
-    Sector: Internet
-    Website: https://deliveroo.co.uk/
 Andrew Davies
-    Name: Andrew Davies
-    Email: Andrew.davies@idioplatform.com 
-    Company: Idio Platform
-    Role: CEO
-    Sector: Internet
-    Website: https://www.idioplatform.com/
 Andrew Davies
-    Name: Andrew Davies
-    Email: Andrew.davies@idioplatform.com 
-    Company: Ninety CIC
-    Role: Board Member
-    Sector: Internet
-    Website: https://www.idioplatform.com/
 Guy Davenport
-    Name: Guy Davenport
-    Company: LocPin
-    Role: CEO
-    Sector: Internet
-    Website: https://www.locpin.com/
 Rob Kwong 
-    Name: Rob Kwong 
-    Company: Financial Times
-    Role: Head of Digital Transformation
-    Sector: Media/PR
 James Turford
-    Name: James Turford
-    Email: james@nested.com
-    Company: Nested
-    Role: COO
-    Sector: Internet/ Real Estate
-    Website: https://nested.com
 Alex Barton
-    Name: Alex Barton
-    Email: alex@letsmush.com
-    Company: mush
-    Role: COO
-    Sector: Internet/Social Network
-    Website: https://letsmush.com/
 Allan Martinson
-    Name: Allan Martinson
-    Email: allan.martinson@starship.xyz
-    Company: Starship
-    Role: COO
-    Sector: Robotics
-    Website: https://www.starship.xyz/
 Emily Forbes
-    Name: Emily Forbes
-    Email: emily@seenit.io
-    Company: seenit
-    Role: Founder
-    Sector: Internet/Entertainment
-    Website: https://seenit.io/
 Jason Trost
-    Name: Jason Trost
-    Email: jason.trost@smarkets.com
-    Company: smarkets
-    Role: Founder and CEO
-    Sector: Internet/Finance
-    Website: https://smarkets.com/
 Daniel Hegarty
-    Name: Daniel Hegarty
-    Email: daniel@habito.com
-    Company: Habito
-    Role: Founder and CEO
-    Sector: Internet/Finance
-    Website: https://www.habito.com/
 
-    Company: bob
-    Sector: Internet/HR
 Daren Bigmore
-    Name: Daren Bigmore
-    Email: daren.bigmore@starleaf.com
-    Company: Starleaf
-    Role: CFO
-    Sector: Internet/ Communications
-    Website: https://www.starleaf.com/
 Nigel Whiteoak
-    Name: Nigel Whiteoak
-    Email: nigel@lovecrafts.com
-    Company: love crafts
-    Role: Founder
-    Sector: Internet/ E-Commerce
-    Website: https://www.lovecrafts.com/
 Cecilia Herbert
-    Name: Cecilia Herbert
-    Email: cecilia@receipt-bank.com
-    Company: receipt bank
-    Role: Product Owner
-    Sector: Internet/ Finance
-    Website: https://www.receipt-bank.com/
 Christopher Lewis
-    Name: Christopher Lewis
-    Email: christopher@simbasleep.com
-    Company: simba
-    Role: CPO
-    Sector: Internet/ Mattress
-    Website: https://simbasleep.com/
 Edward Twiddy
-    Name: Edward Twiddy
-    Email: edward.twiddy@atombank.co.uk
-    Company: Atom
-    Role: COO + Innovation Officer
-    Sector: Internet/ Finance
-    Website: https://www.atombank.co.uk/
 Graham Heydon
-    Name: Graham Heydon
-    Email: graham.heydon@forrestbrown.co.uk
-    Company: Forrest Brown
-    Role: Partner
-    Sector: Legal
-    Website: https://forrestbrown.co.uk/
 Andrew Shrimpton 
-    Name: Andrew Shrimpton 
-    Email: Andrew.j.shrimpton@uk.gt.com
-    Company: Grant Thorton 
-    Role: Partner
-    Sector: Legal
 Max Brosius
-    Name: Max Brosius
-    Email: max@blackboat.com 
-    Company: Blackboat
-    Role: Head of Marketing
-    Sector: Media/PR
-    Website: https://www.blackboat.com/
 Tom White
-    Name: Tom White
-    Email: tom.white@barclays.co.uk
-    Company: Barclays
-    Sector: Finance
-    Website: https://www.barclays.co.uk/
 Dan Wiseman
-    Name: Dan Wiseman
-    Email: contact@webwise.media 
-    Company: Webwise Media
-    Role: CEO
-    Sector: Internet 
-    Website: https://webwisemedia.co.uk/
 Ben Tyson
-    Name: Ben Tyson
-    Email: ben.tyson@bornsocial.co.uk
-    Company: Born Social
-    Role: CEO
-    Sector: Internet / Media/PR
-    Website: https://www.bornsocial.co.uk/
 Harinder Sandhu
-    Name: Harinder Sandhu
-    Email: harri@empowerrd.com
-    Company: Empowerred
-    Role: CFO
-    Sector: Legal / Internet 
-    Website: https://www.empowerrd.com/
 James Pidgeon
-    Name: James Pidgeon
-    Email: james.pidgeon@drift.com
-    Company: Drift
-    Role: Head of Sales EMEA
-    Sector: Internet 
-    Website: https://www.drift.com
 Asi Sharabi
-    Name: Asi Sharabi
-    Email: asi@wonderbly.com
-    Company: Wonderbly
-    Role: co-Founder
-    Sector: Internet 
-    Website: https://www.wonderbly.com/
 Eddy Swindell
-    Name: Eddy Swindell
-    Email: eddy.swindell@freshrelevance.com
-    Company: Fresh Relevance 
-    Role: Sales and Marketing Director
-    Sector: Internet 
-    Website: https://www.freshrelevance.com/
 Justine Goldstraw
-    Name: Justine Goldstraw
-    Email: justine@snaptech.co.uk
-    Company: Snap Tech
-    Role: Marketing Manager
-    Sector: Internet
-    Website: https://www.snaptechnology.co.uk/
 Adam Hyslop
-    Name: Adam Hyslop
-    Email: adam@openrent.co.uk
-    Company: Open Rent
-    Role: Sales Manager 
-    Sector: Internet
-    Website: https://www.openrent.co.uk/
 David Gildeh
-    Name: David Gildeh
-    Email: david.gildeh@outlyer.com
-    Company: Outlyer
-    Role: CEO
-    Sector: Internet
-    Website: https://www.outlyer.com/
 Lucy Stonehill
-    Name: Lucy Stonehill
-    Email: lucy@bridge-u.com
-    Company: BridgeU
-    Role: COO
-    Sector: Internet
-    Website: https://bridge-u.com/
 Courtney SSJ Grant
-    Name: Courtney SSJ Grant
-    Email: courtney@kalohq.com
-    Company: Kalo
-    Role: COO
-    Sector: Internet
-    Website: https://kalohq.com/
 Ian Spencer
-    Name: Ian Spencer
-    Email: ian@audiense.com
-    Company: Audiense
-    Role: co-Founder
-    Sector: Internet
-    Website: https://audiense.com/
 Richard Mabey
-    Name: Richard Mabey
-    Email: richard@juro.com
-    Company: Juro
-    Role: CEO
-    Sector: Internet
-    Website: https://juro.com/
 Jedidiah Silud
-    Name: Jedidiah Silud
-    Email: jedidiah@enki.com
-    Company: enki
-    Role: Marketing Director
-    Sector: Internet
-    Website: https://enki.com/
 Austin Craig
-    Name: Austin Craig
-    Email: austin@mainframe.com
-    Company: mainframe
-    Role: Sales Manager 
-    Sector: Internet
-    Website: https://mainframe.com/
 Justin Smith
-    Name: Justin Smith
-    Email: justin@getsidecar.com
-    Company: Sidecar
-    Role: CTO
-    Sector: Internet
-    Website: https://hello.getsidecar.com/
 Jennifer Orser
-    Name: Jennifer Orser
-    Company: Flux
-    Sector: Internet
-    Website: https://flux.io/
 James?
-    Name: James?
-    Company: GoSquared
-    Role: CEO?
-    Sector: Internet
 James Smith
-    Name: James Smith
-    Email: james.smith@theticketfairy.com
-    Company: The Ticket Fairy
-    Sector: Internet
-    Website: https://www.theticketfairy.com/
 Glen Shoosmith
-    Name: Glen Shoosmith
-    Email: glen@bookingbug.com
-    Company: Booking Bug
-    Sector: Internet
-    Website: https://www.bookingbug.co.uk/
 David Levesley
-    Name: David Levesley
-    Email: david.levesley@jpress.co.uk 
-    Company: i Paper
-    Role: Social Media Editor 
-    Sector: Media/PR
-    Website: https://inews.co.uk/
 Nick Jackson
-    Name: Nick Jackson
-    Email: nick.jackson@orpiva.com
-    Company: Orpiva
-    Role: Head of Marketing
-    Sector: Internet/Retail
-    Website: https://www.orpiva.com/
 Jonathan Krebs 
-    Name: Jonathan Krebs 
-    Email: jonathan@trailapp.com
-    Company: Trail
-    Role: Head of Product
-    Sector: Internet
-    Website: https://www.trailapp.com/
 Sofia Quintero
-    Name: Sofia Quintero
-    Email: sofia@nomnom.it
-    Company: Nom Nom
-    Role: Founder
-    Sector: Internet
-    Website: https://nomnom.it/
 Marwan Chanawani
-    Name: Marwan Chanawani
-    Email: marwan.chanawani@exponea.com
-    Company: Exponea
-    Role: Chief Sales Officer
-    Sector: Internet
-    Website: https://exponea.com/
 Henry Gimelfarb
-    Name: Henry Gimelfarb
-    Email: henry@plateiq.com
-    Company: Plate IQ
-    Role: Vice President of Sales
-    Sector: Internet
-    Website: https://www.plateiq.com/
 Brian Norton
-    Name: Brian Norton
-    Email: brian@trychameleon.com
-    Company: Chameleon
-    Role: co-Founder
-    Sector: Internet
-    Website: https://www.trychameleon.com/
 Adam Sturrock
-    Name: Adam Sturrock
-    Email: adam@moltin.com
-    Company: Moltin
-    Role: VP Customer Success & co-founder
-    Sector: Internet
-    Website: https://moltin.com/
 Matt Wheeler
-    Name: Matt Wheeler
-    Email: matt@driftrock.com
-    Company: Driftrock
-    Role: CEO
-    Sector: Internet
-    Website: https://www.driftrock.com/
 Ralf Hirt
-    Name: Ralf Hirt
-    Email: ralf@harri.com
-    Company: Harri
-    Role: COO
-    Sector: Internet
-    Website: https://www.harri.com/tts-uk
 Simon Morley
-    Name: Simon Morley
-    Email: simon.morley@ct-networks.io
-    Company: Cucumber Tony
-    Role: CEO
-    Sector: Internet
-    Website: https://www.ct-networks.io/
 Stephen Mackintosh
-    Name: Stephen Mackintosh
-    Email: stephen@reinfer.io
-    Company: Reinfer
-    Role: CRO
-    Sector: Internet
-    Website: https://reinfer.io/
 Tzachi 
-    Name: Tzachi 
-    Email: tzachi@cardlifeapp.com
-    Company: Cardlife
-    Role: co-Founder
-    Sector: Internet
-    Website: https://cardlifeapp.com/
 Nick Katz
-    Name: Nick Katz
-    Email: nick@helloacasa.com
-    Company: acasa
-    Role: co-Founder
-    Sector: Internet
-    Website: https://www.helloacasa.com/
 Colin Hewitt
-    Name: Colin Hewitt
-    Email: colin@floatapp.com
-    Company: Float
-    Role: co-Founder
-    Sector: Internet
-    Website: https://floatapp.com/
 Darren Lester
-    Name: Darren Lester
-    Email: darren@specifiedby.com
-    Company: Specified By
-    Role: CEO
-    Sector: Internet
-    Website: https://www.specifiedby.com/
 Saul Gowens
-    Name: Saul Gowens
-    Email: saul@websand.co.uk
-    Company: websand
-    Role: Founder
-    Sector: Internet
-    Website: http://www.websand.co.uk/
 Fraser Hardy
-    Name: Fraser Hardy
-    Email: fraser@qudini.com
-    Company: qudini
-    Role: co-Founder / CTO
-    Sector: Internet
-    Website: https://www.qudini.com/
 Tom Williams
-    Name: Tom Williams
-    Email: tom.williams@voxpopme.com
-    Company: voxpopme
-    Role: Regional Director EMEA
-    Sector: Internet
-    Website: https://site.voxpopme.com/
 Andy Brabender
-    Name: Andy Brabender
-    Email: abrabender@servicechannel.info
-    Company: Service Channel
-    Role: Executive Vice President of Global Sales
-    Sector: Internet
-    Website: https://servicechannel.info/uk-cafm-software/
 Somesh Selvachandran
-    Name: Somesh Selvachandran
-    Email: somesh@talkingcircles.co
-    Company: Talking Circles
-    Role: co-Founder/ CTO
-    Sector: Internet
-    Website: https://talkingcircles.co/
 Henry Irish
-    Name: Henry Irish
-    Email: henry@passfort.com
-    Company: PassFort
-    Role: co-Founder
-    Sector: Internet
-    Website: https://passfort.com/
 Andre Rego
-    Name: Andre Rego
-    Email: andre@swogo.com
-    Company: swogo
-    Role: Founder
-    Sector: Internet
-    Website: http://swogo.com/
 Steve Anderson
-    Name: Steve Anderson
-    Email: steve@vettd.com
-    Company: vettd
-    Role: CRO
-    Sector: Internet
-    Website: https://vettd.com/
 Jerome de Lafargue
-    Name: Jerome de Lafargue
-    Email: jerome@zeroheight.com
-    Company: zeroheight
-    Role: co-founder & CEO
-    Sector: Internet
-    Website: https://www.zeroheight.com/
 Sanjaya Palinda
-    Name: Sanjaya Palinda
-    Email: sanjaya.palinda@rewardgateway.com
-    Company: Reward Gateway
-    Role: Head of IT
-    Sector: Internet
-    Website: https://www.rewardgateway.com/
 Paul Balogh
-    Name: Paul Balogh
-    Email: paul@learnfwd.com
-    Company: Learn Forward
-    Role: co-Founder / CEO
-    Sector: Internet
-    Website: https://learnfwd.com/
 Avida Hancock
-    Name: Avida Hancock
-    Email: avida@satalia.com
-    Company: Satalia
-    Role: COO
-    Sector: Internet
-    Website: https://www.satalia.com/
 Colin Crerar
-    Name: Colin Crerar
-    Email: colin@expend.io
-    Company: expend
-    Role: Sales and Product Manager
-    Sector: Internet
-    Website: https://expend.io/
 Lana Gemmell
-    Name: Lana Gemmell
-    Email: lana.gemmell@visiblealpha.com
-    Company: Visible Alpha
-    Role: Senior Product Manager
-    Sector: Internet
-    Website: https://visiblealpha.com/
 George Dunning
-    Name: George Dunning
-    Email: george@thisisbud.com
-    Company: bud
-    Role: co Founder
-    Sector: Internet
-    Website: https://www.thisisbud.com/
 Hannah Chaplin
-    Name: Hannah Chaplin
-    Email: hannah@receptive.io
-    Company: Receptive
-    Role: CEO & Co-Founder
-    Sector: Internet
-    Website: https://www.receptive.io/
 Maxence Dussart
-    Name: Maxence Dussart
-    Email: maxence@unibuddy.co
-    Company: unibuddy
-    Role: co-founder
-    Sector: Internet
-    Website: https://www.unibuddy.co/
 Jens Munch
-    Name: Jens Munch
-    Email: jens@paceup.com
-    Company: pace
-    Role: CEO
-    Sector: Internet
-    Website: https://www.paceup.com/en/
 Paul Organ
-    Name: Paul Organ
-    Email: paul@boardingware.com
-    Company: Boardingware
-    Role: Co-Founder & Co-CEO
-    Sector: Internet
-    Website: https://www.boardingware.com/
 Filip Duszczak
-    Name: Filip Duszczak
-    Email: filip.duszczak@instream.io
-    Company: InStream
-    Role: CEO
-    Sector: Internet
-    Website: http://instream.io/en/
 Andy Coles
-    Name: Andy Coles
-    Email: andy@reincubate.com
-    Company: reincubate
-    Role: COO
-    Sector: Internet
-    Website: https://www.reincubate.com/
 Clement Kuhn
-    Name: Clement Kuhn
-    Email: clement.kuhn@wing.eu
-    Company: Wing
-    Role: COO
-    Sector: Internet
-    Website: https://www.wing.eu/en
 Cleide Vieira
-    Name: Cleide Vieira
-    Email: cleide.vieira@purple.ai
-    Company: Purple
-    Role: Customer Success Manager 
-    Sector: Internet
-    Website: https://www.purple.ai/
 Armando Osuna
-    Name: Armando Osuna
-    Email: armando@good.co
-    Company: Good & Co
-    Role: VP Global Sales
-    Sector: Mobile
-    Website: https://good.co/
 Daniel Murray
-    Name: Daniel Murray
-    Email: daniel@grabble.com
-    Company: Grabble
-    Role: Co Founder
-    Sector: Mobile / Fashion
-    Website: https://www.grabble.com/
 Marie Barbe
-    Name: Marie Barbe
-    Email: marie-barbe@shopcade.com
-    Company: Shopcade
-    Role: Co-Founder, COO
-    Sector: Internet
-    Website: https://www.shopcade.com/
 Sanchita Saha
-    Name: Sanchita Saha
-    Email: sanchita@citysocializer.com
-    Company: citysocializer
-    Role: CEO & Founder
-    Sector: Internet
-    Website: https://www.citysocializer.com
 Alistair Redfurn
-    Name: Alistair Redfurn
-    Email: ali@peakon.com
-    Company: Peakon 
-    Role: Sales Manager
-    Sector: Internet/HR
-    Website: https://peakon.com/
 Ben Medlock
-    Name: Ben Medlock
-    Email: ben@swiftkey.com
-    Company: Swiftkey
-    Role: co-Founder
-    Sector: Internet
-    Website: https://swiftkey.com/en
 Andrew Wray
-    Name: Andrew Wray
-    Email: andrew@yoyowallet.com
-    Company: YoYo Wallet
-    Role: Vice President - Marketing and Growth
-    Sector: Internet
-    Website: https://www.yoyowallet.com/
 Simon Beckerman
-    Name: Simon Beckerman
-    Email: simon@depop.com
-    Company: depop
-    Role: Founder
-    Sector: Internet / Retail
-    Website: https://www.depop.com/
