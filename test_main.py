@@ -8,8 +8,8 @@ pp = pprint.PrettyPrinter(indent=4)
 
 TestAccountInfo = {
   'kloudless': {
-    'organisationID': 'explaain',
-    'accountID': '282782204',
+    'organisationID': 'yc',
+    'accountID': '297914432',
     'superService': 'kloudless',
   },
   'gsheets': {
@@ -18,31 +18,32 @@ TestAccountInfo = {
     'superService': 'kloudless',
     'service': 'gdocs',
   },
-  'confluence': {
-    'organisationID': 'explaain',
-    'accountID': 'https://explaain.atlassian.net/wiki/',
-    'username': 'admin',
-    'password': 'h3110w0r1d',
-    'siteDomain': 'explaain',
-    'service': 'confluence',
-  }
+  # 'confluence': {
+  #   'organisationID': 'explaain',
+  #   'accountID': 'https://explaain.atlassian.net/wiki/',
+  #   'username': 'admin',
+  #   'password': 'h3110w0r1d',
+  #   'siteDomain': 'explaain',
+  #   'service': 'confluence',
+  # }
 }
 
 TestFilesToFetch = {
   'gdocs': [
     # 'FS1864iLNT6VttUFpOrGziWMoAqIyx3CZM6wV5jfUKPoE3qCHI0_eh3RELL7I5HIU',
     # 'F1UVWb2gWfAQZO4FbkhySjqnnu6W2YVHAh2qAVb-bbleYPrNzGv-Re5xozb8UNKXi',
-    # 'FyjC21jL7Hy3j55_Ek-d5U_oSk3pt4e7zjAq30HGyD7MoWBYhUjgktG9t6aCzfkce'
+    # 'FyjC21jL7Hy3j55_Ek-d5U_oSk3pt4e7zjAq30HGyD7MoWBYhUjgktG9t6aCzfkce',
+    'FJamVu29CVRXjYCDJXx2I8Ge-ipSQ2irry0emEK-jrZZcQWZEqxhnjoGfpTjL3QMA',
   ],
   'gsheets': [
-    'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce',
+    # 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce',
   ],
-  'confluence': [],
+  # 'confluence': [],
 }
 
 Formats = {
   # 'html': html,
-  # 'xml_doc': xml,
+  'xml_doc': xml,
   'csv': csv,
 }
 FormatFileEndings = {
