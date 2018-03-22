@@ -67,6 +67,10 @@ def getEntityTypes(text: str):
   return entityTypes
 
 def serveUserData(idToken: str):
+  """ Returns user data from our Database (Algolia),
+  once the user has logged in through Firebase (if it can't verify user token it gives up immediately).
+  Currently only called from frontend in (auth.js)
+  """
   try:
     decoded_user = firebaseAuth.verify_id_token(idToken)
     print(decoded_user)
@@ -91,20 +95,41 @@ def serveUserData(idToken: str):
         'filters': 'emails: "' + decoded_user['email'] + '"'
       }
       res = algoliaUsersIndex.search('', params)
-      user = res['hits'][0]
-      if '_highlightResult' in user:
-        del user['_highlightResult']
-      print('Found this match by email:', user)
-      # Add firebase details and save in db
-      user['firebase'] = firebaseUid
-      algoliaUsersIndex.save_object(user)
-      mp.track('admin', 'Added Firebase Details to User', user)
-      return user
+      if 'hits' in res and len(res['hits']):
+        user = res['hits'][0]
+        if '_highlightResult' in user:
+          del user['_highlightResult']
+        print('Found this match by email:', user)
+        # Add firebase details and save in db
+        user['firebase'] = firebaseUid
+        algoliaUsersIndex.save_object(user)
+        mp.track('admin', 'Added Firebase Details to User', user)
+        return user
+      else:
+        organisationID = decoded_user['name'].replace(' ', '_') + '_' + str(random.randint(10000000, 99999999))
+        # Create new organisation!
+        organisation = setUpOrg(organisationID)
+        print('organisation')
+        pp.pprint(organisation)
+        if not organisation or 'algolia' not in organisation or 'apiKey' not in organisation['algolia']:
+          return None
+        # Create new user!
+        user = {
+          'firebase': firebaseUid,
+          'organisationID': organisationID,
+          'emails': [decoded_user['email']],
+          'algoliaApiKey': organisation['algolia']['apiKey'],
+          'role': 'admin'
+        }
+        algoliaUsersIndex.add_object(user)
+        print('Created new user:', user)
+        mp.track('admin', 'Created User in Database after very first Google login', user)
+        return user
     else:
       return False
 
 def setUpOrg(organisationID: str):
-  """For now this just sets up Cards and Files Algolia Indices,
+  """ For now this just sets up Cards and Files Algolia Indices,
   Creates algoliaApiKey and saves this to organisations index.
   Currently only called from Slack (savvy-api, slack-interface.js).
   """
@@ -133,39 +158,43 @@ def setUpOrg(organisationID: str):
     'hits': []
   }
   numAttempts = 0
-  while len(results['hits']) == 0 and numAttempts < 3:
-    time.sleep(5)
-    numAttempts += 1
-    results = algoliaOrgsIndex.search('', searchParams)
+  results = algoliaOrgsIndex.search('', searchParams)
+  # while len(results['hits']) == 0 and numAttempts < 3:
+  #   time.sleep(5)
+  #   numAttempts += 1
+  #   results = algoliaOrgsIndex.search('', searchParams)
   if len(results['hits']) and 'objectID' in results['hits'][0]:
-    orgObjectID = results['hits'][0]['objectID']
-    objectID = orgObjectID
-    print('orgObjectID', orgObjectID)
+    objectID = results['hits'][0]['objectID']
+    print('objectID', objectID)
+    organisation = {
+      'objectID': objectID,
+      'name': organisationID, # Still saving this for now in case of legacy issues
+      'algolia': {
+        'apiKey': algoliaApiKey['key']
+      }
+    }
     try:
-      algoliaOrgsIndex.partial_update_object({
-        'objectID': orgObjectID,
-        'name': organisationID, # Still saving this for now in case of legacy issues
-        'algolia': {
-          'apiKey': algoliaApiKey['key']
-        }
-      })
-      mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': orgObjectID, 'organisationID': organisationID })
+      res = algoliaOrgsIndex.partial_update_object(organisation)
+      mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': objectID, 'organisationID': organisationID })
+      return organisation
     except Exception as e:
       print(e)
       mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
       print('Organisation Setup Failed')
       return None
   else:
+    # Assume organisation needs creating, and create one!
     try:
       objectID = organisationID
-      algoliaOrgsIndex.save_object({
+      organisation = {
         'objectID': objectID,
         'organisationID': organisationID,
         'name': organisationID, # Still saving this for now in case of legacy issues
         'algolia': {
           'apiKey': algoliaApiKey['key']
         }
-      })
+      }
+      algoliaOrgsIndex.save_object(organisation)
       mp.track('admin', 'Org Setup: New Org Object Created', { 'objectID': organisationID, 'organisationID': organisationID })
       mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': organisationID, 'organisationID': organisationID })
     except Exception as e:
@@ -176,6 +205,7 @@ def setUpOrg(organisationID: str):
   allOrgs = browseAlgolia(algoliaOrgsIndex)
   mp.track('admin', 'Organisation Setup Complete', { 'objectID': objectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
   print('Organisation Setup Complete', organisationID)
+  return organisation
 
 def setUpDomain(organisationID: str):
   dnsRecords = [
@@ -218,6 +248,7 @@ def addSource(data: dict):
   print('data:', data)
   source = data['source']['account']
   source['objectID'] = data['source']['account']['id']
+  source['accountID'] = source['objectID']
   source['organisationID'] = organisationID
   source['addedBy'] = data['source']['account']['account']
   source['superService'] = 'kloudless' # For now assumes it's kloudless
@@ -227,23 +258,19 @@ def addSource(data: dict):
   source['totalSources'] = len(allSources)
   mp.track('admin', 'Source Added', source)
 
-  # Index all files from source
-  accountInfo = {
-    'organisationID': organisationID,
-    'accountID': source['objectID']
-  }
 
   # If either Algolia Index doesn't exist then create them, create algoliaApiKey and add this to organisations index
   indices = client.list_indexes()
   if not any(i['name'] == algoliaGetFilesIndexName(organisationID) for i in indices['items']) or not any(i['name'] == algoliaGetCardsIndexName(organisationID) for i in indices['items']):
     setUpOrg(organisationID)
 
+  # Index all files from source
   numIndexed = 0
   numAttempts = 0
   while numIndexed == 0 and numAttempts < 20:
-    time.sleep(10)
+    time.sleep(5)
     numAttempts += 1
-    numIndexed = indexFiles(accountInfo, True)
+    numIndexed = indexFiles(source)
   return source
 
 def listSources():
