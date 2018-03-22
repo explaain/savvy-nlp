@@ -48,7 +48,7 @@ def getFile(accountInfo, fileID):
 
 
 def getFileUrl(id, fileType):
-  print('getFileUrl', id, fileType)
+  # print('getFileUrl', id, fileType)
   roots = {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'https://docs.google.com/document/d/',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'https://docs.google.com/spreadsheets/d/',
