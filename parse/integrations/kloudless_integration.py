@@ -48,10 +48,14 @@ def getFile(accountInfo, fileID):
 
 
 def getFileUrl(id, fileType):
+  print('getFileUrl', id, fileType)
   roots = {
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'https://docs.google.com/document/d/',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'https://docs.google.com/spreadsheets/d/',
     'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'https://docs.google.com/presentation/d/',
+    'application/vnd.google-apps.document': 'https://docs.google.com/document/d/',
+    'application/vnd.google-apps.spreadsheet': 'https://docs.google.com/spreadsheets/d/',
+    'application/vnd.google-apps.presentation': 'https://docs.google.com/presentation/d/',
     # 'application/pdf': 'https://drive.google.com/file/d/'
   }
   return (roots[fileType] if fileType and fileType in roots else 'https://drive.google.com/file/d/') + id
