@@ -895,7 +895,7 @@ def startIndexing():
 
 #
 #
-# indexFiles({
+# indexFile({
 #   'id': 297914432,
 #   'account': 'ycxsavvy@gmail.com',
 #   'active': True,
