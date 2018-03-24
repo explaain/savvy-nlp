@@ -502,15 +502,7 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
     cards.append(card)
     allCards.append(card)
   cardIDs = []
-  # try:
-    # if Testing:
-  cardIDs = { 'objectIDs': [random.randint(1, 1000000000000) for c in cards] } # Use this when testing to avoid using up Algolia operations!!
-    # else:
-    #   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
-    #   cardIDs = algoliaCardsIndex.add_objects(cards)
-  # except Exception as e:
-  #   print('Something went wrong saving this card to Algolia:' + f['title'])
-  #   print(e)
+  cardIDs = { 'objectIDs': [random.randint(1, 1000000000000) for c in cards] }
   for i, objectID in enumerate(cardIDs['objectIDs']):
     cards[i]['objectID'] = objectID
   return {
