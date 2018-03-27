@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-import pprint, datetime, sched, time, calendar, json, requests, random
+import pprint, datetime, sched, time, calendar, json, requests, random, difflib
 from algoliasearch import algoliasearch
 from parse import services, entityNlp
 import xmljson
 import firebase_admin
 from firebase_admin import credentials as firebaseCredentials
 from firebase_admin import auth as firebaseAuth
+from google.cloud import storage as google_storage
 
 
 from google.cloud import language
@@ -18,8 +19,12 @@ pp = pprint.PrettyPrinter(indent=4)
 mp = Mixpanel('e3b4939c1ae819d65712679199dfce7e')
 cf = CloudFlare.CloudFlare(email='jeremy@explaain.com', token='ada07cb1af04e826fa34ffecd06f954ee5e93')
 
+google_storage_client = google_storage.Client.from_service_account_json(
+        'google-cloud-platform-Savvy-credentials.json')
+google_bucket = google_storage_client.get_bucket('savvy')
+
 # Decides whether we're in testing mode or not
-Testing = False
+Testing = True
 
 # Decide what to print out:
 toPrint = {
@@ -419,6 +424,44 @@ def indexFileContent(accountInfo, f):
   if not contentArray:
     return False
   cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
+  # Freeze this one
+  newFreeze = fileCardsToFreeze(cards)
+  # Retrive last freeze (if available)
+  blob = google_bucket.blob('diff/' + accountInfo['organisationID'] + '/' + f['objectID'])
+  try:
+    oldFreeze = blob.download_as_string()
+    oldFreeze = oldFreeze.decode("utf-8").split('\n')
+    oldFreeze.pop(3)
+    pp.pprint(oldFreeze)
+    print(type(oldFreeze))
+    print(type(newFreeze))
+  except Exception as e:
+    oldFreeze = None
+
+  if oldFreeze:
+    # Compare freezes
+    fullDiff = difflib.context_diff(oldFreeze, newFreeze)
+    # Filter 'cards' to just new cards
+
+    # If diff contains additions/subtractions:
+    diffTypes = [diff[:2] for diff in fullDiff]
+    print(diffTypes)
+    if '+ ' in diffTypes or '- ' in diffTypes:
+      print(1111)
+      # For now, just replace all cards like we used to
+
+      # @TODO: Delete all existing cards from that point onwards (@TODO: remove initial delete from above ^)
+
+    else:
+      print(2222)
+      cards
+      # ???
+
+    # Replace new objectIDs with existing ones - INCLUDING references to other cards
+
+  # Replace freeze
+  blob.upload_from_string('\n'.join(newFreeze))
+
   if not Testing:
     try:
       algoliaCardsIndex.add_objects(cards)
@@ -433,6 +476,7 @@ def indexFileContent(accountInfo, f):
 def createFileCard(accountInfo, f):
   card = {
     'type': 'file',
+    'isFile': True,
     'objectID': f['objectID'],
     'title': f['title'],
     'fileID': f['objectID'],
@@ -509,6 +553,18 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
     'cards': cards, # Cards on this level
     'allCards': allCards # Cards passed up that should continue being passed
   }
+
+def fileCardsToFreeze(cards):
+  newCards = []
+  for card in cards:
+    newCard = dict(card)
+    keysToRemove = ['objectID', 'listItems', 'modified', 'created', 'fileID', 'fileType', 'fileUrl']
+    for key in keysToRemove:
+      if key in newCard:
+        del(newCard[key])
+    newCards.append(newCard)
+  freeze = [str(card) for card in newCards]
+  return freeze
 
 def saveCard(card: dict, author:dict):
   # @TODO: Figure out whether sometimes an update will delete a field but it'll be automatically put back in
@@ -872,11 +928,11 @@ def startIndexing():
 #   'accountID': '282782204',
 #   'superService': 'kloudless',
 # }, 'FIpeUA6-qJgZTLvISKr3n2v0BMmTqXsQN5-GkQ_yR8yOycticQbP2Trz4qdW08xsl')
-# indexFile({
-#   'organisationID': 'explaain',
-#   'accountID': '282782204',
-#   'superService': 'kloudless',
-# }, 'Ffz0GtHAtp2qbiNN-mGtZmI1dsC6Uh60QN3jJ-sOvN8dIP39UXcRkKu42D1e7Jti_')
+indexFile({
+  'organisationID': 'explaain',
+  'accountID': '282782204',
+  'superService': 'kloudless',
+}, 'Ffz0GtHAtp2qbiNN-mGtZmI1dsC6Uh60QN3jJ-sOvN8dIP39UXcRkKu42D1e7Jti_')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
