@@ -7,7 +7,6 @@ import firebase_admin
 from firebase_admin import credentials as firebaseCredentials
 from firebase_admin import auth as firebaseAuth
 
-
 from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
@@ -868,10 +867,6 @@ def startIndexing():
 # indexFiles(accountInfo)
 
 # indexAll()
-# indexFiles({
-#   'organisationID': 'explaain',
-#   'accountID': '282782204'
-# }, allFiles=True)
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204',
@@ -881,7 +876,7 @@ def startIndexing():
 #   'organisationID': 'explaain',
 #   'accountID': '282782204',
 #   'superService': 'kloudless',
-# }, 'Ffz0GtHAtp2qbiNN-mGtZmI1dsC6Uh60QN3jJ-sOvN8dIP39UXcRkKu42D1e7Jti_')
+# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
