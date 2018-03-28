@@ -15,7 +15,7 @@ from google.cloud.language import types
 from mixpanel import Mixpanel
 import CloudFlare
 
-pp = pprint.PrettyPrinter(indent=4)
+pp = pprint.PrettyPrinter(indent=4, width=160)
 mp = Mixpanel('e3b4939c1ae819d65712679199dfce7e')
 cf = CloudFlare.CloudFlare(email='jeremy@explaain.com', token='ada07cb1af04e826fa34ffecd06f954ee5e93')
 
@@ -24,7 +24,7 @@ google_storage_client = google_storage.Client.from_service_account_json(
 google_bucket = google_storage_client.get_bucket('savvy')
 
 # Decides whether we're in testing mode or not
-Testing = True
+Testing = False
 
 # Decide what to print out:
 toPrint = {
@@ -396,20 +396,11 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   notifyChanges(oldFile, f)
   if not Testing:
     mp.track('admin', 'File Indexed', f)
-  print('File Indexed with ' + str(cardsCreated) + ' cards: ' + (f['title'] if 'title' in f else ''))
+  print('File Indexed with ' + str(cardsCreated) + ' updated cards: ' + (f['title'] if 'title' in f else ''))
 
 def indexFileContent(accountInfo, f):
   print('indexFileContent')
   algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
-  if not Testing and 'objectID' in f and len(f['objectID']): # Avoids a blank objectID deleting all cards in index
-    # print(f)
-    # Delete all chunks from file
-    params = {
-      'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
-    }
-    algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
-
-    print('Deleted')
 
   # Create new cards
   print('accountInfo')
@@ -424,6 +415,8 @@ def indexFileContent(accountInfo, f):
   if not contentArray:
     return False
   cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
+  for i, card in enumerate(cards):
+    card['index'] = i
   # Freeze this one
   newFreeze = fileCardsToFreeze(cards)
   # Retrive last freeze (if available)
@@ -431,44 +424,79 @@ def indexFileContent(accountInfo, f):
   try:
     oldFreeze = blob.download_as_string()
     oldFreeze = oldFreeze.decode("utf-8").split('\n')
-    oldFreeze.pop(3)
-    pp.pprint(oldFreeze)
+    print('oldFreeze')
+    pp.pprint([line[:100] for line in oldFreeze])
+    print('newFreeze')
+    pp.pprint([line[:100] for line in newFreeze])
     print(type(oldFreeze))
     print(type(newFreeze))
   except Exception as e:
     oldFreeze = None
 
+
+
   if oldFreeze:
-    # Compare freezes
-    fullDiff = difflib.context_diff(oldFreeze, newFreeze)
-    # Filter 'cards' to just new cards
+    print(len(oldFreeze))
+    print(len(newFreeze))
+    # If lengths are the same then use new method
+    if len(oldFreeze) == len(newFreeze):
+      # Retrieve all existing cards
+      params = {
+        'query': '',
+        'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
+      }
+      oldCards = algoliaCardsIndex.browse_all(params)
+      oldCards = [hit for hit in oldCards]
 
-    # If diff contains additions/subtractions:
-    diffTypes = [diff[:2] for diff in fullDiff]
-    print(diffTypes)
-    if '+ ' in diffTypes or '- ' in diffTypes:
-      print(1111)
-      # For now, just replace all cards like we used to
+      # Store objectIDs to replace
+      objectIDsToReplace = {}
+      for i, line in enumerate(newFreeze):
+        oldCard = [card for card in oldCards if 'index' in card and card['index'] == i]
+        realObjectID = str(oldCard[0]['objectID']) if len(oldCard) else None
+        newCard = [card for card in cards if 'index' in card and card['index'] == i]
+        tempObjectID = str(newCard[0]['objectID']) if len(newCard) else None
+        if tempObjectID and realObjectID:
+          objectIDsToReplace[tempObjectID] = realObjectID
+          print(i, tempObjectID, realObjectID)
+      pp.pprint(objectIDsToReplace)
+      # objectIDsToReplace = [[cards[i]['objectID'], oldCards[i]['objectID']] for line, i in enumerate(newFreeze)]
+      # Filter to only new cards
+      cards = [card for i, card in enumerate(cards) if oldFreeze[i] != newFreeze[i]]
+      # Replace new objectIDs with existing ones - INCLUDING references to other cards
+      for card in cards:
+        card['objectID'] = objectIDsToReplace[card['objectID']]
+        if 'listItems' in card:
+          for i, item in enumerate(card['listItems']):
+            card['listItems'][i] = objectIDsToReplace[item]
+      print('Now replaced objectIDs:')
+      pp.pprint(cards)
 
-      # @TODO: Delete all existing cards from that point onwards (@TODO: remove initial delete from above ^)
 
     else:
-      print(2222)
-      cards
-      # ???
+      if not Testing and 'objectID' in f and len(f['objectID']): # Avoids a blank objectID deleting all cards in index
+        # print(f)
+        # Delete all chunks from file
+        params = {
+          'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
+        }
+        algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
 
-    # Replace new objectIDs with existing ones - INCLUDING references to other cards
+        print('Deleted')
 
-  # Replace freeze
-  blob.upload_from_string('\n'.join(newFreeze))
+
 
   if not Testing:
+    # Replace freeze
+    try:
+      blob.upload_from_string('\n'.join(newFreeze))
+    except Exception as e:
+      print(e)
     try:
       algoliaCardsIndex.add_objects(cards)
     except Exception as e:
       print(e)
       print('Something went wrong saving cards to Algolia!')
-  print('Number of Cards:', len(cards))
+  print('Number of Cards Updated:', len(cards))
   if toPrint['cardsCreated']:
     pp.pprint(cards)
   return len(cards)
@@ -521,7 +549,7 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       'entityTypes': entityTypes,
       'created': f['created'],
       'modified': f['modified'],
-      'index': i,
+      # 'index': chunk['index'] if 'index' in chunk else None,
       'service': f['service'],
       'source': accountInfo['accountID'],
     }
@@ -546,7 +574,7 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
     cards.append(card)
     allCards.append(card)
   cardIDs = []
-  cardIDs = { 'objectIDs': [random.randint(1, 1000000000000) for c in cards] }
+  cardIDs = { 'objectIDs': [str(random.randint(1, 1000000000000)) for c in cards] }
   for i, objectID in enumerate(cardIDs['objectIDs']):
     cards[i]['objectID'] = objectID
   return {
@@ -932,7 +960,7 @@ indexFile({
   'organisationID': 'explaain',
   'accountID': '282782204',
   'superService': 'kloudless',
-}, 'Ffz0GtHAtp2qbiNN-mGtZmI1dsC6Uh60QN3jJ-sOvN8dIP39UXcRkKu42D1e7Jti_')
+}, 'F0kViktN6M309v8uy5XTa4EzlSeI-uLp2uoPdQkiIx6D-pZfvdqTZi9pzUMgDLEGW')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
