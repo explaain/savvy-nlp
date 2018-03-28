@@ -8,7 +8,6 @@ from firebase_admin import credentials as firebaseCredentials
 from firebase_admin import auth as firebaseAuth
 from google.cloud import storage as google_storage
 
-
 from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
@@ -659,36 +658,41 @@ def saveCard(card: dict, author:dict):
   # Save to service
   if 'service' in card and card['service']:
     serviceData = services.getService(serviceName=card['service'], specificCard=card)
+  elif 'superService' in card and card['superService']:
+    serviceData = services.getService(superServiceName=card['superService'], specificCard=card)
+  else:
+    serviceData = None
     print('serviceData')
     print(serviceData)
-    if serviceData and 'module' in serviceData:
-      print('has module')
-      service = serviceData['module']
-      if 'source' in card and card['source']:
-        try:
-          source = algoliaSourcesIndex.get_object(card['source'])
-        except Exception as e:
-          print(e)
-          source = None
-      else:
-        sources = browseAlgolia(algoliaSourcesIndex, {
-          'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
-        })
-        source = sources[0]
-      # @TODO: Account for the fact that the Sifter API currently doesn't let us update issues, so it always creates a new one
+  if serviceData and 'module' in serviceData:
+    print('has module')
+    service = serviceData['module']
+    if 'source' in card and card['source']:
       try:
-        if ('type' in card and card['type'] == 'file'):
-          serviceCard = service.saveFile(source, card)
-        else:
-          print('Saving to integration!')
-          serviceCard = service.saveCard(source, card)
+        source = algoliaSourcesIndex.get_object(card['source'])
       except Exception as e:
         print(e)
-        serviceCard = None
-      # Assemble final card
-      if serviceCard and type(serviceCard) is dict:
-        for key in serviceCard:
-          card[key] = serviceCard[key]
+        source = None
+    else:
+      sources = browseAlgolia(algoliaSourcesIndex, {
+        'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
+      })
+      source = sources[0]
+    # @TODO: Account for the fact that the Sifter API currently doesn't let us update issues, so it always creates a new one
+    try:
+      if ('type' in card and card['type'] == 'file'):
+        print('Saving file to integration!')
+        serviceCard = service.saveFile(source, card)
+      else:
+        print('Saving card to integration!')
+        serviceCard = service.saveCard(source, card)
+    except Exception as e:
+      print(e)
+      serviceCard = None
+    # Assemble final card
+    if serviceCard and type(serviceCard) is dict:
+      for key in serviceCard:
+        card[key] = serviceCard[key]
   # Save to Savvy
   print('card')
   pp.pprint(card)
@@ -947,20 +951,16 @@ def startIndexing():
 # indexFiles(accountInfo)
 
 # indexAll()
-# indexFiles({
-#   'organisationID': 'explaain',
-#   'accountID': '282782204'
-# }, allFiles=True)
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204',
 #   'superService': 'kloudless',
 # }, 'FIpeUA6-qJgZTLvISKr3n2v0BMmTqXsQN5-GkQ_yR8yOycticQbP2Trz4qdW08xsl')
-indexFile({
-  'organisationID': 'explaain',
-  'accountID': '282782204',
-  'superService': 'kloudless',
-}, 'F0kViktN6M309v8uy5XTa4EzlSeI-uLp2uoPdQkiIx6D-pZfvdqTZi9pzUMgDLEGW')
+# indexFile({
+#   'organisationID': 'explaain',
+#   'accountID': '282782204',
+#   'superService': 'kloudless',
+# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204'
