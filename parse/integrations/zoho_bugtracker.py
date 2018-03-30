@@ -1,5 +1,3 @@
-# @TODO: Investigate! Could instead do this with: https://github.com/bryanmikaelian/sifter-python
-
 import pprint, json, requests, dateutil.parser as dp
 
 pp = pprint.PrettyPrinter(indent=4)

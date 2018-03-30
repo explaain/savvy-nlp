@@ -27,7 +27,7 @@ CORS(app)
 def add_source():
   print('Starting to add source!')
   results = index.addSource(request.json)
-  return jsonify({'results': results})
+  return jsonify(results)
 
 @app.route('/get-user', methods=['POST'])
 def get_user():

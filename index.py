@@ -222,42 +222,19 @@ def setUpDomain(organisationID: str):
   # zones = cf.zones.dns_records.get('1f89549d5561f64fbf1553214c85e960')
   # zone = [z for z in zones if z['name'] == 'heysavvy.com']
 
-
-# This was probably a one-time only thing
-def updateSources():
-  allSources = browseAlgolia(algoliaSourcesIndex)
-  pp.pprint(allSources)
-  allAccounts = kloudlessDrives.listAccounts()
-  pp.pprint(allAccounts)
-  updatedSources = []
-  for source in allSources:
-    updatedSource = [account for account in allAccounts if str(account['id']) == source['objectID']]
-    if len(updatedSource):
-      updatedSource = dict(updatedSource[0])
-      updatedSource['objectID'] = source['objectID']
-      updatedSource['organisationID'] = source['organisationID']
-      updatedSource['addedBy'] = source['addedBy']
-      updatedSource['superService'] = 'kloudless'
-      del updatedSource['id']
-      updatedSources.append(updatedSource)
-      algoliaSourcesIndex.save_object(updatedSource)
-  pp.pprint(updatedSources)
-
-def addSource(data: dict):
+def addSource(source: dict):
   """This is for when a user adds a new source,
   such as connecting up their Google Drive.
   It automatically indexes all files after connecting.
   """
-  organisationID = data['organisationID']
-  print('data:', data)
-  source = data['source']['account']
-  source['objectID'] = data['source']['account']['id']
-  source['accountID'] = source['objectID']
-  source['organisationID'] = organisationID
-  source['addedBy'] = data['source']['account']['account']
-  source['superService'] = 'kloudless' # For now assumes it's kloudless
+  for key in [ 'organisationID', 'service' ]:
+    if key not in source:
+      e = 'source must contain \'' + key + '\''
+      print(e)
+      return { 'success': False, 'error': e }
   print('source:', source)
-  algoliaSourcesIndex.add_object(source)
+  res = algoliaSourcesIndex.add_object(source)
+  source['objectID'] = res['objectID']
   allSources = browseAlgolia(algoliaSourcesIndex)
   source['totalSources'] = len(allSources)
   mp.track('admin', 'Source Added', source)
@@ -265,8 +242,8 @@ def addSource(data: dict):
 
   # If either Algolia Index doesn't exist then create them, create algoliaApiKey and add this to organisations index
   indices = client.list_indexes()
-  if not any(i['name'] == algoliaGetFilesIndexName(organisationID) for i in indices['items']) or not any(i['name'] == algoliaGetCardsIndexName(organisationID) for i in indices['items']):
-    setUpOrg(organisationID)
+  if not any(i['name'] == algoliaGetFilesIndexName(source['organisationID']) for i in indices['items']) or not any(i['name'] == algoliaGetCardsIndexName(source['organisationID']) for i in indices['items']):
+    setUpOrg(source['organisationID'])
 
   # Index all files from source
   numIndexed = 0
@@ -275,7 +252,11 @@ def addSource(data: dict):
     time.sleep(5)
     numAttempts += 1
     numIndexed = indexFiles(source)
-  return source
+  return {
+    'success': True,
+    'source': source,
+    'numIndexed': numIndexed
+  }
 
 def listSources():
   return browseAlgolia(algoliaSourcesIndex)
@@ -327,6 +308,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
     'indexing': [],
     'notIndexing': []
   }
+  pp.pprint(files)
   algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
   indexedFiles = algoliaFilesIndex.get_objects([f['objectID'] for f in files])
   # print('actualFiles')
@@ -385,12 +367,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   createFileCard(accountInfo, f)
   # Update service data with fileType to get service format
   serviceData = services.getService(accountInfo=accountInfo, specificCard=f)
-  if 'format' in serviceData and serviceData['format']:
-    print('format!')
-    cardsCreated = indexFileContent(accountInfo, f)
-  else:
-    print('No format')
-    cardsCreated = 0
+  cardsCreated = indexFileContent(accountInfo, f)
   f['cardsCreated'] = cardsCreated
   notifyChanges(oldFile, f)
   if not Testing:
@@ -406,14 +383,24 @@ def indexFileContent(accountInfo, f):
   print(accountInfo)
   serviceData = services.getService(accountInfo=accountInfo, specificCard=f)
   service = serviceData['module']
-  try:
-    contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
-  except Exception as e:
-    print(e)
-    contentArray = None
-  if not contentArray:
-    return False
-  cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
+  if hasattr(service, 'getFileCards'):
+    # This is for services that are already split into card-like chunks (e.g. Trello)
+    print('getFileCards')
+    cards = service.getFileCards(accountInfo, f['objectID'])
+  elif 'format' in serviceData and serviceData['format']:
+    # This is for services that need to be parsed into card-like chunks (e.g. docs, sheets (though maybe ultimately not sheets!))
+    try:
+      contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
+    except Exception as e:
+      print(e)
+      contentArray = None
+    if not contentArray:
+      return 0
+    cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
+  else:
+    cards = None
+  if not cards or not len(cards):
+    return 0
   for i, card in enumerate(cards):
     card['index'] = i
   # Freeze this one
@@ -967,7 +954,9 @@ def startIndexing():
 # }, 'J13B2DLXBLT8HsALzNTfviaXVscPNm5RtgnSv_KPbZgSMJAe0vNj5M5ipz')
 # indexFile({
 #   'organisationID': 'explaain',
-#   'accountID': '282782204'
+#   'accountID': '282782204',
+#   'superService': 'kloudless'
+# }, 'F5c2i-hLpBOPeaTNaH65opIarzBxzAcJyHAsgKAZXXVHwsZBA08BV8ANIOnb6ShY3')
 # }, 'F88bWIq-LWUFA72bVPTHSBrJni_zNfEufrlqw8Hc--DkNBTM4u7InvdV8JcVurbpT')
 # indexFile({
 #   'organisationID': 'askporter',

@@ -1,5 +1,5 @@
 import pprint, sys
-from parse.integrations import kloudless_integration as kloudlessDrives, confluence, sifter, zoho_bugtracker, gsites
+from parse.integrations import kloudless_integration as kloudlessDrives, confluence, sifter, zoho_bugtracker, gsites, trello
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -44,6 +44,12 @@ Integrations = {
     'format': 'html',
     'module': gsites
   },
+  'trello': {
+    'name': 'Trello',
+    'superService': False,
+    'format': None,
+    'module': trello
+  },
 }
 
 def getIntegrations():
@@ -61,6 +67,7 @@ def getServices():
   return services
 
 def getService(accountInfo=None, serviceName=None, superServiceName=None, specificCard=None):
+  pp.pprint(accountInfo)
   services = getServices()
   if accountInfo:
     if 'service' in accountInfo:
