@@ -86,6 +86,7 @@ def boardToFile(source, board):
     'fileID': board.get('id', None), # Duplicate of 'objectID' (safer to have both for now)
     'fileTitle': board.get('name', None), # Duplicate of 'title' (safer to have both for now)
     'fileUrl': board.get('url', None),
+    'fileFormat': 'kanban',
     'created': None, # int(dp.parse(board.get('dateLastActivity', None)).strftime('%s')) / 1000,
     'modified': int(dp.parse(board['dateLastActivity']).strftime('%s')) if 'dateLastActivity' in board and board['dateLastActivity'] else None,
     # 'creator': board.get('reported_person', None), # @TODO: This needs to be matched with Savvy users!!!
@@ -102,6 +103,7 @@ def boardToFile(source, board):
 def trelloToCard(source, trelloCard, boardFile):
   card = {
     'service': 'trello',
+    'format': 'card',
     'source': source['objectID'],
     'organisationID': source['organisationID'],
     'objectID': trelloCard.get('id', None),
@@ -110,8 +112,9 @@ def trelloToCard(source, trelloCard, boardFile):
     'description': trelloCard.get('desc', None),
     'fileType': 'web',
     'fileID': trelloCard.get('idBoard', None), # Duplicate of 'objectID' (safer to have both for now)
-    'fileTitle': boardFile.get('name', None), # Duplicate of 'title' (safer to have both for now)
-    'fileUrl': boardFile.get('url', None),
+    'fileTitle': boardFile.get('title', None), # Duplicate of 'title' (safer to have both for now)
+    'fileUrl': boardFile.get('fileUrl', None),
+    'fileFormat': 'kanban',
     'created': None, # int(dp.parse(trelloCard.get('dateLastActivity', None)).strftime('%s')) / 1000,
     'modified': int(dp.parse(trelloCard['dateLastActivity']).strftime('%s')) if 'dateLastActivity' in trelloCard and trelloCard['dateLastActivity'] else None,
     # 'creator': trelloCard.get('reported_person', None), # @TODO: This needs to be matched with Savvy users!!!

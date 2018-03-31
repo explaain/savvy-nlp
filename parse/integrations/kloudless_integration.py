@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import re, io, pprint, itertools, zipfile, untangle, time
+import re, io, pprint, itertools, zipfile, untangle, time, traceback, sys
 from collections import OrderedDict
 import xmljson
-from . import kloudless_gdocs as gdocs, kloudless_gsheets as gsheets
+from . import kloudless_gdocs as gdocs, kloudless_gsheets as gsheets, kloudless_dropbox as dropbox
 from xmljson import parker, Parker
 # bf = BadgerFish(dict_type=OrderedDict)
 from xml.etree.ElementTree import fromstring
@@ -42,56 +42,54 @@ def getFile(accountInfo, fileID):
     # author = account.users.retrieve(id=f['owner']['id'])
     f = kloudlessToFile(f, accountInfo)
   except Exception as e:
+    traceback.print_exc(file=sys.stdout)
     f = None
     print('Error getting file: "' + fileID + '"', e)
   return f
 
-
-def getFileUrl(id, fileType):
-  # print('getFileUrl', id, fileType)
-  roots = {
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'https://docs.google.com/document/d/',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'https://docs.google.com/spreadsheets/d/',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'https://docs.google.com/presentation/d/',
-    'application/vnd.google-apps.document': 'https://docs.google.com/document/d/',
-    'application/vnd.google-apps.spreadsheet': 'https://docs.google.com/spreadsheets/d/',
-    'application/vnd.google-apps.presentation': 'https://docs.google.com/presentation/d/',
-    # 'application/pdf': 'https://drive.google.com/file/d/'
-  }
-  return (roots[fileType] if fileType and fileType in roots else 'https://drive.google.com/file/d/') + id
-
 def kloudlessToFile(f, accountInfo):
-  serviceData = getServiceByFileType(f['mime_type'])
-  algoliaFile = {
+  print('kloudlessToFile')
+  pp.pprint(f)
+  subServiceData = getSubServiceByMimeType(f['mime_type'], accountInfo)
+  file = {
     'objectID': f['id'],
     'url': getFileUrl(f['raw_id'], f['mime_type']),
     'rawID': f['raw_id'],
-    'fileType': f['mime_type'],
+    'fileFormat': mimeTypeToFileFormat(f['mime_type']),
+    'mimeType': f['mime_type'],
     'title': f['name'],
     'created': time.mktime(f['created'].timetuple()) if f['created'] else None,
     'modified': time.mktime(f['modified'].timetuple()) if f['modified'] else None,
     'source': accountInfo['accountID'],
     'superService': 'kloudless',
-    'service': serviceData['service'] if serviceData and 'service' in serviceData else None
+    'service': accountInfo['service'],
   }
-  return algoliaFile
+  if subServiceData and 'serviceName' in subServiceData:
+    file['subService'] = subServiceData['serviceName']
+  pp.pprint(file)
+  return file
 
 def getExportedFileData(accountInfo, fileID):
   print('getExportedFileData')
   fileData = getFile(accountInfo, fileID)
   if not fileData:
     return None
-  fileType = fileData['fileType']
-  serviceData = getServiceByFileType(fileType)
-  if not serviceData or 'module' not in serviceData:
+  mimeType = fileData['mimeType']
+  subServiceData = getSubServiceByMimeType(mimeType, accountInfo)
+  if subServiceData and 'module' in subServiceData:
+    driveService = subServiceData['module']
+  else:
+    driveService = getServiceModuleByName(accountInfo['service'])
+  if not driveService:
     return None
-  driveService = serviceData['module']
   account = getAccount(accountInfo['accountID'])
   exportParams = driveService.getExportParams(fileData, type='getContent')
-  # print('exportParams')
-  # print(exportParams)
+  print('exportParams')
+  pp.pprint(exportParams)
   if exportParams['type'] == 'retrieve':
     exportedFile = account.files.retrieve(fileID)
+    print('exportedFile')
+    pp.pprint(exportedFile)
   elif exportParams['type'] == 'raw':
     exportedFile = account.raw(raw_uri = exportParams['raw_uri'] if 'raw_uri' in exportParams else '', raw_method=exportParams['raw_method'] if 'raw_method' in exportParams else '')
   return {
@@ -104,34 +102,107 @@ def getFileContent(accountInfo, fileID):
   return exportedFileData['driveService'].fileToContent(exportedFileData['exportedFile']) if exportedFileData else None
 
 def getContentForCards(accountInfo, fileID):
+  print('getContentForCards')
   exportedFileData = getExportedFileData(accountInfo, fileID)
-  return exportedFileData['driveService'].fileToCardData(exportedFileData['exportedFile']) if exportedFileData else None
+  print('exportedFileData')
+  pp.pprint(exportedFileData)
+  return exportedFileData['driveService'].fileToCardData(exportedFileData['exportedFile']) if exportedFileData and 'exportedFile' in exportedFileData else None
 
-def getServiceByFileType(fileType):
-  servicesByFileType = {
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
-      'service': 'gdocs',
-      'format': 'xml_doc',
-      'module': gdocs,
-    },
-    'application/vnd.google-apps.document': {
-      'service': 'gdocs',
-      'format': 'xml_doc',
-      'module': gdocs,
-    },
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
-      'service': 'gsheets',
-      'format': 'csv',
-      'module': gsheets,
-    },
-    'application/vnd.google-apps.spreadsheet': {
-      'service': 'gsheets',
-      'format': 'csv',
-      'module': gsheets,
-    },
+
+def getFileUrl(id, mimeType):
+  # print('getFileUrl', id, mimeType)
+  roots = {
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'https://docs.google.com/document/d/',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'https://docs.google.com/spreadsheets/d/',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'https://docs.google.com/presentation/d/',
+    'application/vnd.google-apps.document': 'https://docs.google.com/document/d/',
+    'application/vnd.google-apps.spreadsheet': 'https://docs.google.com/spreadsheets/d/',
+    'application/vnd.google-apps.presentation': 'https://docs.google.com/presentation/d/',
+    # 'application/pdf': 'https://drive.google.com/file/d/'
   }
-  driveService = servicesByFileType[fileType] if fileType in servicesByFileType else None
-  return driveService
+  return (roots[mimeType] if mimeType and mimeType in roots else 'https://drive.google.com/file/d/') + id
+
+def getServiceModuleByName(serviceName):
+  serviceModules = {
+    'dropbox': dropbox,
+    'gdrive': None,
+  }
+  return serviceModules[serviceName] if serviceName in serviceModules else None
+
+def getSubServiceByMimeType(mimeType: str, accountInfo: dict=None):
+  if not accountInfo or 'service' not in accountInfo or accountInfo['service'] != 'gdrive':
+    return None
+  if mimeType in [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.google-apps.document'
+  ]:
+    return {
+      'serviceName': 'gdocs',
+      'title': 'Google Docs',
+      'format': 'xml_doc',
+      'module': gdocs,
+    }
+  elif mimeType in [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.google-apps.spreadsheet'
+  ]:
+    return {
+      'serviceName': 'gsheets',
+      'title': 'Google Sheets',
+      'format': 'csv',
+      'module': gsheets,
+    }
+  else:
+    return None
+
+def mimeTypeToFileFormat(mimeType: str):
+  if mimeType in [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.google-apps.document',
+    'application/vnd.oasis.opendocument.text', # .odt
+    'application/msword', # .doc
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', # .docx
+    'application/rtf',
+  ]:
+    return 'document'
+  elif mimeType in [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.google-apps.spreadsheet',
+    'application/vnd.oasis.opendocument.spreadsheet', # .ods
+    'application/vnd.ms-excel', # .xls
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', # .xlsx
+    'text/csv',
+  ]:
+    return 'spreadsheet'
+  elif mimeType in [
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.google-apps.presentation',
+    'application/vnd.oasis.opendocument.presentation', # .odp
+    'application/vnd.ms-powerpoint', # .ppt
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation', # .pptx
+  ]:
+    return 'presentation'
+  elif mimeType[:6] == 'image/':
+    return 'image'
+  elif mimeType[:6] == 'video/':
+    return 'video'
+  elif mimeType[:6] == 'audio/':
+    return 'audio'
+  elif mimeType == 'application/pdf':
+    return 'pdf'
+  elif mimeType == 'text/plain':
+    return 'text'
+  elif mimeType == 'text/html':
+    return 'webpage'
+  elif mimeType == 'text/calendar':
+    return 'event'
+  elif mimeType == 'application/zip':
+    return 'archive'
+  elif mimeType == 'application/json':
+    return 'data' # Should CSV be this too?
+  else:
+    return None
+
 
 
 def saveCard(source: dict, card: dict):

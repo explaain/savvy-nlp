@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pprint, datetime, sched, time, calendar, json, requests, random, difflib
+import pprint, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys
 from algoliasearch import algoliasearch
 from parse import services, entityNlp
 import xmljson
@@ -290,15 +290,19 @@ def indexAll(includingLastXSeconds=0):
 def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   """Indexes all files from a single source that have been updated since their own lastUpdated value"""
   print('indexFiles')
-  serviceData = services.getService(accountInfo=accountInfo)
-  if not serviceData or 'module' not in serviceData:
+  integrationData = services.getIntegrationData(accountInfo=accountInfo)
+  allServiceData = services.getAllServiceData(accountInfo=accountInfo)
+  print('integrationData1')
+  pp.pprint(integrationData)
+  if not integrationData or 'module' not in integrationData:
     print('No module defined')
     return False
-  service = serviceData['module']
+  integration = integrationData['module']
   try:
-    print(service)
-    files = service.listFiles(accountInfo)
+    print(integration)
+    files = integration.listFiles(accountInfo)
   except Exception as e:
+    traceback.print_exc(file=sys.stdout)
     print(e)
     files = None
   if not files or not len(files):
@@ -318,12 +322,13 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   for f in files:
     indexedFileArray = [iFile for iFile in indexedFiles['results'] if iFile and iFile['objectID'] == f['objectID']]
     indexedFile = indexedFileArray[0] if len(indexedFileArray) else None
+
     if allFiles or not indexedFile or 'modified' not in indexedFile or indexedFile['modified'] < f['modified'] or calendar.timegm(time.gmtime()) - includingLastXSeconds < f['modified']:
       filesTracker['indexing'].append({
         'title': f['title'],
         'modified': f['modified'],
         'lastIndexed': indexedFile['modified'] if indexedFile and 'modified' in indexedFile else 'Never!',
-        'service': f['service'],
+        'service': allServiceData['service']['serviceName'] if allServiceData and 'service' in allServiceData and 'serviceName' in allServiceData['service'] else None,
       })
       indexFile(accountInfo, f['objectID'], actualFile=f)
     else:
@@ -341,15 +346,18 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   return len(files)
 
 def indexFile(accountInfo: dict, fileID: str, actualFile=None):
-  serviceData = services.getService(accountInfo=accountInfo)
-  if not serviceData or 'module' not in serviceData:
+  integrationData = services.getIntegrationData(accountInfo=accountInfo, specificCard=actualFile)
+  print('integrationData')
+  pp.pprint(integrationData)
+  if not integrationData or 'module' not in integrationData:
+    print('No module defined')
     return False
-  service = serviceData['module']
+  integration = integrationData['module']
   if actualFile:
     f = actualFile
   else:
     try:
-      f = service.getFile(accountInfo, fileID=fileID)
+      f = integration.getFile(accountInfo, fileID=fileID)
     except Exception as e:
       print(e)
       f = None
@@ -360,19 +368,17 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   try:
     oldFile = algoliaFilesIndex.get_object(f['objectID'])
   except Exception as e:
-    print(e)
+    print('Old file doesn\'t exist.', e)
     oldFile = None
   if not Testing:
     algoliaFilesIndex.add_object(f)
   createFileCard(accountInfo, f)
-  # Update service data with fileType to get service format
-  serviceData = services.getService(accountInfo=accountInfo, specificCard=f)
-  cardsCreated = indexFileContent(accountInfo, f)
-  f['cardsCreated'] = cardsCreated
+  cardsSaved = indexFileContent(accountInfo, f)
+  f['cardsSaved'] = cardsSaved
   notifyChanges(oldFile, f)
   if not Testing:
     mp.track('admin', 'File Indexed', f)
-  print('File Indexed with ' + str(cardsCreated) + ' updated cards: ' + (f['title'] if 'title' in f else ''))
+  print('File Indexed with ' + str(cardsSaved) + ' updated cards: ' + (f['title'] if 'title' in f else ''))
 
 def indexFileContent(accountInfo, f):
   print('indexFileContent')
@@ -381,24 +387,29 @@ def indexFileContent(accountInfo, f):
   # Create new cards
   print('accountInfo')
   print(accountInfo)
-  serviceData = services.getService(accountInfo=accountInfo, specificCard=f)
-  service = serviceData['module']
-  if hasattr(service, 'getFileCards'):
+  integrationData = services.getIntegrationData(accountInfo=accountInfo)
+  print('integrationData')
+  pp.pprint(integrationData)
+  if not integrationData or 'module' not in integrationData:
+    print('No module defined')
+    return False
+  integration = integrationData['module']
+  if hasattr(integration, 'getFileCards'):
     # This is for services that are already split into card-like chunks (e.g. Trello)
     print('getFileCards')
-    cards = service.getFileCards(accountInfo, f['objectID'])
-  elif 'format' in serviceData and serviceData['format']:
+    cards = integration.getFileCards(accountInfo, f['objectID'])
+    contentArray = None
+  else:
     # This is for services that need to be parsed into card-like chunks (e.g. docs, sheets (though maybe ultimately not sheets!))
     try:
-      contentArray = service.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
+      contentArray = integration.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
     except Exception as e:
+      traceback.print_exc(file=sys.stdout)
       print(e)
       contentArray = None
     if not contentArray:
       return 0
     cards = createCardsFromContentArray(accountInfo, contentArray, f)['allCards']
-  else:
-    cards = None
   if not cards or not len(cards):
     return 0
   for i, card in enumerate(cards):
@@ -407,40 +418,45 @@ def indexFileContent(accountInfo, f):
   newFreeze = fileCardsToFreeze(cards)
   # Retrive last freeze (if available)
   blob = google_bucket.blob('diff/' + accountInfo['organisationID'] + '/' + f['objectID'])
-  try:
-    oldFreeze = blob.download_as_string()
-    oldFreeze = oldFreeze.decode("utf-8").split('\n')
-    print('oldFreeze')
-    pp.pprint([line[:100] for line in oldFreeze])
-    print('newFreeze')
-    pp.pprint([line[:100] for line in newFreeze])
-    print(type(oldFreeze))
-    print(type(newFreeze))
-  except Exception as e:
+  if contentArray: # Need to think more about whether this is the right condition!
+    try:
+      oldFreeze = blob.download_as_string()
+      oldFreeze = oldFreeze.decode("utf-8").split('\n')
+      print('oldFreeze')
+      pp.pprint([line[:100] for line in oldFreeze])
+      print('newFreeze')
+      pp.pprint([line[:100] for line in newFreeze])
+      print(type(oldFreeze))
+      print(type(newFreeze))
+    except Exception as e:
+      oldFreeze = None
+  else:
     oldFreeze = None
 
 
-
-  if oldFreeze:
-    print(len(oldFreeze))
-    print(len(newFreeze))
-    # If lengths are the same then use new method
-    if len(oldFreeze) == len(newFreeze):
+  if oldFreeze and len(oldFreeze) == len(newFreeze):
       # Retrieve all existing cards
       params = {
         'query': '',
-        'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
+        'filters': 'fileID: "' + f['objectID'] + '"'
       }
       oldCards = algoliaCardsIndex.browse_all(params)
       oldCards = [hit for hit in oldCards]
+      print('oldCards')
+      pp.pprint(oldCards)
 
       # Store objectIDs to replace
       objectIDsToReplace = {}
       for i, line in enumerate(newFreeze):
+        print('--- ', i)
         oldCard = [card for card in oldCards if 'index' in card and card['index'] == i]
+        print(oldCard)
         realObjectID = str(oldCard[0]['objectID']) if len(oldCard) else None
+        print(realObjectID)
         newCard = [card for card in cards if 'index' in card and card['index'] == i]
+        print(newCard)
         tempObjectID = str(newCard[0]['objectID']) if len(newCard) else None
+        print(tempObjectID)
         if tempObjectID and realObjectID:
           objectIDsToReplace[tempObjectID] = realObjectID
           print(i, tempObjectID, realObjectID)
@@ -456,18 +472,16 @@ def indexFileContent(accountInfo, f):
             card['listItems'][i] = objectIDsToReplace[item]
       print('Now replaced objectIDs:')
       pp.pprint(cards)
+  else:
+    if not Testing and 'objectID' in f and len(f['objectID']): # Avoids a blank objectID deleting all cards in index
+      # print(f)
+      # Delete all chunks from file
+      params = {
+        'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
+      }
+      algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
 
-
-    else:
-      if not Testing and 'objectID' in f and len(f['objectID']): # Avoids a blank objectID deleting all cards in index
-        # print(f)
-        # Delete all chunks from file
-        params = {
-          'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
-        }
-        algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
-
-        print('Deleted')
+      print('Deleted')
 
 
 
@@ -492,14 +506,18 @@ def createFileCard(accountInfo, f):
     'type': 'file',
     'isFile': True,
     'objectID': f['objectID'],
+    'format': f['fileFormat'] if 'fileFormat' in f else None,
     'title': f['title'],
     'fileID': f['objectID'],
     'fileUrl': f['url'],
-    'fileType': f['fileType'] if 'fileType' in f else f['mimeType'] if 'mimeType' in f else None,
+    'fileFormat': f['fileFormat'] if 'fileFormat' in f else None,
+    'mimeType': f['mimeType'] if 'mimeType' in f else f['fileType'] if 'fileType' in f else None,
     'fileTitle': f['title'],
     'created': f['created'],
     'modified': f['modified'],
     'service': f['service'],
+    'superService': f['superService'] if 'superService' in f else None,
+    'subService': f['subService'] if 'subService' in f else None,
     'source': f['source'],
   }
   if 'description' in f and f['description']:
@@ -525,19 +543,22 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       allRelevantText += ' ' + ' '.join([cell['content'] for cell in chunk['cells']])
     entityTypes = getEntityTypes(allRelevantText)
     card = {
-      'type': 'p',
+      'format': fileToCardFormat(f),
       'description': chunk['content'],
       'fileID': f['objectID'],
       'fileUrl': f['url'],
       'fileType': f['fileType'] if 'fileType' in f else f['mimeType'] if 'mimeType' in f else None,
       'fileTitle': f['title'],
+      'fileFormat': f['fileFormat'] if 'fileFormat' in f else None,
       'context': parentContext,
       'entityTypes': entityTypes,
       'created': f['created'],
       'modified': f['modified'],
       # 'index': chunk['index'] if 'index' in chunk else None,
-      'service': f['service'],
       'source': accountInfo['accountID'],
+      'service': f['service'],
+      'superService': f['superService'] if 'superService' in f else None,
+      'subService': f['subService'] if 'subService' in f else None,
     }
     if 'service' in accountInfo:
       card['service'] = accountInfo['service']
@@ -567,6 +588,17 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
     'cards': cards, # Cards on this level
     'allCards': allCards # Cards passed up that should continue being passed
   }
+
+def fileToCardFormat(file):
+  subServiceFormats = {
+    'gdocs': 'paragraph',
+    'gsheets': 'row',
+  }
+  if 'subService' in file and file['subService'] in subServiceFormats:
+    return subServiceFormats[file['subService']]
+  else:
+    return 'card'
+
 
 def fileCardsToFreeze(cards):
   newCards = []
@@ -644,21 +676,16 @@ def saveCard(card: dict, author:dict):
   # @TODO: Account for the fact that the service data may have updated since the last index - fetch this as well as existingCard?
   # Save to service
   if 'service' in card and card['service']:
-    serviceData = services.getService(serviceName=card['service'], specificCard=card)
-  elif 'superService' in card and card['superService']:
-    serviceData = services.getService(superServiceName=card['superService'], specificCard=card)
-  else:
-    serviceData = None
-    print('serviceData')
-    print(serviceData)
-  if serviceData and 'module' in serviceData:
-    print('has module')
-    service = serviceData['module']
+    integrationData = services.getIntegrationData(specificCard=card)
+    if integrationData and 'module' in integrationData:
+      integration = integrationData['module']
+      print('has module')
+  if integration:
     if 'source' in card and card['source']:
       try:
         source = algoliaSourcesIndex.get_object(card['source'])
       except Exception as e:
-        print(e)
+        print('Couldn\'t get source from db.', e)
         source = None
     else:
       sources = browseAlgolia(algoliaSourcesIndex, {
@@ -669,10 +696,10 @@ def saveCard(card: dict, author:dict):
     try:
       if ('type' in card and card['type'] == 'file'):
         print('Saving file to integration!')
-        serviceCard = service.saveFile(source, card)
+        serviceCard = integration.saveFile(source, card)
       else:
         print('Saving card to integration!')
-        serviceCard = service.saveCard(source, card)
+        serviceCard = integration.saveCard(source, card)
     except Exception as e:
       print(e)
       serviceCard = None
@@ -700,13 +727,15 @@ def deleteCard(card, author):
   try:
     existingCard = algoliaCardsIndex.get_object(card['objectID'])
   except Exception as e:
-    print(e)
+    print('No existing card to delete.', e)
     existingCard = None
   verified = authorIsSavvy(existingCard, author)
   if verified:
     if 'service' in card and card['service']:
-      serviceData = services.getService(serviceName=card['service'])
-      service = serviceData['module']
+      integrationData = services.getIntegrationData(specificCard=card)
+      if integrationData and 'module' in integrationData:
+        integration = integrationData['module']
+        print('has module')
       if 'source' in card and card['source']:
         source = algoliaSourcesIndex.get_object(card['source'])
       else:
@@ -717,7 +746,7 @@ def deleteCard(card, author):
       if ('type' in card and card['type'] == 'file'):
         # @TODO: Account for the fact that the Sifter API currently doesn't let us delete issues
         try:
-          serviceCard = service.deleteFile(source, card)
+          serviceCard = integration.deleteFile(source, card)
         except Exception as e:
           print(e)
           serviceCard = {}
@@ -1025,3 +1054,31 @@ def startIndexing():
 
 
 # indexAll()
+#
+# indexFile({
+#   "organisationID": "Savvy Test_81834683",
+#   "superService": "kloudless",
+#   "service": "dropbox",
+#   "accountID": 299031109,
+#   "access_token": "P7f9ck2S0cmrsluz4tzCvb8ygpzLz7",
+#   "account": {
+#     "id": 299031109,
+#     "account": "testsavvy3@gmail.com",
+#     "active": True,
+#     "service": "dropbox",
+#     "created": "2018-03-30T14:10:03.992811Z",
+#     "modified": "2018-03-30T22:04:07.309751Z",
+#     "service_name": "Dropbox",
+#     "admin": False,
+#     "apis": [
+#       "storage"
+#     ],
+#     "effective_scope": "dropbox:normal.storage.default dropbox:normal.storage.default",
+#     "api": "meta",
+#     "type": "account"
+#   },
+#   "scope": "dropbox:normal.storage",
+#   "addedBy": "testsavvy3@gmail.com",
+#   "title": "Dropbox",
+#   "objectID": "743997510"
+# }, 'FdxDb09OPjebpJzmcWPb8Zcj8EP76lJSPO0lZLKQm2Gg=')

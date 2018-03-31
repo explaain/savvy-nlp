@@ -3,93 +3,78 @@ from parse.integrations import kloudless_integration as kloudlessDrives, conflue
 
 pp = pprint.PrettyPrinter(indent=4)
 
-Integrations = {
+Services = {
   'confluence': {
-    'name': 'Confluence',
+    'title': 'Confluence',
     'superService': False,
-    'format': 'html',
     'module': confluence
   },
-  'kloudless': {
-    'superService': True,
-    'module': kloudlessDrives,
-    'services': {
-      'gdocs': {
-        'name': 'Google Docs',
-        'format': 'xml_doc',
-        'module': kloudlessDrives
-      },
-      'gsheets': {
-        'name': 'Google Sheets',
-        'format': 'csv',
-        'module': kloudlessDrives
-      }
-    }
+  'gdrive': {
+    'title': 'Google Drive',
+    'superService': 'kloudless',
+  },
+  'dropbox': {
+    'title': 'Dropbox',
+    'superService': 'kloudless',
   },
   'sifter': {
-    'name': 'Sifter',
+    'title': 'Sifter',
     'superService': False,
-    'format': None,
     'module': sifter
   },
   'zoho': {
-    'name': 'Zoho',
+    'title': 'Zoho',
     'superService': False,
-    'format': None,
     'module': zoho_bugtracker
   },
   'gsites': {
-    'name': 'Google Sites',
+    'title': 'Google Sites',
     'superService': False,
-    'format': 'html',
     'module': gsites
   },
   'trello': {
-    'name': 'Trello',
+    'title': 'Trello',
     'superService': False,
-    'format': None,
     'module': trello
   },
 }
 
-def getIntegrations():
-  return Integrations
+SuperServices = {
+  'kloudless': {
+    'module': kloudlessDrives,
+  },
+}
 
-def getServices():
-  services = {}
-  for i in Integrations:
-    if Integrations[i]['superService']:
-      for j in Integrations[i]['services']:
-        services[j] = Integrations[i]['services'][j]
-        services[j]['superService'] = i
-    else:
-      services[i] = Integrations[i]
-  return services
-
-def getService(accountInfo=None, serviceName=None, superServiceName=None, specificCard=None):
+def getAllServiceData(accountInfo=None, serviceName=None, superServiceName=None, specificCard=None):
   pp.pprint(accountInfo)
-  services = getServices()
+  allServiceData = {}
+  if specificCard:
+    if 'service' in specificCard:
+      serviceName = specificCard['service']
+    if 'superService' in specificCard:
+      superServiceName = specificCard['superService']
+    if 'mimeType' in specificCard:
+      try:
+        allServiceData['subService'] = service['module'].getSubServiceByFileType(specificCard['mimeType'])
+      except Exception as e:
+        print('No subService')
   if accountInfo:
     if 'service' in accountInfo:
       serviceName = accountInfo['service']
     if 'superService' in accountInfo:
       superServiceName = accountInfo['superService']
-  if serviceName and serviceName == 'gdrive':
-    serviceName = None
-    superServiceName = 'kloudless'
-  service = services[serviceName] if serviceName in services else Integrations[superServiceName] if superServiceName and superServiceName in Integrations else None
-  # Convert mimeType to fileType (for legacy cards)
-  if specificCard and 'mimeType' in specificCard and 'fileType' not in specificCard:
-    specificCard['fileType'] = specificCard['mimeType']
-  if specificCard and 'fileType' in specificCard:
-    try:
-      tempService = service['module'].getServiceByFileType(specificCard['fileType'])
-    except Exception as e:
-      tempService = None
-    if tempService and 'service' in tempService:
-      service = services[tempService['service']]
-  return service
+  if serviceName and serviceName in Services:
+    allServiceData['service'] = Services[serviceName]
+    allServiceData['service']['serviceName'] = serviceName
+  else:
+    return None
+  if superServiceName and superServiceName in SuperServices:
+    allServiceData['superService'] = SuperServices[superServiceName]
+    allServiceData['superService']['superServiceName'] = serviceName
+  return allServiceData
 
-def getServiceFormat(serviceName: str):
-  service = getService(serviceName=serviceName)
-  return service['format'] if service and 'format' in service else None
+def getIntegrationData(accountInfo=None, serviceName=None, superServiceName=None, specificCard=None):
+  allServiceData = getAllServiceData(accountInfo, serviceName, superServiceName, specificCard)
+  print('allServiceData')
+  pp.pprint(allServiceData)
+  return None if not allServiceData else allServiceData['superService'] if 'superService' in allServiceData else allServiceData['service'] if 'service' in allServiceData else None
