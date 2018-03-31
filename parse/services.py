@@ -63,6 +63,9 @@ def getAllServiceData(accountInfo=None, serviceName=None, superServiceName=None,
       serviceName = accountInfo['service']
     if 'superService' in accountInfo:
       superServiceName = accountInfo['superService']
+  if serviceName and serviceName in ['gdocs', 'gsheets', 'gslides']: # This fixes legacy cards
+    allServiceData['subService'] = serviceName
+    serviceName = 'gdrive'
   if serviceName and serviceName in Services:
     allServiceData['service'] = Services[serviceName]
     allServiceData['service']['serviceName'] = serviceName
