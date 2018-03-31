@@ -677,10 +677,11 @@ def saveCard(card: dict, author:dict):
   # Save to service
   if 'service' in card and card['service']:
     integrationData = services.getIntegrationData(specificCard=card)
-    if integrationData and 'module' in integrationData:
-      integration = integrationData['module']
-      print('has module')
+    integration = integrationData['module'] if integrationData and 'module' in integrationData else None
+  else:
+    integration = None
   if integration:
+    print('has module')
     if 'source' in card and card['source']:
       try:
         source = algoliaSourcesIndex.get_object(card['source'])
