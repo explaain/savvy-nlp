@@ -57,6 +57,17 @@ def get_results():
   #   print(e)
   #   results = {}
 
+@app.route('/search-cards', methods=['POST'])
+def search_cards():
+  print('Starting to search cards!')
+  pp.pprint(request.json)
+  if request.json['params'] and 'searchStrategy' in request.json['params']:
+    request.json['params']['search_service'] = request.json['params']['searchStrategy']
+    del(request.json['params']['searchStrategy'])
+  result = index.searchCards(request.json['user'], request.json['query'], request.json['params'])
+  pp.pprint(result)
+  return jsonify(result)
+
 @app.route('/save-card', methods=['POST'])
 def save_card():
   print('Starting to save card!')

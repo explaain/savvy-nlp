@@ -262,7 +262,7 @@ def indexAll(includingLastXSeconds=0):
     print(source)
     accountID = source['accountID'] if 'accountID' in source else source['objectID']
     organisationID = source['organisationID']
-    accountInfo =  source
+    accountInfo = source
     accountInfo['accountID'] = accountID
     num = indexFiles(accountInfo, includingLastXSeconds=includingLastXSeconds)
     indexed.append({
@@ -270,7 +270,7 @@ def indexAll(includingLastXSeconds=0):
       'accountID': accountID,
       'numberOfFiles': num
     })
-    db.Sources().save(source)
+    # db.Sources().save(source)
   mp.track('admin', 'Completed Global Index', {
     'accounts': indexed,
     'numberOfAccounts': len(indexed)
@@ -597,6 +597,15 @@ def fileCardsToFreeze(cards):
     newCards.append(newCard)
   freeze = [str(card) for card in newCards]
   return freeze
+
+def searchCards(user: dict=None, query: str='', params: dict=None):
+  if not user or not len(user) or 'organisationID' not in user:
+    return None
+  # The next 2 lines are pretty much (if not exactly) dealt with in db.Cards.search so should decide where best to put them
+  if (not query or not len(query)) and params and len(params) and 'query' in params:
+    query = params['query']
+  search_service = params['search_service'] if params and len(params) and 'search_service' in params else 'algolia'
+  return db.Cards(user['organisationID']).search(query=query, params=params, search_service=search_service)
 
 def saveCard(card: dict, author:dict):
   # @TODO: Figure out whether sometimes an update will delete a field but it'll be automatically put back in

@@ -61,7 +61,10 @@ class Index:
         return self.index.search(query, params)
       else:
         # @TODO: configure search and insert query
-        return es.search(index=self.lowercase_index_name, body = {'query': {'match_all': {}}})
+        res = es.search(index=self.lowercase_index_name, body = {'query': {'match_all': {}}})
+        return {
+          'hits': [hit['_source'] for hit in res['hits']['hits']]
+        }
     except Exception as e:
       print(search_service + ': Couldn\'t search for records in index "' + self.lowercase_index_name + '". ', e)
       sentry.captureException()
