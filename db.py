@@ -56,6 +56,7 @@ class Index:
       if search_service == 'algolia':
         return self.index.search(query, params)
       else:
+        # @TODO: configure search and insert query
         return es.search(index=self.lowercase_index_name, body = {'query': {'match_all': {}}})
     except Exception as e:
       print('Algolia: Couldn\'t search for records in index "' + self.index_name + '". ', e)
@@ -227,7 +228,7 @@ class Index:
     return result
 
   def delete_by_query(self, params: dict=None):
-    if not params:
+    if not params or not len(params) or (len(params) == 1 and 'query' in params and not len (params['query'])):
       return None
     try:
       # @TODO: Check this is actually the Algolia command
