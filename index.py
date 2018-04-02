@@ -224,7 +224,7 @@ def addSource(source: dict):
       print(e)
       return { 'success': False, 'error': e }
   print('source:', source)
-  res = db.Source().add(source)
+  res = db.Sources().add(source)
   source['objectID'] = res['objectID']
   allSources = db.Sources().browse()
   source['totalSources'] = len(allSources)
@@ -680,7 +680,7 @@ def saveCard(card: dict, author:dict):
     print('has module')
     if 'source' in card and card['source']:
       try:
-        source = db.Source().get(card['source'])
+        source = db.Sources().get(card['source'])
       except Exception as e:
         print('Couldn\'t get source from db.', e)
         sentry.captureException()
