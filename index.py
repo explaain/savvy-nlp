@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import pprint, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys
-from algoliasearch import algoliasearch
+import pprint, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys, db
+from raven import Client as SentryClient
 from parse import services, entityNlp
 import xmljson
 import firebase_admin
@@ -15,6 +15,7 @@ from mixpanel import Mixpanel
 import CloudFlare
 
 pp = pprint.PrettyPrinter(indent=4, width=160)
+sentry = SentryClient('https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428')
 mp = Mixpanel('e3b4939c1ae819d65712679199dfce7e')
 cf = CloudFlare.CloudFlare(email='jeremy@explaain.com', token='ada07cb1af04e826fa34ffecd06f954ee5e93')
 
@@ -33,33 +34,6 @@ toPrint = {
 # Initiate Firebase
 cred = firebaseCredentials.Certificate('serviceAccountKey.json')
 default_app = firebase_admin.initialize_app(cred)
-
-# Initiate Algolia
-client = algoliasearch.Client('D3AE3TSULH', '1b36934cc0d93e04ef8f0d5f36ad7607') # This API key allows everything
-algoliaOrgsIndex = client.init_index('organisations') if not Testing else client.init_index('-local-organisations')
-algoliaSourcesIndex = client.init_index('sources')
-algoliaUsersIndex = client.init_index('users')
-
-
-DefaultLastModified = 0 # Temporary
-
-
-def algoliaGetFilesIndexName(organisationID: str):
-  return organisationID + '__Files'
-def algoliaGetCardsIndexName(organisationID: str):
-  return organisationID + '__Cards'
-def algoliaGetFilesIndex(organisationID: str):
-  algoliaFilesIndex = client.init_index(algoliaGetFilesIndexName(organisationID))
-  return algoliaFilesIndex
-def algoliaGetCardsIndex(organisationID: str):
-  algoliaCardsIndex = client.init_index(algoliaGetCardsIndexName(organisationID))
-  return algoliaCardsIndex
-
-def browseAlgolia(index, params=False):
-  if params:
-    return [hit for hit in index.browse_all(params)]
-  else:
-    return [hit for hit in index.browse_all()]
 
 def getEntityTypes(text: str):
   try:
@@ -81,11 +55,12 @@ def serveUserData(idToken: str):
     firebaseUid = decoded_user['uid']
   except Exception as e:
     print(e)
+    sentry.captureException()
     return False
   params = {
     'filters': 'firebase: "' + firebaseUid + '"'
   }
-  res = algoliaUsersIndex.search('', params)
+  res = db.Users().search(params=params)
   if 'hits' in res and len(res['hits']):
     user = res['hits'][0]
     if '_highlightResult' in user:
@@ -98,7 +73,7 @@ def serveUserData(idToken: str):
       params = {
         'filters': 'emails: "' + decoded_user['email'] + '"'
       }
-      res = algoliaUsersIndex.search('', params)
+      res = db.Users().search(params=params)
       if 'hits' in res and len(res['hits']):
         user = res['hits'][0]
         if '_highlightResult' in user:
@@ -106,7 +81,7 @@ def serveUserData(idToken: str):
         print('Found this match by email:', user)
         # Add firebase details and save in db
         user['firebase'] = firebaseUid
-        algoliaUsersIndex.save_object(user)
+        db.Users().save(user)
         mp.track('admin', 'Added Firebase Details to User', user)
         return user
       else:
@@ -115,17 +90,23 @@ def serveUserData(idToken: str):
         organisation = setUpOrg(organisationID)
         print('organisation')
         pp.pprint(organisation)
+
+        # Algolia-specific
         if not organisation or 'algolia' not in organisation or 'apiKey' not in organisation['algolia']:
           return None
+
         # Create new user!
         user = {
           'firebase': firebaseUid,
           'organisationID': organisationID,
           'emails': [decoded_user['email']],
+
+          # Algolia-specific
           'algoliaApiKey': organisation['algolia']['apiKey'],
+
           'role': 'admin'
         }
-        algoliaUsersIndex.add_object(user)
+        db.Users().add(user)
         print('Created new user:', user)
         mp.track('admin', 'Created User in Database after very first Google login', user)
         return user
@@ -139,12 +120,13 @@ def setUpOrg(organisationID: str):
   """
   print('Setting Up Organisation', organisationID)
   mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
-  filesSettings = algoliaGetFilesIndex('explaain').get_settings()
-  cardsSettings = algoliaGetCardsIndex('explaain').get_settings()
+  filesSettings = db.Files(organisationID).get_settings()
+  cardsSettings = db.Cards(organisationID).get_settings()
   print(filesSettings)
   print(cardsSettings)
-  algoliaGetFilesIndex(organisationID).set_settings(filesSettings) # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
-  algoliaGetCardsIndex(organisationID).set_settings(cardsSettings)
+  # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
+  db.Files(organisationID).set_settings(filesSettings)
+  db.Cards(organisationID).set_settings(cardsSettings)
   mp.track('admin', 'Org Setup: Indexes Created', { 'organisationID': organisationID })
   apiKeyParams = {
     'acl': ['search', 'browse', 'addObject', 'deleteObject'],
@@ -152,8 +134,11 @@ def setUpOrg(organisationID: str):
     'description': 'Access only for organisation ' + organisationID
   }
   print('apiKeyParams', apiKeyParams)
+
+  # Algolia-specific
   algoliaApiKey = client.add_api_key(apiKeyParams)
   print('algoliaApiKey', algoliaApiKey)
+
   mp.track('admin', 'Org Setup: API Key Created', { 'organisationID': organisationID })
   searchParams = {
     'filters': 'organisationID: "' + organisationID + '"'
@@ -162,29 +147,29 @@ def setUpOrg(organisationID: str):
     'hits': []
   }
   numAttempts = 0
-  results = algoliaOrgsIndex.search('', searchParams)
-  # while len(results['hits']) == 0 and numAttempts < 3:
-  #   time.sleep(5)
-  #   numAttempts += 1
-  #   results = algoliaOrgsIndex.search('', searchParams)
+  results = db.Orgs().search(params=searchParams)
   if len(results['hits']) and 'objectID' in results['hits'][0]:
     objectID = results['hits'][0]['objectID']
     print('objectID', objectID)
     organisation = {
       'objectID': objectID,
       'name': organisationID, # Still saving this for now in case of legacy issues
+
+      # Algolia-specific
       'algolia': {
         'apiKey': algoliaApiKey['key']
       }
+
     }
     try:
-      res = algoliaOrgsIndex.partial_update_object(organisation)
+      res = db.Orgs().partial_update(organisation)
       mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': objectID, 'organisationID': organisationID })
       return organisation
     except Exception as e:
       print(e)
       mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
       print('Organisation Setup Failed')
+      sentry.captureException()
       return None
   else:
     # Assume organisation needs creating, and create one!
@@ -194,19 +179,23 @@ def setUpOrg(organisationID: str):
         'objectID': objectID,
         'organisationID': organisationID,
         'name': organisationID, # Still saving this for now in case of legacy issues
+
+        # Algolia-specific
         'algolia': {
           'apiKey': algoliaApiKey['key']
         }
+
       }
-      algoliaOrgsIndex.save_object(organisation)
+      db.Orgs().save(organisation)
       mp.track('admin', 'Org Setup: New Org Object Created', { 'objectID': organisationID, 'organisationID': organisationID })
       mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': organisationID, 'organisationID': organisationID })
     except Exception as e:
       print(e)
       mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
       print('Organisation Setup Failed')
+      sentry.captureException()
       return None
-  allOrgs = browseAlgolia(algoliaOrgsIndex)
+  allOrgs = db.Orgs().browse()
   mp.track('admin', 'Organisation Setup Complete', { 'objectID': objectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
   print('Organisation Setup Complete', organisationID)
   return organisation
@@ -233,16 +222,16 @@ def addSource(source: dict):
       print(e)
       return { 'success': False, 'error': e }
   print('source:', source)
-  res = algoliaSourcesIndex.add_object(source)
+  res = db.Source().add(source)
   source['objectID'] = res['objectID']
-  allSources = browseAlgolia(algoliaSourcesIndex)
+  allSources = db.Sources().browse()
   source['totalSources'] = len(allSources)
   mp.track('admin', 'Source Added', source)
 
 
-  # If either Algolia Index doesn't exist then create them, create algoliaApiKey and add this to organisations index
-  indices = client.list_indexes()
-  if not any(i['name'] == algoliaGetFilesIndexName(source['organisationID']) for i in indices['items']) or not any(i['name'] == algoliaGetCardsIndexName(source['organisationID']) for i in indices['items']):
+  # If either DB Index doesn't exist then create them, create api keys and add this to organisations index
+  indices = db.Client().list_indices()
+  if not any(i['name'] == db.Files(source['organisationID']).get_index_name() for i in indices['items']) or not any(i['name'] == db.Cards(source['organisationID']).get_index_name() for i in indices['items']):
     setUpOrg(source['organisationID'])
 
   # Index all files from source
@@ -259,7 +248,7 @@ def addSource(source: dict):
   }
 
 def listSources():
-  return browseAlgolia(algoliaSourcesIndex)
+  return db.Sources().browse()
 
 def indexAll(includingLastXSeconds=0):
   """Indexes all files from all sources that have been updated since their own lastUpdated value"""
@@ -281,7 +270,7 @@ def indexAll(includingLastXSeconds=0):
       'accountID': accountID,
       'numberOfFiles': num
     })
-    algoliaSourcesIndex.save_object(source)
+    db.Sources().save(source)
   mp.track('admin', 'Completed Global Index', {
     'accounts': indexed,
     'numberOfAccounts': len(indexed)
@@ -313,8 +302,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
     'notIndexing': []
   }
   pp.pprint(files)
-  algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
-  indexedFiles = algoliaFilesIndex.get_objects([f['objectID'] for f in files])
+  indexedFiles = db.Files(accountInfo['organisationID']).get(objectIDs=[f['objectID'] for f in files])
   # print('actualFiles')
   # pp.pprint(files)
   # print('indexedFiles')
@@ -360,18 +348,17 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
       f = integration.getFile(accountInfo, fileID=fileID)
     except Exception as e:
       print(e)
+      sentry.captureException()
       f = None
   if f is None:
     return False
-  algoliaFilesIndex = algoliaGetFilesIndex(accountInfo['organisationID'])
-  algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
   try:
-    oldFile = algoliaFilesIndex.get_object(f['objectID'])
+    oldFile = db.Files(accountInfo['organisationID']).get(f['objectID'])
   except Exception as e:
     print('Old file doesn\'t exist.', e)
     oldFile = None
   if not Testing:
-    algoliaFilesIndex.add_object(f)
+    db.Files(accountInfo['organisationID']).add(f)
   createFileCard(accountInfo, f)
   cardsSaved = indexFileContent(accountInfo, f)
   f['cardsSaved'] = cardsSaved
@@ -382,7 +369,6 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
 
 def indexFileContent(accountInfo, f):
   print('indexFileContent')
-  algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
 
   # Create new cards
   print('accountInfo')
@@ -440,7 +426,7 @@ def indexFileContent(accountInfo, f):
         'query': '',
         'filters': 'fileID: "' + f['objectID'] + '"'
       }
-      oldCards = algoliaCardsIndex.browse_all(params)
+      oldCards = db.Cards(accountInfo['organisationID']).browse(params=params)
       oldCards = [hit for hit in oldCards]
       print('oldCards')
       pp.pprint(oldCards)
@@ -479,7 +465,7 @@ def indexFileContent(accountInfo, f):
       params = {
         'filters': 'type: "p" AND fileID: "' + f['objectID'] + '"'
       }
-      algoliaCardsIndex.delete_by_query('', params) # Is this dangerous???
+      db.Cards(accountInfo['organisationID']).delete_by_query(params=params) # Is this dangerous???
 
       print('Deleted')
 
@@ -492,9 +478,10 @@ def indexFileContent(accountInfo, f):
     except Exception as e:
       print(e)
     try:
-      algoliaCardsIndex.add_objects(cards)
+      db.Cards(accountInfo['organisationID']).add(cards)
     except Exception as e:
       print(e)
+      sentry.captureException()
       print('Something went wrong saving cards to Algolia!')
   print('Number of Cards Updated:', len(cards))
   if toPrint['cardsCreated']:
@@ -526,9 +513,8 @@ def createFileCard(accountInfo, f):
     card['createdBy'] = f['createdBy']
   if 'integrationFields' in f and f['integrationFields']:
     card['integrationFields'] = f['integrationFields']
-  algoliaCardsIndex = algoliaGetCardsIndex(accountInfo['organisationID'])
   if not Testing:
-    algoliaCardsIndex.add_object(card)
+    db.Cards(accountInfo['organisationID']).add(card)
     print('File Card Created!')
     pp.pprint(card)
 
@@ -617,7 +603,6 @@ def saveCard(card: dict, author:dict):
   if not author or 'organisationID' not in author or 'objectID' not in author:
     return None
   organisationID = author['organisationID']
-  algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
   keysToRemove = ['_highlightResult']
   for key in keysToRemove:
     if key in card:
@@ -626,7 +611,7 @@ def saveCard(card: dict, author:dict):
   if 'objectID' in card:
     # Retrieve existing card
     try:
-      existingCard = algoliaCardsIndex.get_object(card['objectID'])
+      existingCard = db.Cards(organisationID).get(card['objectID'])
     except Exception as e:
       print(e)
       print('objectID provided but no existing card found')
@@ -684,12 +669,13 @@ def saveCard(card: dict, author:dict):
     print('has module')
     if 'source' in card and card['source']:
       try:
-        source = algoliaSourcesIndex.get_object(card['source'])
+        source = db.Source().get(card['source'])
       except Exception as e:
         print('Couldn\'t get source from db.', e)
+        sentry.captureException()
         source = None
     else:
-      sources = browseAlgolia(algoliaSourcesIndex, {
+      sources = db.Sources().browse(params = {
         'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
       })
       source = sources[0]
@@ -704,6 +690,7 @@ def saveCard(card: dict, author:dict):
     except Exception as e:
       print(e)
       serviceCard = None
+      sentry.captureException()
     # Assemble final card
     if serviceCard and type(serviceCard) is dict:
       for key in serviceCard:
@@ -712,7 +699,7 @@ def saveCard(card: dict, author:dict):
   print('card')
   pp.pprint(card)
   if not Testing:
-    savedResult = algoliaCardsIndex.add_object(card)
+    savedResult = db.Cards(organisationID).add(card)
     card['objectID'] = savedResult['objectID']
     mp.track(author['objectID'] if author and 'objectID' in author else 'admin', 'Card Saved', card)
   notifyChanges(existingCard, card)
@@ -724,12 +711,12 @@ def deleteCard(card, author):
   if not author or 'organisationID' not in author or 'objectID' not in author:
     return { 'success': False, 'error': 'No author with correct details' }
   organisationID = author['organisationID']
-  algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
   try:
-    existingCard = algoliaCardsIndex.get_object(card['objectID'])
+    existingCard = db.Cards(organisationID).get(card['objectID'])
   except Exception as e:
     print('No existing card to delete.', e)
     existingCard = None
+    sentry.captureException()
   verified = authorIsSavvy(existingCard, author)
   if verified:
     if 'service' in card and card['service']:
@@ -738,9 +725,9 @@ def deleteCard(card, author):
         integration = integrationData['module']
         print('has module')
       if 'source' in card and card['source']:
-        source = algoliaSourcesIndex.get_object(card['source'])
+        source = db.Sources().get(card['source'])
       else:
-        sources = browseAlgolia(algoliaSourcesIndex, {
+        sources = db.Sources().browse(params={
           'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
         })
         source = sources[0]
@@ -752,29 +739,31 @@ def deleteCard(card, author):
           print(e)
           serviceCard = {}
     try:
-      algoliaCardsIndex.delete_object(card['objectID'])
+      db.Cards(organisationID).delete(card['objectID'])
       notifyChanges(card, None)
       return { 'success': True, 'card': None }
     except Exception as e:
       print(e)
+      sentry.captureException()
       return { 'success': False, 'error': 'Couldn\'t delete card' }
   else:
     try:
-      existingCard = algoliaCardsIndex.get_object(card['objectID'])
+      existingCard = db.Cards(organisationID).get(card['objectID'])
       card = dict(existingCard)
       card['pendingDelete'] = True
-      algoliaCardsIndex.save_object(card)
+      db.Cards(organisationID).save(card)
       notifyChanges(existingCard, card)
       return { 'success': True, 'card': card }
     except Exception as e:
+      sentry.captureException()
       return { 'success': False, 'error': 'Couldn\'t set card to be pending deletion' }
 
 def verify(objectID: dict, author: dict, prop: str = None, approve: bool = True):
   organisationID = author['organisationID']
-  algoliaCardsIndex = algoliaGetCardsIndex(organisationID)
   try:
-    existingCard = algoliaCardsIndex.get_object(objectID)
+    existingCard = db.Cards(organisationID).get(objectID)
   except Exception as e:
+    sentry.captureException()
     return { 'success': False, 'error': 'Card could not be found' }
   card = dict(existingCard)
 

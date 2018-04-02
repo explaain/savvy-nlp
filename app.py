@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-import os, pprint
+import os, pprint, index, cards
 # import bugsnag, os, pprint
-from flask import Flask, jsonify, request
+from raven import Client as SentryClient
 from flask_cors import CORS, cross_origin
-import index
-import cards
+from flask import Flask, jsonify, request
 from parse import parse
 
 # bugsnag.configure(
@@ -13,6 +12,8 @@ from parse import parse
 # )
 
 pp = pprint.PrettyPrinter(indent=4)
+
+sentry = SentryClient('https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428')
 
 from algoliasearch import algoliasearch
 client = algoliasearch.Client('D3AE3TSULH', '88bd0a77faff65d4ace510fbf172a4e1') # This API key allows everything
