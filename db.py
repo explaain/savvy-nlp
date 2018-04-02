@@ -125,7 +125,8 @@ class Index:
       records = None
     elif type(toAdd) == list:
       records = toAdd
-    else:
+      record = None
+    if not record and not records:
       return None
     try:
       if records:
@@ -170,7 +171,8 @@ class Index:
       records = None
     elif type(toAdd) == list:
       records = toAdd
-    else:
+      record = None
+    if not record and not records:
       return None
     try:
       if records:
@@ -308,7 +310,7 @@ class Files(Index):
 
 # Sources()
 # print(Cards('explaain').get(objectID='CBk1gWIBrXgu31eums2X'))
-# pp.pprint(Cards('explaain').search(search_service='elasticsearch', query=''))
+# pp.pprint(Cards('kompasapp').search(search_service='elasticsearch', query=''))
 # print(Cards('explaain').add([
 # {
 #   "hello": "hello3",
