@@ -1,8 +1,11 @@
 import pprint, json, traceback, sys
+from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
 
 pp = pprint.PrettyPrinter(indent=4) #, width=160)
+
+sentry = SentryClient('https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428')
 
 es = Elasticsearch(
     ['https://ad56f010315f958f3a4d179dc36e6554.us-east-1.aws.found.io:9243/'],
@@ -42,6 +45,7 @@ class Index:
       return self.index
     except Exception as e:
       print('Algolia: Couldn\'t connect to index "' + self.index_name + '". ', e)
+      sentry.captureException()
       return None
 
   def get_index_name(self):
@@ -59,7 +63,8 @@ class Index:
         # @TODO: configure search and insert query
         return es.search(index=self.lowercase_index_name, body = {'query': {'match_all': {}}})
     except Exception as e:
-      print('Algolia: Couldn\'t search for records in index "' + self.index_name + '". ', e)
+      print(search_service + ': Couldn\'t search for records in index "' + self.lowercase_index_name + '". ', e)
+      sentry.captureException()
       return None
 
   def get(self, objectID: str=None, objectIDs: list=[]):
@@ -70,6 +75,7 @@ class Index:
         return self.index.get_objects(objectIDs)
       except Exception as e:
         print('Algolia: Couldn\'t get records from index "' + self.index_name + '". ', e)
+        sentry.captureException()
         return None
     else:
       try:
@@ -88,11 +94,13 @@ class Index:
         # pp.pprint(res)
       except Exception as e:
         traceback.print_exc(file=sys.stdout)
+        sentry.captureException()
         print('ElasticSearch: Couldn\'t get record from index "' + self.lowercase_index_name + '". ', e)
       try:
         return self.index.get_object(objectID)
       except Exception as e:
         print('Algolia: Couldn\'t get record from index "' + self.index_name + '". ', e)
+        sentry.captureException()
         return None
 
   def browse(self, params=False):
@@ -103,6 +111,7 @@ class Index:
         browsed = self.index.browse_all()
     except Exception as e:
       print('Algolia: Couldn\'t browse index "' + index_name + '". ', e)
+      sentry.captureException()
     return [hit for hit in browsed]
 
   def add(self, toAdd):
@@ -120,6 +129,7 @@ class Index:
         result = self.index.add_object(record)
     except Exception as e:
       print('Algolia: Couldn\'t add record(s) to index "' + self.index_name + '". ', e)
+      sentry.captureException()
       return None
     print('result')
     pp.pprint(result)
@@ -145,6 +155,7 @@ class Index:
       pp.pprint(res)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
+      sentry.captureException()
       print('ElasticSearch: Couldn\'t add record(s) to index "' + self.lowercase_index_name + '". ', e)
     return result
 
@@ -170,6 +181,7 @@ class Index:
         result = self.index.save_object(record)
     except Exception as e:
       print('Algolia: Couldn\'t save record(s) to index "' + self.index_name + '". ', e)
+      sentry.captureException()
       return None
     print('result')
     pp.pprint(result)
@@ -193,6 +205,7 @@ class Index:
       pp.pprint(res)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
+      sentry.captureException()
       print('ElasticSearch: Couldn\'t save record(s) to index "' + self.lowercase_index_name + '". ', e)
     return result
 
@@ -202,6 +215,7 @@ class Index:
       result = self.index.partial_update_object(record)
     except Exception as e:
       print('Algolia: Couldn\'t save record to index "' + self.index_name + '". ', e)
+      sentry.captureException()
       return None
     try:
       body = dict(record)
@@ -209,6 +223,7 @@ class Index:
       res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=result['objectID'], body=body)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
+      sentry.captureException()
       print('ElasticSearch: Couldn\'t update record in index "' + self.lowercase_index_name + '". ', e)
     return result
 
@@ -219,11 +234,13 @@ class Index:
       result = self.index.delete_object(objectID)
     except Exception as e:
       print('Algolia: Couldn\'t delete record from index "' + self.index_name + '". ', e)
+      sentry.captureException()
       return None
     try:
       res = es.delete(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
+      sentry.captureException()
       print('ElasticSearch: Couldn\'t delete record from index "' + self.lowercase_index_name + '". ', e)
     return result
 
@@ -235,12 +252,14 @@ class Index:
       result = self.index.delete_by_query(params=params)
     except Exception as e:
       print('Algolia: Couldn\'t delete records from index "' + self.index_name + '". ', e)
+      sentry.captureException()
       return None
     # @TODO: Look this up and finish it
     # try:
     #   res = es.delete_by_query(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
     # except Exception as e:
     #   traceback.print_exc(file=sys.stdout)
+    #   sentry.captureException()
     #   print('ElasticSearch: Couldn\'t delete records from index "' + self.lowercase_index_name + '". ', e)
     return result
 
@@ -249,6 +268,7 @@ class Index:
       return self.index.get_settings()
     except Exception as e:
       print('Algolia: Couldn\'t get settings from index "' + self.index_name + '". ', e)
+      sentry.captureException()
       return None
 
   def set_settings(self, settings: dict):
@@ -256,6 +276,7 @@ class Index:
       return self.index.set_settings(settings)
     except Exception as e:
       print('Algolia: Couldn\'t set settings for index "' + self.index_name + '". ', e)
+      sentry.captureException()
       return None
 
 
@@ -282,7 +303,7 @@ class Files(Index):
 
 # Sources()
 # print(Cards('explaain').get(objectID='CBk1gWIBrXgu31eums2X'))
-# pp.pprint(Cards('explaain').search(search_service='elasticsearch'))
+# pp.pprint(Sources().search(search_service='elasticsearch', query=''))
 # print(Cards('explaain').add([
 # {
 #   "hello": "hello3",
