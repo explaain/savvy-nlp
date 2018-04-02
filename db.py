@@ -1,11 +1,13 @@
-import pprint, json, traceback, sys
+import pprint, os, json, traceback, sys
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
 
 pp = pprint.PrettyPrinter(indent=4) #, width=160)
 
-sentry = SentryClient('https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428')
+sentry = SentryClient(
+  'https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428',
+  environment = 'local' if 'HOME' in os.environ and os.environ['HOME'] == '/Users/jeremy' else 'production')
 
 es = Elasticsearch(
     ['https://ad56f010315f958f3a4d179dc36e6554.us-east-1.aws.found.io:9243/'],
@@ -306,7 +308,7 @@ class Files(Index):
 
 # Sources()
 # print(Cards('explaain').get(objectID='CBk1gWIBrXgu31eums2X'))
-# pp.pprint(Sources().search(search_service='elasticsearch', query=''))
+# pp.pprint(Cards('explaain').search(search_service='elasticsearch', query=''))
 # print(Cards('explaain').add([
 # {
 #   "hello": "hello3",

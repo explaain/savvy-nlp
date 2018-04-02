@@ -13,7 +13,9 @@ from parse import parse
 
 pp = pprint.PrettyPrinter(indent=4)
 
-sentry = SentryClient('https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428')
+sentry = SentryClient(
+  'https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428',
+  environment = 'local' if 'HOME' in os.environ and os.environ['HOME'] == '/Users/jeremy' else 'production')
 
 from algoliasearch import algoliasearch
 client = algoliasearch.Client('D3AE3TSULH', '88bd0a77faff65d4ace510fbf172a4e1') # This API key allows everything

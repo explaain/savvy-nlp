@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pprint, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys, db
+import pprint, os, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys, db
 from raven import Client as SentryClient
 from parse import services, entityNlp
 import xmljson
@@ -15,7 +15,9 @@ from mixpanel import Mixpanel
 import CloudFlare
 
 pp = pprint.PrettyPrinter(indent=4, width=160)
-sentry = SentryClient('https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428')
+sentry = SentryClient(
+  'https://9a0228c8fde2404c9ccd6063e6b02b4c:d77e32d1f5b64f07ba77bda52adbd70e@sentry.io/1004428',
+  environment = 'local' if 'HOME' in os.environ and os.environ['HOME'] == '/Users/jeremy' else 'production')
 mp = Mixpanel('e3b4939c1ae819d65712679199dfce7e')
 cf = CloudFlare.CloudFlare(email='jeremy@explaain.com', token='ada07cb1af04e826fa34ffecd06f954ee5e93')
 
@@ -1081,3 +1083,39 @@ def startIndexing():
 #   "title": "Dropbox",
 #   "objectID": "743997510"
 # }, 'FdxDb09OPjebpJzmcWPb8Zcj8EP76lJSPO0lZLKQm2Gg=')
+
+# indexFile({
+#   "active": True,
+#   "service": "gdrive",
+#   "created": 1511972977,
+#   "modified": 1516801100,
+#   "service_name": "Google Drive",
+#   "admin": False,
+#   "apis": [
+#     "storage"
+#   ],
+#   "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default gdrive:normal.storage.default",
+#   "api": "meta",
+#   "type": "account",
+#   "organisationID": "explaain",
+#   "addedBy": "jeremy@explaain.com",
+#   "accountID": "282782204",
+#   "googleRawCredentials": {
+#     "client_id": "704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com",
+#     "client_secret": "7fU16P8yZL-MHzMItnOw-SR0",
+#     "refresh_token": "1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe",
+#     "scopes": [
+#       "https://www.googleapis.com/auth/drive.metadata.readonly",
+#       "https://www.googleapis.com/auth/spreadsheets"
+#     ],
+#     "access_token": "ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM",
+#     "token_uri": "https://accounts.google.com/o/oauth2/token",
+#     "user_agent": None,
+#     "token_expiry": False
+#   },
+#   "superService": "kloudless",
+#   "objectID": "282782204"
+# }, 'F0kViktN6M309v8uy5XTa4EzlSeI-uLp2uoPdQkiIx6D-pZfvdqTZi9pzUMgDLEGW')
+
+
+# pp.pprint([var + ': ' + os.environ[var] for var in os.environ])
