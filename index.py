@@ -355,7 +355,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   if f is None:
     return False
   try:
-    oldFile = db.Files(accountInfo['organisationID']).get(f['objectID'])
+    oldFile = db.Files(accountInfo['organisationID']).get(f['objectID'], allowFail=True)
   except Exception as e:
     print('Old file doesn\'t exist.', e)
     oldFile = None

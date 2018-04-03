@@ -72,7 +72,8 @@ class Index:
       sentry.captureException()
       return None
 
-  def get(self, objectID: str=None, objectIDs: list=[]):
+  def get(self, objectID: str=None, objectIDs: list=[], allowFail: bool=False):
+    # allowFail should only be True if it's fine for the object not to be found
     if not objectID and (not objectIDs or not len(objectIDs)):
       return None
     if objectIDs and len(objectIDs):
@@ -104,8 +105,11 @@ class Index:
       try:
         return self.index.get_object(objectID)
       except Exception as e:
-        print('Algolia: Couldn\'t get record from index "' + self.index_name + '". ', e)
-        sentry.captureException()
+        if allowFail:
+          print('Algolia: Didn\'t find record in index, but this is OK so not throwing error')
+        else:
+          print('Algolia: Couldn\'t get record from index "' + self.index_name + '". ', e)
+          sentry.captureException()
         return None
 
   def browse(self, params=False):
