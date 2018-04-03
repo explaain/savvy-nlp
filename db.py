@@ -252,11 +252,13 @@ class Index:
     return result
 
   def delete_by_query(self, params: dict=None):
-    if not params or not len(params) or (len(params) == 1 and 'query' in params and not len (params['query'])):
+    if not params or not len(params) or (('query' not in params or not len (params['query'])) and ('filter' in params or not len (params['filter']))):
+      # This makes sure that we don't delete everything! (I.e. that either params['query'] or params['filter'] exists and is non-empty)
       return None
+    query = params['query'] if 'query' in params and params['query'] else ''
     try:
       # @TODO: Check this is actually the Algolia command
-      result = self.index.delete_by_query(params=params)
+      result = self.index.delete_by_query(query=query, params=params)
     except Exception as e:
       print('Algolia: Couldn\'t delete records from index "' + self.index_name + '". ', e)
       sentry.captureException()
@@ -310,7 +312,7 @@ class Files(Index):
 
 # Sources()
 # print(Cards('explaain').get(objectID='CBk1gWIBrXgu31eums2X'))
-# pp.pprint(Cards('kompasapp').search(search_service='elasticsearch', query=''))
+# pp.pprint(Cards('explaain').search(search_service='elasticsearch', query=''))
 # print(Cards('explaain').add([
 # {
 #   "hello": "hello3",
