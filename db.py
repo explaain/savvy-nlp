@@ -256,7 +256,7 @@ class Index:
     return result
 
   def delete_by_query(self, params: dict=None):
-    if not params or not len(params) or (('query' not in params or not len (params['query'])) and ('filter' in params or not len (params['filter']))):
+    if not params or not len(params) or (('query' not in params or not len (params['query'])) and ('filter' not in params or not len (params['filter']))):
       # This makes sure that we don't delete everything! (I.e. that either params['query'] or params['filter'] exists and is non-empty)
       return None
     query = params['query'] if 'query' in params and params['query'] else ''
