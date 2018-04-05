@@ -2,7 +2,7 @@
 import re, io, pprint, itertools, zipfile, untangle, time, traceback, sys
 from collections import OrderedDict
 import xmljson
-from . import kloudless_gdocs as gdocs, kloudless_gsheets as gsheets, kloudless_dropbox as dropbox
+from . import kloudless_gdrive as gdrive, kloudless_gdocs as gdocs, kloudless_gsheets as gsheets, kloudless_dropbox as dropbox
 from xmljson import parker, Parker
 # bf = BadgerFish(dict_type=OrderedDict)
 from xml.etree.ElementTree import fromstring
@@ -29,6 +29,8 @@ def listFiles(accountInfo, after=False, number=500):
   # print('Number of Files:', len(recent))
   # print('files: ', '\n'.join(list(map(lambda x: x['name'], recent))))
   files = [kloudlessToFile(f, accountInfo) for f in recent]
+  print('len(files)')
+  print(len(files))
   return files
 
 def getFile(accountInfo, fileID):
@@ -97,9 +99,10 @@ def getExportedFileData(accountInfo, fileID):
     'driveService': driveService
   }
 
-def getFileContent(accountInfo, fileID):
-  exportedFileData = getExportedFileData(accountInfo, fileID)
-  return exportedFileData['driveService'].fileToContent(exportedFileData['exportedFile']) if exportedFileData else None
+# @TODO: Seems like this is no longer used!
+# def getFileContent(accountInfo, fileID):
+#   exportedFileData = getExportedFileData(accountInfo, fileID)
+#   return exportedFileData['driveService'].fileToContent(exportedFileData['exportedFile']) if exportedFileData else None
 
 def getContentForCards(accountInfo, fileID):
   print('getContentForCards')
@@ -125,7 +128,7 @@ def getFileUrl(id, mimeType):
 def getServiceModuleByName(serviceName):
   serviceModules = {
     'dropbox': dropbox,
-    'gdrive': None,
+    'gdrive': gdrive,
   }
   return serviceModules[serviceName] if serviceName in serviceModules else None
 
