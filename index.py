@@ -7,12 +7,21 @@ import firebase_admin
 from firebase_admin import credentials as firebaseCredentials
 from firebase_admin import auth as firebaseAuth
 from google.cloud import storage as google_storage
+from algoliasearch import algoliasearch
+
+
+
+from oauth2client import client as googleClient
 
 from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
 from mixpanel import Mixpanel
 import CloudFlare
+
+GOOGLE_CLIENT_SECRET_FILE = 'google_connect_client_secret.json'
+
+algoliaClient = algoliasearch.Client('D3AE3TSULH', '1b36934cc0d93e04ef8f0d5f36ad7607') # This API key allows everything
 
 pp = pprint.PrettyPrinter(indent=4, width=160)
 sentry = SentryClient(
@@ -138,7 +147,7 @@ def setUpOrg(organisationID: str):
   print('apiKeyParams', apiKeyParams)
 
   # Algolia-specific
-  algoliaApiKey = client.add_api_key(apiKeyParams)
+  algoliaApiKey = algoliaClient.add_api_key(apiKeyParams)
   print('algoliaApiKey', algoliaApiKey)
 
   mp.track('admin', 'Org Setup: API Key Created', { 'organisationID': organisationID })
@@ -221,6 +230,17 @@ def addSource(source: dict):
   for key in [ 'organisationID', 'service' ]:
     if key not in source:
       e = 'source must contain \'' + key + '\''
+      print(e)
+      return { 'success': False, 'error': e }
+  if 'superService' in source and source['superService'] == 'google':
+    if 'code' in source and 'scopes' in source:
+      # Exchange auth code for access token, refresh token, and ID token
+      credentials = googleClient.credentials_from_clientsecrets_and_code(GOOGLE_CLIENT_SECRET_FILE, source['scopes'], source['code'])
+      source['access_token'] = credentials.access_token
+      source['refresh_token'] = credentials.refresh_token
+      source['id_token'] = credentials.id_token
+    elif 'access_token' not in source and 'refresh_token' not in source and 'id_token' not in source:
+      e = 'source must contain either: both "code" and "scopes"; or "access_token" and "refresh_token" and "id_token"'
       print(e)
       return { 'success': False, 'error': e }
   print('source:', source)
