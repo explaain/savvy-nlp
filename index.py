@@ -122,8 +122,8 @@ def setUpOrg(organisationID: str):
   """
   print('Setting Up Organisation', organisationID)
   mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
-  filesSettings = db.Files(organisationID).get_settings()
-  cardsSettings = db.Cards(organisationID).get_settings()
+  filesSettings = db.Files('explaain').get_settings()
+  cardsSettings = db.Cards('explaain').get_settings()
   print(filesSettings)
   print(cardsSettings)
   # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
