@@ -27,7 +27,7 @@ class Client:
       return None
 
   def list_indices(self):
-    self.client.list_indexes()
+    return self.client.list_indexes()
 
 
 class Index:
