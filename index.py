@@ -122,8 +122,14 @@ def setUpOrg(organisationID: str):
   """
   print('Setting Up Organisation', organisationID)
   mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
+<<<<<<< Updated upstream
   filesSettings = db.Files('explaain').get_settings()
   cardsSettings = db.Cards('explaain').get_settings()
+=======
+  indexToCopySettingsFrom = 'explaain'
+  filesSettings = db.Files(indexToCopySettingsFrom).get_settings()
+  cardsSettings = db.Cards(indexToCopySettingsFrom).get_settings()
+>>>>>>> Stashed changes
   print(filesSettings)
   print(cardsSettings)
   # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
