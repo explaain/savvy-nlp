@@ -63,7 +63,10 @@ class Index:
         return self.index.search(query, params)
       else:
         # @TODO: configure search and insert query
-        res = es.search(index=self.lowercase_index_name, body = {'query': {'match_all': {}}})
+        if query and len(query):
+          res = es.search(index=self.lowercase_index_name, q=query, body = {'query': {'match_all': {}}}, size=12)
+        else:
+          res = es.search(index=self.lowercase_index_name, body = {'query': {'match_all': {}}}, size=12)
         return {
           'hits': [hit['_source'] for hit in res['hits']['hits']]
         }
