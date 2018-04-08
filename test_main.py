@@ -1,7 +1,7 @@
 import os, json, pprint
 import index
 from parse import services
-from parse.integrations import kloudless_integration as kloudlessDrives, confluence
+from parse.integrations import super_kloudless as kloudlessDrives, confluence
 from parse.integrations.formats import html, xml_doc as xml, csv
 
 pp = pprint.PrettyPrinter(indent=4)
