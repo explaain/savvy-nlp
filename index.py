@@ -314,7 +314,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
     indexedFileArray = [iFile for iFile in indexedFiles['results'] if iFile and iFile['objectID'] == f['objectID']]
     indexedFile = indexedFileArray[0] if len(indexedFileArray) else None
 
-    if allFiles or not indexedFile or 'modified' not in indexedFile or indexedFile['modified'] < f['modified'] or calendar.timegm(time.gmtime()) - includingLastXSeconds < f['modified']:
+    if allFiles or not indexedFile or 'modified' not in indexedFile or not indexedFile['modified'] or indexedFile['modified'] < f['modified'] or calendar.timegm(time.gmtime()) - includingLastXSeconds < f['modified']:
       filesTracker['indexing'].append({
         'title': f['title'],
         'modified': f['modified'],
