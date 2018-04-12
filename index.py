@@ -424,6 +424,7 @@ def indexFileContent(accountInfo, f):
     print('No module defined')
     return False
   integration = integrationData['module']
+  cards = None
   if hasattr(integration, 'getFileCards'):
     # This is for services that are already split into card-like chunks (e.g. Trello)
     print('getFileCards')
