@@ -290,7 +290,7 @@ def indexAll(includingLastXSeconds=0):
   indexed = []
   for source in sources:
     print(source)
-    accountID = accountInfo.get('accountID', accountInfo.get('objectID', None))
+    accountID = source.get('accountID', source.get('objectID', None))
     if accountID:
       organisationID = source['organisationID']
       accountInfo = source
