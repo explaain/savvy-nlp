@@ -82,7 +82,7 @@ def serveUserData(idToken: str):
   }
   res = db.Users().search(params=params)
   if 'hits' in res and len(res['hits']):
-    if len(res['hits'] > 1):
+    if len(res['hits']) > 1:
       print('More than one result for firebaseUid ' + firebaseUid + ' - aborting for security reasons!')
       sentry.captureMessage('More than one result for this firebaseUid - aborting for security reasons!', extra={
         'user': decoded_user,
