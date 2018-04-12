@@ -27,10 +27,11 @@ def get_google_service(http_auth):
 
 # @TODO Figure out whether this still needs 'after' or 'number'
 def list_files(google_service=None, source: dict=None):
-  result = google_service.users().threads().list(userId='me', q='is:important').execute()
-  threads = result['threads']
-  files = [_thread_to_file(google_service, source, thread) for thread in threads[:50]]
-  return files
+  return []
+  # result = google_service.users().threads().list(userId='me', q='is:important').execute()
+  # threads = result['threads']
+  # files = [_thread_to_file(google_service, source, thread) for thread in threads[:50]]
+  # return files
 
 def get_file(google_service=None, source: dict=None, file_id: str=None):
   print('get_file', google_service, source, file_id)
