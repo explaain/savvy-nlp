@@ -62,6 +62,7 @@ def serveUserData(idToken: str):
   once the user has logged in through Firebase (if it can't verify user token it gives up immediately).
   Currently only called from frontend in (auth.js)
   """
+  firebaseUid = None
   try:
     decoded_user = firebaseAuth.verify_id_token(idToken)
     print(decoded_user)
@@ -70,11 +71,23 @@ def serveUserData(idToken: str):
     print(e)
     sentry.captureException()
     return False
+  if not firebaseUid or not len(firebaseUid):
+    print('Blank firebaseUid - aborting for security reasons!')
+    sentry.captureMessage('Blank firebaseUid - aborting for security reasons!', extra={
+      'user': decoded_user,
+    })
+    return False
   params = {
     'filters': 'firebase: "' + firebaseUid + '"'
   }
   res = db.Users().search(params=params)
   if 'hits' in res and len(res['hits']):
+    if len(res['hits'] > 1):
+      print('More than one result for firebaseUid ' + firebaseUid + ' - aborting for security reasons!')
+      sentry.captureMessage('More than one result for this firebaseUid - aborting for security reasons!', extra={
+        'user': decoded_user,
+      })
+      return False # @TODO: return something more useful in errors?
     user = res['hits'][0]
     if '_highlightResult' in user:
       del user['_highlightResult']
