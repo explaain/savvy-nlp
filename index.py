@@ -303,7 +303,9 @@ def indexAll(includingLastXSeconds=0):
       })
     else:
       print('No accountID or objectID!!')
-      sentry.captureMessage('No accountID or objectID!!', source=source)
+      sentry.captureMessage('No accountID or objectID!!', extra={
+        'source': source,
+      })
     # db.Sources().save(source)
   mp.track('admin', 'Completed Global Index', {
     'accounts': indexed,

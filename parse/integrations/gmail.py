@@ -29,7 +29,7 @@ def get_google_service(http_auth):
 def list_files(google_service=None, source: dict=None):
   result = google_service.users().threads().list(userId='me', q='is:important').execute()
   threads = result['threads']
-  files = [_thread_to_file(google_service, source, thread) for thread in threads[:5]]
+  files = [_thread_to_file(google_service, source, thread) for thread in threads[:20]]
   return files
 
 def get_file(google_service=None, source: dict=None, file_id: str=None):
@@ -64,7 +64,10 @@ def _get_message_text(google_service=None, message_id: str=None):
       html_message = base64.urlsafe_b64decode(raw[1].encode('ASCII')).decode('utf-8')
   if not html_message:
     print('Unrecognised email format!!!')
-    sentry.captureMessage('Unrecognised email format!!!', message=message, msg_str=msg_str)
+    sentry.captureMessage('Unrecognised email format!!!', extra={
+      'message': message,
+      'msg_str': msg_str,
+    })
   return html_message
 
 
@@ -79,30 +82,31 @@ def get_cards(google_service=None, source: dict=None, file_id: str=None):
       if message and len(message) and 'id' in message:
         id = message['id']
         message_text = _get_message_text(google_service, message['id'])
-        message_text = ''.join(''.join(''.join(message_text.split('=\r\n')).split('\r\n')).split('=C2=A0'))
-        soup=bs(message_text)                #make BeautifulSoup
-        for div in soup.find_all("div", {'class':'3D"gmail_signature"'}):
-          div.decompose()
-        for div in soup.find_all("blockquote"):
-          div.decompose()
-        for div in soup.find_all("div", {'class':'gmail_signature'}):
-          div.decompose()
-        for div in soup.find_all("div", {'class':'3D"gmail_extra"'}):
-          div.decompose()
-        prettyHTML=soup.prettify()          #prettify the html
-        markdown = html2text.html2text(prettyHTML)
-        # markdown = '\n\n'.join([m for m in re.compile('\n\s+\n').split(markdown) if not m == '' and not m == '  '])
-        # markdown = '\n\n'.join([m for m in markdown.split('\n') if len(m) and not m[0] == '>'])
-        markdown = '\n\n'.join([m for m in markdown.split('\n') if len(m) and not m[:3] == '\--'])
-        for i, m in enumerate(markdown.split('\n')):
-          if bool(re.match('On \d+ \w+ \d+, at \d\d:\d\d, .+ < \[.+', m)):
-            markdown = '\n'.join(markdown.split('\n')[:i])
-        # markdown = '\n\n'.join([m for m in markdown.split('\n') if len(m) and not re.compile('On \d+ \w+ \d+, at \d\d:\d\d, .+ < \[.+').match(m)])
-        message['markdown_text'] = markdown
-        messages.append(message)
+        if message_text:
+          message_text = ''.join(''.join(''.join(message_text.split('=\r\n')).split('\r\n')).split('=C2=A0'))
+          soup=bs(message_text)                #make BeautifulSoup
+          for div in soup.find_all("div", {'class':'3D"gmail_signature"'}):
+            div.decompose()
+          for div in soup.find_all("blockquote"):
+            div.decompose()
+          for div in soup.find_all("div", {'class':'gmail_signature'}):
+            div.decompose()
+          for div in soup.find_all("div", {'class':'3D"gmail_extra"'}):
+            div.decompose()
+          prettyHTML=soup.prettify()          #prettify the html
+          markdown = html2text.html2text(prettyHTML)
+          # markdown = '\n\n'.join([m for m in re.compile('\n\s+\n').split(markdown) if not m == '' and not m == '  '])
+          # markdown = '\n\n'.join([m for m in markdown.split('\n') if len(m) and not m[0] == '>'])
+          markdown = '\n\n'.join([m for m in markdown.split('\n') if len(m) and not m[:3] == '\--'])
+          for i, m in enumerate(markdown.split('\n')):
+            if bool(re.match('On \d+ \w+ \d+, at \d\d:\d\d, .+ < \[.+', m)):
+              markdown = '\n'.join(markdown.split('\n')[:i])
+          # markdown = '\n\n'.join([m for m in markdown.split('\n') if len(m) and not re.compile('On \d+ \w+ \d+, at \d\d:\d\d, .+ < \[.+').match(m)])
+          message['markdown_text'] = markdown
+          messages.append(message)
 
-        # open('message-' + id + '.html', 'w').write(prettyHTML)
-        # open('message-' + id + '.md', 'w').write(markdown)
+          # open('message-' + id + '.html', 'w').write(prettyHTML)
+          # open('message-' + id + '.md', 'w').write(markdown)
   file = _thread_to_file(google_service, source, thread)
   cards = [_message_to_card(google_service, source, file, message_text) for message_text in messages]
   return cards
