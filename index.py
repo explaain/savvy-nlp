@@ -420,7 +420,7 @@ def indexFileContent(accountInfo, f):
     print('getFileCards')
     cards = integration.getFileCards(accountInfo, f['objectID'])
     contentArray = None
-  else:
+  if not cards:
     # This is for services that need to be parsed into card-like chunks (e.g. docs, sheets (though maybe ultimately not sheets!))
     try:
       contentArray = integration.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
@@ -1179,4 +1179,4 @@ def startIndexing():
 #     'totalSources': 72,
 #     'user_agent': None}
 #
-# indexFile(source, '161ce2a9ea8dc4a7')
+# indexFile(source, '162ba61cf493693f')

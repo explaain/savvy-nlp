@@ -73,6 +73,21 @@ def getFile(source: dict=None, fileID: str=None):
 # def getExportedFileData(source, file_id):
 #   return None
 
+def getFileCards(source: dict=None, file_id: str=None):
+  if not source or 'service' not in source or not file_id:
+    return None
+  service = get_service(source['service'])
+  if 'module' not in service:
+    return None
+  service_module = service['module']
+  if not hasattr(service_module, 'get_cards'):
+    return None
+  google_service = get_google_service(source)
+  if not google_service:
+    return None
+  cards = service_module.get_cards(google_service, source, file_id)
+  return cards
+
 def getContentForCards(source, file_id):
   service_module = get_service(source['service'])['module']
   google_service = get_google_service(source)
