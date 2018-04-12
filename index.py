@@ -293,9 +293,8 @@ def indexAll(includingLastXSeconds=0):
     accountID = source.get('accountID', source.get('objectID', None))
     if accountID:
       organisationID = source['organisationID']
-      accountInfo = source
-      accountInfo['accountID'] = accountID
-      num = indexFiles(accountInfo, includingLastXSeconds=includingLastXSeconds)
+      source['accountID'] = accountID
+      num = indexFiles(source, includingLastXSeconds=includingLastXSeconds)
       indexed.append({
         'organisationID': organisationID,
         'accountID': accountID,
