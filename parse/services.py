@@ -1,5 +1,5 @@
 import pprint, sys
-from parse.integrations import kloudless_integration as kloudlessDrives, confluence, sifter, zoho_bugtracker, gsites, trello
+from parse.integrations import super_kloudless as kloudlessDrives, super_google as google, confluence, sifter, zoho_bugtracker, gsites, trello
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -12,6 +12,10 @@ Services = {
   'gdrive': {
     'title': 'Google Drive',
     'superService': 'kloudless',
+  },
+  'gmail': {
+    'title': 'Gmail',
+    'superService': 'google',
   },
   'dropbox': {
     'title': 'Dropbox',
@@ -43,6 +47,9 @@ SuperServices = {
   'kloudless': {
     'module': kloudlessDrives,
   },
+  'google': {
+    'module': google,
+  },
 }
 
 def getAllServiceData(accountInfo=None, serviceName=None, superServiceName=None, specificCard=None):
@@ -73,7 +80,7 @@ def getAllServiceData(accountInfo=None, serviceName=None, superServiceName=None,
     return None
   if superServiceName and superServiceName in SuperServices:
     allServiceData['superService'] = SuperServices[superServiceName]
-    allServiceData['superService']['superServiceName'] = serviceName
+    allServiceData['superService']['superServiceName'] = superServiceName
   return allServiceData
 
 def getIntegrationData(accountInfo=None, serviceName=None, superServiceName=None, specificCard=None):

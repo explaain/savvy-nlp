@@ -7,12 +7,21 @@ import firebase_admin
 from firebase_admin import credentials as firebaseCredentials
 from firebase_admin import auth as firebaseAuth
 from google.cloud import storage as google_storage
+from algoliasearch import algoliasearch
+
+
+
+from oauth2client import client as googleClient
 
 from google.cloud import language
 from google.cloud.language import enums
 from google.cloud.language import types
 from mixpanel import Mixpanel
 import CloudFlare
+
+GOOGLE_CLIENT_SECRET_FILE = 'google_connect_client_secret.json'
+
+algoliaClient = algoliasearch.Client('D3AE3TSULH', '1b36934cc0d93e04ef8f0d5f36ad7607') # This API key allows everything
 
 pp = pprint.PrettyPrinter(indent=4, width=160)
 sentry = SentryClient(
@@ -124,9 +133,9 @@ def setUpOrg(organisationID: str):
   """
   print('Setting Up Organisation', organisationID)
   mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
-  indexToCopySettingsFrom = 'explaain'
-  filesSettings = db.Files(indexToCopySettingsFrom).get_settings()
-  cardsSettings = db.Cards(indexToCopySettingsFrom).get_settings()
+  orgToCopySettingsFrom = 'explaain'
+  filesSettings = db.Files(orgToCopySettingsFrom).get_settings()
+  cardsSettings = db.Cards(orgToCopySettingsFrom).get_settings()
   print(filesSettings)
   print(cardsSettings)
   # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
@@ -141,7 +150,7 @@ def setUpOrg(organisationID: str):
   print('apiKeyParams', apiKeyParams)
 
   # Algolia-specific
-  algoliaApiKey = client.add_api_key(apiKeyParams)
+  algoliaApiKey = algoliaClient.add_api_key(apiKeyParams)
   print('algoliaApiKey', algoliaApiKey)
 
   mp.track('admin', 'Org Setup: API Key Created', { 'organisationID': organisationID })
@@ -226,6 +235,22 @@ def addSource(source: dict):
       e = 'source must contain \'' + key + '\''
       print(e)
       return { 'success': False, 'error': e }
+  if 'superService' in source and source['superService'] == 'google':
+    if 'code' in source and 'scopes' in source:
+      # Exchange auth code for access token, refresh token, and ID token
+      credentials = googleClient.credentials_from_clientsecrets_and_code(GOOGLE_CLIENT_SECRET_FILE, source['scopes'], source['code'])
+      pp.pprint(dir(credentials))
+      source['access_token'] = credentials.access_token
+      source['refresh_token'] = credentials.refresh_token
+      source['id_token'] = credentials.id_token
+      source['token_expiry'] = credentials.token_expiry
+      source['user_agent'] = credentials.user_agent
+      source['revoke_uri'] = credentials.revoke_uri
+      pp.pprint(source)
+    elif 'access_token' not in source and 'refresh_token' not in source and 'id_token' not in source:
+      e = 'source must contain either: both "code" and "scopes"; or "access_token" and "refresh_token" and "id_token"'
+      print(e)
+      return { 'success': False, 'error': e }
   print('source:', source)
   res = db.Sources().add(source)
   source['objectID'] = str(res['objectID'])
@@ -265,16 +290,20 @@ def indexAll(includingLastXSeconds=0):
   indexed = []
   for source in sources:
     print(source)
-    accountID = source['accountID'] if 'accountID' in source else source['objectID']
-    organisationID = source['organisationID']
-    accountInfo = source
-    accountInfo['accountID'] = accountID
-    num = indexFiles(accountInfo, includingLastXSeconds=includingLastXSeconds)
-    indexed.append({
-      'organisationID': organisationID,
-      'accountID': accountID,
-      'numberOfFiles': num
-    })
+    accountID = accountInfo.get('accountID', accountInfo.get('objectID', None))
+    if accountID:
+      organisationID = source['organisationID']
+      accountInfo = source
+      accountInfo['accountID'] = accountID
+      num = indexFiles(accountInfo, includingLastXSeconds=includingLastXSeconds)
+      indexed.append({
+        'organisationID': organisationID,
+        'accountID': accountID,
+        'numberOfFiles': num
+      })
+    else:
+      print('No accountID or objectID!!')
+      sentry.captureMessage('No accountID or objectID!!', source=source)
     # db.Sources().save(source)
   mp.track('admin', 'Completed Global Index', {
     'accounts': indexed,
@@ -347,7 +376,10 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     return False
   integration = integrationData['module']
   if actualFile:
-    f = actualFile
+    keys = ['objectID', 'service', 'source', 'title', 'modified']
+    keysInActualFile = [(key in actualFile and actualFile[key]) for key in keys]
+    if keysInActualFile.count(False) == 0:
+      f = actualFile
   else:
     try:
       f = integration.getFile(accountInfo, fileID=fileID)
@@ -396,7 +428,7 @@ def indexFileContent(accountInfo, f):
     print('getFileCards')
     cards = integration.getFileCards(accountInfo, f['objectID'])
     contentArray = None
-  else:
+  if not cards:
     # This is for services that need to be parsed into card-like chunks (e.g. docs, sheets (though maybe ultimately not sheets!))
     try:
       contentArray = integration.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
@@ -546,7 +578,7 @@ def createCardsFromContentArray(accountInfo, contentArray, f, parentContext=[]):
       'created': f['created'],
       'modified': f['modified'],
       # 'index': chunk['index'] if 'index' in chunk else None,
-      'source': accountInfo['accountID'],
+      'source': accountInfo.get('accountID', accountInfo.get('objectID', None)),
       'service': f['service'],
       'superService': f['superService'] if 'superService' in f else None,
       'subService': f['subService'] if 'subService' in f else None,
@@ -1122,3 +1154,31 @@ def startIndexing():
 
 
 # pp.pprint([var + ': ' + os.environ[var] for var in os.environ])
+
+
+#
+# source = {   'access_token': 'ya29.GluWBas4lqycjRobeUke5AWjeWNqphLZN4M_gWkcY0YfiC0er4fvw_z1h0akMle0-X79aMpGjTg9NWfRX6-khcqEJj0XuI_jRm6w4YOfwCZsFzy1amF2isfa_mKP',
+#     'code': '4/AAAPQUlZqLo985b_9slclk2DYKGJVk8d3t1OXhZJBVivxAq_NM5nUNDR6MFQAqwc5mkdQ-LtFLnz1i2rvffwZjg',
+#     'id_token': {   'at_hash': '0Y3Lg94fJ29-AfcsQO4klg',
+#                     'aud': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
+#                     'azp': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
+#                     'email': 'jeremy@explaain.com',
+#                     'email_verified': True,
+#                     'exp': 1523119243,
+#                     'hd': 'explaain.com',
+#                     'iat': 1523115643,
+#                     'iss': 'accounts.google.com',
+#                     'sub': '104380110279658920175'},
+#     'objectID': '826182612',
+#     'organisationID': 'explaain',
+#     'refresh_token': '1/t1CV_co7Ruo4pBgCGfXGhqVPn9oDn-t_a-3VL6Q0MYU',
+#     'revoke_uri': 'https://accounts.google.com/o/oauth2/revoke',
+#     'scopes': ['https://www.googleapis.com/auth/gmail.readonly'],
+#     'service': 'gmail',
+#     'superService': 'google',
+#     'title': 'Gmail',
+#     'token_expiry': datetime.datetime(2018, 4, 7, 16, 40, 43, 784752),
+#     'totalSources': 72,
+#     'user_agent': None}
+#
+# indexFile(source, '162ba61cf493693f')
