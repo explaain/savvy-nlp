@@ -28,7 +28,7 @@ google_bucket = google_storage_client.get_bucket('savvy')
 # Decides whether we're in testing mode or not
 Testing = False
 
-ForceOverwrite = True
+ForceOverwrite = False
 
 # Decide what to print out:
 toPrint = {
