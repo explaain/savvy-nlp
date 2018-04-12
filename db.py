@@ -1,7 +1,9 @@
 import pprint, os, json, traceback, sys
+import templates
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
+from elasticsearch import client
 
 pp = pprint.PrettyPrinter(indent=4) #, width=160)
 
@@ -10,14 +12,18 @@ sentry = SentryClient(
   environment = 'local' if 'HOME' in os.environ and os.environ['HOME'] == '/Users/jeremy' else 'production')
 
 es = Elasticsearch(
+# https://elastic:z5X0jw5hyJRzpEIOvFQmWwxN@ad56f010315f958f3a4d179dc36e6554.us-east-1.aws.found.io:9243/
     ['https://ad56f010315f958f3a4d179dc36e6554.us-east-1.aws.found.io:9243/'],
     http_auth=('elastic', 'z5X0jw5hyJRzpEIOvFQmWwxN'),
     scheme='https',
     port=9243,)
 
+UsingAlgolia = False
+
 class Client:
   """docstring for Client"""
   def __init__(self, app_id='D3AE3TSULH', api_key='1b36934cc0d93e04ef8f0d5f36ad7607'): # This API key allows everything
+  # def __init__(self, app_id='__', api_key='__'): # This API key allows everything
     self.client = algoliasearch.Client(app_id, api_key)
 
   def index(self, index_name: str=None):
@@ -28,6 +34,12 @@ class Client:
 
   def list_indices(self):
     return self.client.list_indexes()
+
+  # def delete_index(self, index_name: str=None):
+  #   if index_name and len(index_name):
+  #     return self.client.delete(index=index_name)
+  #   else:
+  #     return None
 
 
 class Index:
@@ -59,7 +71,7 @@ class Index:
     if not len(query) and params and 'query' in params and params['query']:
       query = params['query']
     try:
-      if search_service == 'algolia':
+      if search_service == 'algolia' and UsingAlgolia:
         return self.index.search(query, params)
       else:
         # @TODO: configure search and insert query
@@ -68,18 +80,19 @@ class Index:
         else:
           res = es.search(index=self.lowercase_index_name, body = {'query': {'match_all': {}}}, size=12)
         return {
-          'hits': [hit['_source'] for hit in res['hits']['hits']]
+          'hits': [_transform_from_elasticsearch(self.doc_type, hit['_source'], id=hit['_id']) for hit in res['hits']['hits']]
         }
     except Exception as e:
       print(search_service + ': Couldn\'t search for records in index "' + self.lowercase_index_name + '". ', e)
       sentry.captureException()
       return None
 
-  def get(self, objectID: str=None, objectIDs: list=[], allowFail: bool=False):
+  def get(self, objectID: str=None, objectIDs: list=None, allowFail: bool=False, search_service: str='algolia'):
     # allowFail should only be True if it's fine for the object not to be found
     if not objectID and (not objectIDs or not len(objectIDs)):
       return None
     if objectIDs and len(objectIDs):
+      # Fetching multiple objects
       try:
         return self.index.get_objects(objectIDs)
       except Exception as e:
@@ -87,35 +100,35 @@ class Index:
         sentry.captureException()
         return None
     else:
-      try:
-        print(1)
-        exists = es.exists(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
-        print(exists)
-        print(not exists)
-        if exists:
-          print(22)
-          res = es.get(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
-          print('From ElasticSearch:')
-          pp.pprint(res)
-        else:
-          print('From ElasticSearch: record from index "' + self.lowercase_index_name + '" doesn\'t exist. ')
-
-        # pp.pprint(res)
-      except Exception as e:
-        traceback.print_exc(file=sys.stdout)
-        sentry.captureException()
-        print('ElasticSearch: Couldn\'t get record from index "' + self.lowercase_index_name + '". ', e)
-      try:
-        return self.index.get_object(objectID)
-      except Exception as e:
-        if allowFail:
-          print('Algolia: Didn\'t find record in index, but this is OK so not throwing error')
-        else:
-          print('Algolia: Couldn\'t get record from index "' + self.index_name + '". ', e)
+      if search_service == 'algolia' and UsingAlgolia:
+        try:
+          return self.index.get_object(objectID)
+        except Exception as e:
+          if allowFail:
+            print('Algolia: Didn\'t find record in index, but this is OK so not throwing error')
+          else:
+            print('Algolia: Couldn\'t get record from index "' + self.index_name + '". ', e)
+            sentry.captureException()
+          return None
+      else:
+        try:
+          exists = es.exists(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
+          if exists:
+            res = es.get(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
+            print('From ElasticSearch:')
+            res = _transform_from_elasticsearch(self.doc_type, res['_source'], id=res['_id'])
+            pp.pprint(res)
+            return res
+          else:
+            print('From ElasticSearch: record from index "' + self.lowercase_index_name + '" doesn\'t exist. ')
+            return None
+        except Exception as e:
+          traceback.print_exc(file=sys.stdout)
           sentry.captureException()
-        return None
+          print('ElasticSearch: Couldn\'t get record from index "' + self.lowercase_index_name + '". ', e)
 
   def browse(self, params=False):
+    # @TODO: Add ElasticSearch here
     try:
       if params:
         browsed = self.index.browse_all(params)
@@ -127,45 +140,47 @@ class Index:
     return [hit for hit in browsed]
 
   def add(self, toAdd):
+    record = None
+    records = None
     if type(toAdd) == dict:
       record = toAdd
-      records = None
     elif type(toAdd) == list:
       records = toAdd
-      record = None
     if not record and not records:
       return None
+    if UsingAlgolia:
+      try:
+        if records:
+          result = self.index.add_objects(records)
+        else:
+          result = self.index.add_object(record)
+      except Exception as e:
+        print('Algolia: Couldn\'t add record(s) to index "' + self.index_name + '". ', e)
+        sentry.captureException()
+        return None
+    else:
+      result = None
     try:
       if records:
-        result = self.index.add_objects(records)
-      else:
-        result = self.index.add_object(record)
-    except Exception as e:
-      print('Algolia: Couldn\'t add record(s) to index "' + self.index_name + '". ', e)
-      sentry.captureException()
-      return None
-    print('result')
-    pp.pprint(result)
-    try:
-      if records:
-        body = list(records)
-        for record in body:
-          if 'objectID' in body:
-            del(record['objectID'])
-        body = ['{ "index" : { "_id" : "' + result['objectIDs'][i] + '" } }\n' + json.dumps(record) for i, record in enumerate(records)]
+        records = [_transform_to_elasticsearch(self.doc_type, dict(record)) for record in records]
+        if UsingAlgolia:
+          body = ['{ "index" : { "_id" : "' + result['objectIDs'][i] + '" } }\n' + json.dumps(record) for i, record in enumerate(records)]
+        else:
+          body = ['{ "index" : {' + (records[i]['objectID'] if 'objectID' in records[i] and records[i]['objectID'] else '') + '} }\n' + json.dumps(record) for i, record in enumerate(records)]
         body = '\n'.join(body)
-        print('body')
-        print(body)
         res = es.bulk(index=self.lowercase_index_name, doc_type=self.doc_type, body=body)
       else:
-        body = dict(record)
-        if 'objectID' in body:
-          del(body['objectID'])
-        print('body')
-        print(body)
-        res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=result['objectID'], body=body)
-      print('res')
+        body = _transform_to_elasticsearch(self.doc_type, dict(record))
+        if UsingAlgolia or 'objectID' in record and record['objectID']:
+          print("record['objectID']")
+          print(record['objectID'])
+          res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=(result['objectID'] if result else record['objectID']), body=body)
+        else:
+          res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, body=body)
+      print('ElasticSearch Success:')
       pp.pprint(res)
+      if not UsingAlgolia:
+        result = _transform_elasticsearch_result(res)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
       sentry.captureException()
@@ -187,36 +202,33 @@ class Index:
           if 'objectID' not in record:
             print('All records must contain objectID')
             return None
-        result = self.index.save_objects(records)
+        if UsingAlgolia:
+          result = self.index.save_objects(records)
       else:
         if 'objectID' not in record:
           print('Record must contain objectID')
           return None
-        result = self.index.save_object(record)
+        if UsingAlgolia:
+          result = self.index.save_object(record)
     except Exception as e:
       print('Algolia: Couldn\'t save record(s) to index "' + self.index_name + '". ', e)
       sentry.captureException()
       return None
-    print('result')
-    pp.pprint(result)
+    if not UsingAlgolia:
+      result = None
     try:
       if records:
-        body = list(records)
-        for record in body:
-          del(record['objectID'])
-        body = ['{ "index" : { "_id" : "' + result['objectIDs'][i] + '" } }\n' + json.dumps(record) for i, record in enumerate(records)]
+        body = [_transform_to_elasticsearch(self.doc_type, dict(record)) for record in records]
+        body = ['{ "index" : { "_id" : "' + records[i]['objectID'] + '" } }\n' + json.dumps(record) for i, record in enumerate(body)]
         body = '\n'.join(body)
-        print('body')
-        print(body)
         res = es.bulk(index=self.lowercase_index_name, doc_type=self.doc_type, body=body)
       else:
-        body = dict(record)
-        del(body['objectID'])
-        print('body')
-        print(body)
-        res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=result['objectID'], body=body)
-      print('res')
+        body = _transform_to_elasticsearch(self.doc_type, dict(record))
+        res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=record['objectID'], body=body)
+      print('ElasticSearch Success:')
       pp.pprint(res)
+      if not UsingAlgolia:
+        result = _transform_elasticsearch_result(res)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
       sentry.captureException()
@@ -225,15 +237,14 @@ class Index:
 
   def partial_update(self, record: dict):
     try:
-      # Do we need to account for multiple objects here too?
+      # @TODO: Do we need to account for multiple objects here too?
       result = self.index.partial_update_object(record)
     except Exception as e:
       print('Algolia: Couldn\'t save record to index "' + self.index_name + '". ', e)
       sentry.captureException()
       return None
     try:
-      body = dict(record)
-      del(body['objectID'])
+      body = _transform_to_elasticsearch(self.doc_type, dict(record))
       res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=result['objectID'], body=body)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
@@ -317,8 +328,49 @@ class Files(Index):
     self.index(index_name=organisationID + '__Files', doc_type='file')
 
 
-# Sources()
-# print(Cards('explaain').get(objectID='CBk1gWIBrXgu31eums2X'))
+def _transform_to_elasticsearch(doc_type: str=None, obj: dict=None):
+  # NOTE: 'objectID' gets deleted here so should have already been extracted to use as '_id'
+  if 'objectID' in obj:
+    del(obj['objectID'])
+    # Stuff below is just various hacks to fix issues
+  if doc_type and doc_type == 'card':
+    # for key in ['created', 'modified']:
+    #   if key in obj and obj[key] and isinstance(obj[key], int):
+    #     if obj[key] < 10000000000:
+    #       obj[key] = obj[key] * 1000
+    if 'files' in obj:
+      del(obj['files'])
+  return obj
+
+def _transform_from_elasticsearch(doc_type: str=None, obj: dict=None, id: str=None):
+  print('_transform_from_elasticsearch')
+  if id and ('objectID' not in obj or not obj['objectID']):
+    obj['objectID'] = id
+    # Currently just various hacks to fix issues - we'll want to remove this sooner than _transform_to_elasticsearch()
+  if doc_type and doc_type == 'card':
+    # for key in ['created', 'modified']:
+    #   if key in obj and obj[key] and isinstance(obj[key], int):
+    #     if obj[key] > 10000000000:
+    #       obj[key] = int(obj[key] / 1000)
+    if 'files' in obj:
+      del(obj['files'])
+  return obj
+
+def _transform_elasticsearch_result(res: dict=None):
+  if not res:
+    return None
+  if 'items' in res:
+    return {
+      'objectIDs': [item['index']['_id'] for item in res['items']],
+    }
+  else:
+    return {
+      'objectID': res['_id']
+    }
+
+
+# # Sources()
+# print(Cards('explaain').get(objectID='450006879348', search_service='elasticsearch'))
 # pp.pprint(Cards('explaain').search(search_service='elasticsearch', query=''))
 # print(Cards('explaain').add([
 # {
@@ -332,11 +384,52 @@ class Files(Index):
 # ]))
 # Files('explaain').save(file)
 
+
+# print(card)
+
+# pp.pprint(_transform_to_elasticsearch(card))
+
 #
-# res = es.bulk(index='explaain__cards', doc_type='card', body=
-# '{ "index" : { "_id" : "2" } }\n'
-# +'{"hello": "yo"}\n'
-# '{ "index" : { "_id" : "3" } }\n'
-# +'{"hello": "yo"}\n'
-# )
+# res = es.search(index='explaain__cards', q='darren', body={'query': {'match_all': {}}})
+# res = client.IndicesClient(es).get(index='explaain__cards')
+# res = client.IndicesClient(es).get(index='testingtesting__cards')
 # pp.pprint(res)
+
+# template = templates.get_template('files')
+# pp.pprint(template)
+
+# pp.pprint(client.IndicesClient(es).put_template(name='files', body=template))
+# pp.pprint(client.IndicesClient(es).get_mapping(index='explaain__files', doc_type='file'))
+# res = client.IndicesClient(es).put_mapping(index='testingtesting__cards', doc_type='card', body=template['mappings'])
+
+# res = es.get(index='explaain__cards', doc_type='card', id='450006879348')
+
+# pp.pprint(res)
+# pp.pprint(Client().list_indices())
+# pp.pprint(client.IndicesClient(es).delete('explaain__cards'))
+# pp.pprint(client.IndicesClient(es).delete('explaain__files'))
+# pp.pprint(client.IndicesClient(es).delete(index='Guzel_Akhatova_29560673__Cards'))
+# pp.pprint([index['name'] + ': ' + str(index['entries']) for index in Client().list_indices()['items']])
+
+
+
+# card = {
+#    'created': 1516125053,
+#    'title': 'Testing Card 8',
+#    'description': 'To Test or Not To Test',
+#    'modified': 1522746873,
+#    'modifier': 'Jeremy Tester',
+#    'organisationID': 'explaain',
+#    # 'objectID': '11678',
+# }
+# card2 = {
+#    'created': 1516125053,
+#    'title': 'Testing Card 9',
+#    'description': 'To Test or Not To Test',
+#    'modified': 1522746873,
+#    'modifier': 'Jeremy Tester',
+#    'organisationID': 'explaain',
+#    # 'objectID': '14576',
+# }
+#
+# pp.pprint(Cards('testingtesting').add([card, card2]))

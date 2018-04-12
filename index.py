@@ -28,6 +28,8 @@ google_bucket = google_storage_client.get_bucket('savvy')
 # Decides whether we're in testing mode or not
 Testing = False
 
+ForceOverwrite = True
+
 # Decide what to print out:
 toPrint = {
   'cardsCreated': False
@@ -226,7 +228,7 @@ def addSource(source: dict):
       return { 'success': False, 'error': e }
   print('source:', source)
   res = db.Sources().add(source)
-  source['objectID'] = res['objectID']
+  source['objectID'] = str(res['objectID'])
   allSources = db.Sources().browse()
   source['totalSources'] = len(allSources)
   mp.track('admin', 'Source Added', source)
@@ -356,12 +358,18 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   if f is None:
     return False
   try:
+    print('f1')
+    print(f)
     oldFile = db.Files(accountInfo['organisationID']).get(f['objectID'], allowFail=True)
   except Exception as e:
     print('Old file doesn\'t exist.', e)
     oldFile = None
   if not Testing:
     db.Files(accountInfo['organisationID']).add(f)
+  print('oldFile')
+  print(oldFile)
+  print('f')
+  print(f)
   createFileCard(accountInfo, f)
   cardsSaved = indexFileContent(accountInfo, f)
   f['cardsSaved'] = cardsSaved
@@ -423,7 +431,7 @@ def indexFileContent(accountInfo, f):
     oldFreeze = None
 
 
-  if oldFreeze and len(oldFreeze) == len(newFreeze):
+  if oldFreeze and len(oldFreeze) == len(newFreeze) and not ForceOverwrite:
       # Retrieve all existing cards
       params = {
         'query': '',
@@ -437,18 +445,12 @@ def indexFileContent(accountInfo, f):
       # Store objectIDs to replace
       objectIDsToReplace = {}
       for i, line in enumerate(newFreeze):
-        print('--- ', i)
         oldCard = [card for card in oldCards if 'index' in card and card['index'] == i]
-        print(oldCard)
         realObjectID = str(oldCard[0]['objectID']) if len(oldCard) else None
-        print(realObjectID)
         newCard = [card for card in cards if 'index' in card and card['index'] == i]
-        print(newCard)
         tempObjectID = str(newCard[0]['objectID']) if len(newCard) else None
-        print(tempObjectID)
         if tempObjectID and realObjectID:
           objectIDsToReplace[tempObjectID] = realObjectID
-          print(i, tempObjectID, realObjectID)
       pp.pprint(objectIDsToReplace)
       # objectIDsToReplace = [[cards[i]['objectID'], oldCards[i]['objectID']] for line, i in enumerate(newFreeze)]
       # Filter to only new cards
@@ -495,7 +497,7 @@ def createFileCard(accountInfo, f):
   card = {
     'type': 'file',
     'isFile': True,
-    'objectID': f['objectID'],
+    'objectID': str(f['objectID']),
     'format': f['fileFormat'] if 'fileFormat' in f else None,
     'title': f['title'],
     'fileID': f['objectID'],
@@ -1085,7 +1087,7 @@ def startIndexing():
 #   "objectID": "743997510"
 # }, 'FdxDb09OPjebpJzmcWPb8Zcj8EP76lJSPO0lZLKQm2Gg=')
 
-# indexFile({
+# indexFiles({
 #   "active": True,
 #   "service": "gdrive",
 #   "created": 1511972977,
@@ -1116,7 +1118,7 @@ def startIndexing():
 #   },
 #   "superService": "kloudless",
 #   "objectID": "282782204"
-# }, 'F0kViktN6M309v8uy5XTa4EzlSeI-uLp2uoPdQkiIx6D-pZfvdqTZi9pzUMgDLEGW')
+# }, allFiles=True) #, 'F0kViktN6M309v8uy5XTa4EzlSeI-uLp2uoPdQkiIx6D-pZfvdqTZi9pzUMgDLEGW')
 
 
 # pp.pprint([var + ': ' + os.environ[var] for var in os.environ])
