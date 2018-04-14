@@ -477,39 +477,45 @@ def indexFileContent(accountInfo, f):
   else:
     oldFreeze = None
 
-
+  smartReplace = False
   if oldFreeze and len(oldFreeze) == len(newFreeze) and not ForceOverwrite:
-      # Retrieve all existing cards
-      params = {
-        'query': '',
-        'filters': 'fileID: "' + f['objectID'] + '"'
-      }
-      oldCards = db.Cards(accountInfo['organisationID']).browse(params=params)
-      oldCards = [hit for hit in oldCards]
-      print('oldCards')
-      pp.pprint(oldCards)
+    # Retrieve all existing cards
+    params = {
+      'query': '',
+      'filters': 'fileID: "' + f['objectID'] + '"'
+    }
+    oldCards = db.Cards(accountInfo['organisationID']).browse(params=params)
+    oldCards = [hit for hit in oldCards]
+    print('oldCards')
+    pp.pprint(oldCards)
 
-      # Store objectIDs to replace
-      objectIDsToReplace = {}
-      for i, line in enumerate(newFreeze):
-        oldCard = [card for card in oldCards if 'index' in card and card['index'] == i]
-        realObjectID = str(oldCard[0]['objectID']) if len(oldCard) else None
-        newCard = [card for card in cards if 'index' in card and card['index'] == i]
-        tempObjectID = str(newCard[0]['objectID']) if len(newCard) else None
-        if tempObjectID and realObjectID:
-          objectIDsToReplace[tempObjectID] = realObjectID
-      pp.pprint(objectIDsToReplace)
-      # objectIDsToReplace = [[cards[i]['objectID'], oldCards[i]['objectID']] for line, i in enumerate(newFreeze)]
-      # Filter to only new cards
-      cards = [card for i, card in enumerate(cards) if oldFreeze[i] != newFreeze[i]]
-      # Replace new objectIDs with existing ones - INCLUDING references to other cards
-      for card in cards:
-        card['objectID'] = objectIDsToReplace[card['objectID']]
-        if 'listItems' in card:
-          for i, item in enumerate(card['listItems']):
-            card['listItems'][i] = objectIDsToReplace[item]
-      print('Now replaced objectIDs:')
-      pp.pprint(cards)
+    # Store objectIDs to replace
+    objectIDsToReplace = {}
+    smartReplace = True
+    for i, line in enumerate(newFreeze):
+      oldCard = [card for card in oldCards if 'index' in card and card['index'] == i]
+      realObjectID = str(oldCard[0]['objectID']) if len(oldCard) and 'objectID' in oldCard[0] else None
+      newCard = [card for card in cards if 'index' in card and card['index'] == i]
+      tempObjectID = str(newCard[0]['objectID']) if len(newCard) and 'objectID' in newCard[0] else None
+      if tempObjectID and realObjectID:
+        objectIDsToReplace[tempObjectID] = realObjectID
+      else:
+        print('Abandoning Smart Replace')
+        smartReplace = False
+  if smartReplace:
+    print('Smart Replace!')
+    pp.pprint(objectIDsToReplace)
+    # objectIDsToReplace = [[cards[i]['objectID'], oldCards[i]['objectID']] for line, i in enumerate(newFreeze)]
+    # Filter to only new cards
+    cards = [card for i, card in enumerate(cards) if oldFreeze[i] != newFreeze[i]]
+    # Replace new objectIDs with existing ones - INCLUDING references to other cards
+    for card in cards:
+      card['objectID'] = objectIDsToReplace[card['objectID']]
+      if 'listItems' in card:
+        for i, item in enumerate(card['listItems']):
+          card['listItems'][i] = objectIDsToReplace[item]
+    print('Now replaced objectIDs:')
+    pp.pprint(cards)
   else:
     if not Testing and 'objectID' in f and len(f['objectID']): # Avoids a blank objectID deleting all cards in index
       # print(f)
@@ -520,8 +526,6 @@ def indexFileContent(accountInfo, f):
       db.Cards(accountInfo['organisationID']).delete_by_query(params=params) # Is this dangerous???
 
       print('Deleted')
-
-
 
   if not Testing:
     # Replace freeze
@@ -1107,18 +1111,17 @@ def startIndexing():
 # indexAll()
 #
 # indexFile({
-#   "organisationID": "Savvy Test_81834683",
-#   "superService": "kloudless",
+#   "organisationID": "Savvy_Test_99753051",
 #   "service": "dropbox",
 #   "accountID": 299031109,
-#   "access_token": "P7f9ck2S0cmrsluz4tzCvb8ygpzLz7",
-#   "account": {
+#   "access_token": "yzzxUZH6du4uCHZ2AOpyF1NGAM7ZWz",
+#   "raw_source": {
 #     "id": 299031109,
 #     "account": "testsavvy3@gmail.com",
 #     "active": True,
 #     "service": "dropbox",
 #     "created": "2018-03-30T14:10:03.992811Z",
-#     "modified": "2018-03-30T22:04:07.309751Z",
+#     "modified": "2018-03-31T11:18:19.181813Z",
 #     "service_name": "Dropbox",
 #     "admin": False,
 #     "apis": [
@@ -1131,7 +1134,8 @@ def startIndexing():
 #   "scope": "dropbox:normal.storage",
 #   "addedBy": "testsavvy3@gmail.com",
 #   "title": "Dropbox",
-#   "objectID": "743997510"
+#   "superService": "kloudless",
+#   "objectID": "744035020"
 # }, 'FdxDb09OPjebpJzmcWPb8Zcj8EP76lJSPO0lZLKQm2Gg=')
 
 # indexFiles({
