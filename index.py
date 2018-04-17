@@ -403,8 +403,21 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
       f = None
   if f is None:
     return False
-  if hasattr(integration, 'get_thumbnail_url'):
-    f['thumbnail'] = integration.get_thumbnail_url(accountInfo, fileID=fileID)
+  if hasattr(integration, 'get_thumbnail'):
+    thumbnail_file = integration.get_thumbnail(accountInfo, fileID=fileID)
+    blob = google_bucket.blob('assets/' + accountInfo['organisationID'] + '/thumb_' + fileID)
+    temp_filename = 'temp_thumb.png'
+    out_file = open(temp_filename, 'wb')
+    out_file.write(thumbnail_file)
+    out_file = open(temp_filename, 'rb')
+    blob.upload_from_file(out_file, content_type='image/png')
+    res = blob.make_public()
+    thumbnail_url = blob.public_url
+    try:
+      os.remove(temp_filename)
+    except Exception as e:
+      sentry.captureMessage('No file to remove')
+    f['thumbnail'] = thumbnail_url
   try:
     print('f1')
     print(f)
@@ -1141,7 +1154,7 @@ def startIndexing():
 #   "objectID": "744035020"
 # }, 'FdxDb09OPjebpJzmcWPb8Zcj8EP76lJSPO0lZLKQm2Gg=')
 
-indexFiles({
+indexFile({
   "active": True,
   "service": "gdrive",
   "created": 1511972977,
@@ -1172,7 +1185,7 @@ indexFiles({
   },
   "superService": "kloudless",
   "objectID": "282782204"
-}, allFiles=True) #, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
+}, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
 
 
 # pp.pprint([var + ': ' + os.environ[var] for var in os.environ])
