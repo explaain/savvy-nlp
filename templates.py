@@ -1,4 +1,4 @@
-card_template = {
+cards_template = {
   'index_patterns': ['*__cards'],
   'mappings': {
     'card': {
@@ -7,24 +7,28 @@ card_template = {
           'properties': {
             'content': {
               'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-              'type':'text'
+              'type':'text',
+              'analyzer': 'english',
             },
             'label': {
               'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-              'type':'text'
+              'type':'text',
+              'analyzer': 'english',
             },
             'objectID': {
               'type':'long'
             },
             'value': {
               'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-              'type':'text'
+              'type':'text',
+              'analyzer': 'english',
             }
           }
         },
         'context': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-          'type':'text'
+          'type':'text',
+          'analyzer': 'english',
         },
         'created': {
           'type':'date',
@@ -32,7 +36,8 @@ card_template = {
         },
         'creator': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-          'type':'text'
+          'type':'text',
+          'analyzer': 'english',
         },
         'creatorID': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
@@ -40,7 +45,8 @@ card_template = {
         },
         'description': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-          'type':'text'
+          'type':'text',
+          'analyzer': 'english',
         },
         'entityTypes': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
@@ -56,7 +62,8 @@ card_template = {
         },
         'fileTitle': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-          'type':'text'
+          'type':'text',
+          'analyzer': 'english',
         },
         'fileType': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
@@ -81,7 +88,8 @@ card_template = {
           'properties': {
             'assignedTo': {
               'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-              'type':'text'
+              'type':'text',
+              'analyzer': 'english',
             },
             'escalation_level': {
               'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
@@ -123,7 +131,8 @@ card_template = {
             },
             'projectName': {
               'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-              'type':'text'
+              'type':'text',
+              'analyzer': 'english',
             },
             'reproducible': {
               'properties': {
@@ -161,7 +170,8 @@ card_template = {
         },
         'listCards': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-          'type':'text'
+          'type':'text',
+          'analyzer': 'english',
         },
         'listItems': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
@@ -177,7 +187,8 @@ card_template = {
         },
         'modifier': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-          'type':'text'
+          'type':'text',
+          'analyzer': 'english',
         },
         'modifierID': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
@@ -209,7 +220,8 @@ card_template = {
         },
         'title': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
-          'type':'text'
+          'type':'text',
+          'analyzer': 'english',
         },
         'type': {
           'fields': { 'keyword': { 'type': 'keyword', 'ignore_above': 256 } },
