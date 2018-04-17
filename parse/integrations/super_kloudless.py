@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import re, io, pprint, itertools, zipfile, untangle, time, traceback, sys
+import re, io, pprint, itertools, zipfile, untangle, time, traceback, sys, requests
 from collections import OrderedDict
 import xmljson
 from . import kloudless_gdrive as gdrive, kloudless_gdocs as gdocs, kloudless_gsheets as gsheets, kloudless_dropbox as dropbox
@@ -10,6 +10,16 @@ pp = pprint.PrettyPrinter(indent=1, width=160)
 
 import kloudless
 kloudless.configure(api_key='q4djKR_UXs8MxmUv8M56WdTVihDK6Z7ci8JnL1qJvC2Xx40T')
+
+# @TODO: Move to index.py
+import os
+from google.cloud import storage as google_storage
+google_storage_client = google_storage.Client.from_service_account_json(
+        'google-cloud-platform-Savvy-credentials.json')
+google_bucket = google_storage_client.get_bucket('savvy')
+from wsgiref.util import FileWrapper
+
+
 
 def listAccounts():
   accounts = kloudless.Account.all()
@@ -43,11 +53,38 @@ def getFile(accountInfo, fileID):
     # print("f['owner']['id']", f['owner']['id'])
     # author = account.users.retrieve(id=f['owner']['id'])
     f = kloudlessToFile(f, accountInfo)
+
+    # conn = tinys3.Connection('AKIAJGW24TQI7M6LLI3A','Lnkm+eArFD7HPbI4Ppe83l8WJmlXDiaDjKtiLm6y',tls=True)
+    # f = open('gslides.png','rb')
+    # a = conn.upload('gslides.png', f, 'savvy-storage')
+    # print(a)
+    # return None
+    # try:
+    # except Exception as e:
+    #   thumb = None
+    #   print('Error getting thumbnail: "' + fileID + '"', e)
+
   except Exception as e:
     traceback.print_exc(file=sys.stdout)
     f = None
     print('Error getting file: "' + fileID + '"', e)
   return f
+
+def get_thumbnail_url(source, fileID):
+  if not source or 'accountID' not in source or not fileID:
+    return None
+  thumb = requests.get('https://api.kloudless.com/v1/accounts/' + source['accountID'] + '/storage/files/' + fileID + '/thumbnail',
+    headers={ 'Authorization': 'APIKey q4djKR_UXs8MxmUv8M56WdTVihDK6Z7ci8JnL1qJvC2Xx40T' })
+  blob = google_bucket.blob('assets/' + source['organisationID'] + '/thumb_' + fileID)
+  temp_filename = 'temp_thumb.png'
+  out_file = open(temp_filename, 'wb')
+  out_file.write(thumb.content)
+  out_file = open(temp_filename, 'rb')
+  blob.upload_from_file(out_file, content_type='image/png')
+  res = blob.make_public()
+  thumbnail_url = blob.public_url
+  os.remove(temp_filename)
+  return thumbnail_url
 
 def kloudlessToFile(f, accountInfo):
   print('kloudlessToFile')

@@ -403,6 +403,8 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
       f = None
   if f is None:
     return False
+  if hasattr(integration, 'get_thumbnail_url'):
+    f['thumbnail'] = integration.get_thumbnail_url(accountInfo, fileID=fileID)
   try:
     print('f1')
     print(f)
@@ -556,6 +558,7 @@ def createFileCard(accountInfo, f):
     'fileFormat': f['fileFormat'] if 'fileFormat' in f else None,
     'mimeType': f['mimeType'] if 'mimeType' in f else f['fileType'] if 'fileType' in f else None,
     'fileTitle': f['title'],
+    'fileThumbnail': f.get('thumbnail', None),
     'created': f['created'],
     'modified': f['modified'],
     'service': f['service'],
@@ -1138,38 +1141,38 @@ def startIndexing():
 #   "objectID": "744035020"
 # }, 'FdxDb09OPjebpJzmcWPb8Zcj8EP76lJSPO0lZLKQm2Gg=')
 
-# indexFiles({
-#   "active": True,
-#   "service": "gdrive",
-#   "created": 1511972977,
-#   "modified": 1516801100,
-#   "service_name": "Google Drive",
-#   "admin": False,
-#   "apis": [
-#     "storage"
-#   ],
-#   "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default gdrive:normal.storage.default",
-#   "api": "meta",
-#   "type": "account",
-#   "organisationID": "explaain",
-#   "addedBy": "jeremy@explaain.com",
-#   "accountID": "282782204",
-#   "googleRawCredentials": {
-#     "client_id": "704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com",
-#     "client_secret": "7fU16P8yZL-MHzMItnOw-SR0",
-#     "refresh_token": "1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe",
-#     "scopes": [
-#       "https://www.googleapis.com/auth/drive.metadata.readonly",
-#       "https://www.googleapis.com/auth/spreadsheets"
-#     ],
-#     "access_token": "ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM",
-#     "token_uri": "https://accounts.google.com/o/oauth2/token",
-#     "user_agent": None,
-#     "token_expiry": False
-#   },
-#   "superService": "kloudless",
-#   "objectID": "282782204"
-# }, allFiles=True) #, 'F0kViktN6M309v8uy5XTa4EzlSeI-uLp2uoPdQkiIx6D-pZfvdqTZi9pzUMgDLEGW')
+indexFiles({
+  "active": True,
+  "service": "gdrive",
+  "created": 1511972977,
+  "modified": 1516801100,
+  "service_name": "Google Drive",
+  "admin": False,
+  "apis": [
+    "storage"
+  ],
+  "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default gdrive:normal.storage.default",
+  "api": "meta",
+  "type": "account",
+  "organisationID": "explaain",
+  "addedBy": "jeremy@explaain.com",
+  "accountID": "282782204",
+  "googleRawCredentials": {
+    "client_id": "704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com",
+    "client_secret": "7fU16P8yZL-MHzMItnOw-SR0",
+    "refresh_token": "1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/spreadsheets"
+    ],
+    "access_token": "ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM",
+    "token_uri": "https://accounts.google.com/o/oauth2/token",
+    "user_agent": None,
+    "token_expiry": False
+  },
+  "superService": "kloudless",
+  "objectID": "282782204"
+}, allFiles=True) #, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
 
 
 # pp.pprint([var + ': ' + os.environ[var] for var in os.environ])
