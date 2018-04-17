@@ -18,7 +18,7 @@ es = Elasticsearch(
     scheme='https',
     port=9243,)
 
-UsingAlgolia = True
+UsingAlgolia = False
 
 class Client:
   """docstring for Client"""

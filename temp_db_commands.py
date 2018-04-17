@@ -20,7 +20,7 @@ es = Elasticsearch(
 
 query = 'brand colour'
 
-pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
+# pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
 
 # pp.pprint(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=4))
 # pp.pprint(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=5, explain=True))
@@ -166,7 +166,7 @@ pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch
 # }
 # ))
 
-# pp.pprint(client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card'))
+pp.pprint(client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card'))
 # # pp.pprint(client.IndicesClient(es).get_field_mapping(index='explaain__cards', doc_type='card', fields='description' ))
 #
 #
