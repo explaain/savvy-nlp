@@ -416,7 +416,9 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     try:
       os.remove(temp_filename)
     except Exception as e:
-      sentry.captureMessage('No thumbnail file to remove for file ' + fileID)
+      sentry.captureMessage('No thumbnail file to remove', extra={
+        'fileID': fileID
+      })
     f['thumbnail'] = thumbnail_url
   try:
     print('f1')
