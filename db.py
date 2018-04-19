@@ -175,9 +175,7 @@ class Index:
         res = es.bulk(index=self.lowercase_index_name, doc_type=self.doc_type, body=body)
       else:
         body = _transform_to_elasticsearch(self.doc_type, dict(record))
-        if UsingAlgolia or 'objectID' in record and record['objectID']:
-          print("record['objectID']")
-          print(record['objectID'])
+        if UsingAlgolia or ('objectID' in record and record['objectID']):
           res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=(result['objectID'] if result else record['objectID']), body=body)
         else:
           res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, body=body)
