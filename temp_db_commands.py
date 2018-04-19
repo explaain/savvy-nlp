@@ -20,7 +20,7 @@ es = Elasticsearch(
 
 query = 'brand colour'
 
-pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
+# pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
 
 # pp.pprint(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=4))
 # pp.pprint(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=5, explain=True))
@@ -48,7 +48,7 @@ pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch
 # , explain=True, size=12), indent=2, sort_keys=True))
 
 
-# pp.pprint(client.IndicesClient(es).get_settings(index='explaain__cards'))
+# pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
 
 # pp.pprint(client.IndicesClient(es).analyze(index='explaain__cards', body=
 # {
@@ -130,6 +130,7 @@ pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch
 # ))
 # pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
 
+pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
 # pp.pprint(client.IndicesClient(es).close(index='explaain__cards'))
 # pp.pprint(client.IndicesClient(es).put_settings(index='explaain__cards', body=
 # {
@@ -191,3 +192,7 @@ pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch
 
 
 # pp.pprint(client.IndicesClient(es).delete(index='explaain__cards'))
+
+# savvyCards = [card for card in db.Cards('explaain').browse() if (not 'service' in card or not card['service']) and 'fileID' not in card]
+# res = db.Cards('explaain').add(savvyCards)
+# pp.pprint(res)
