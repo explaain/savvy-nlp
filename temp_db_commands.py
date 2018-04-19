@@ -48,7 +48,7 @@ query = 'brand colour'
 # , explain=True, size=12), indent=2, sort_keys=True))
 
 
-# pp.pprint(client.IndicesClient(es).get_settings(index='explaain__cards'))
+# pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
 
 # pp.pprint(client.IndicesClient(es).analyze(index='explaain__cards', body=
 # {
@@ -130,6 +130,7 @@ query = 'brand colour'
 # ))
 # pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
 
+pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
 # pp.pprint(client.IndicesClient(es).close(index='explaain__cards'))
 # pp.pprint(client.IndicesClient(es).put_settings(index='explaain__cards', body=
 # {
@@ -166,7 +167,7 @@ query = 'brand colour'
 # }
 # ))
 
-pp.pprint(client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card'))
+# pp.pprint(client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card'))
 # # pp.pprint(client.IndicesClient(es).get_field_mapping(index='explaain__cards', doc_type='card', fields='description' ))
 #
 #
@@ -191,3 +192,7 @@ pp.pprint(client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type
 
 
 # pp.pprint(client.IndicesClient(es).delete(index='explaain__cards'))
+
+# savvyCards = [card for card in db.Cards('explaain').browse() if (not 'service' in card or not card['service']) and 'fileID' not in card]
+# res = db.Cards('explaain').add(savvyCards)
+# pp.pprint(res)

@@ -1,3 +1,6 @@
+# ELASTICSEARCH TODOS:
+# @TODO: browse()
+
 import pprint, os, json, traceback, sys
 import templates
 from raven import Client as SentryClient
@@ -18,7 +21,7 @@ es = Elasticsearch(
     scheme='https',
     port=9243,)
 
-UsingAlgolia = False
+UsingAlgolia = True
 
 class Client:
   """docstring for Client"""
@@ -45,17 +48,17 @@ class Client:
 class Index:
   """docstring for Index."""
   def __init__(self, index_name: str=None, doc_type: str='doc'):
-    self.index(index_name=index_name, doc_type=doc_type)
+    self.init_index(index_name=index_name, doc_type=doc_type)
 
-  def index(self, index_name: str=None, doc_type: str='doc'):
+  def init_index(self, index_name: str=None, doc_type: str='doc'):
     if not index_name:
       return None
     self.index_name = index_name
     self.lowercase_index_name = index_name.lower()
     self.doc_type = doc_type
-    client = Client()
+    _client = Client()
     try:
-      self.index = client.index(index_name=self.index_name)
+      self.index = _client.index(index_name=self.index_name)
       return self.index
     except Exception as e:
       print('Algolia: Couldn\'t connect to index "' + self.index_name + '". ', e)
@@ -93,6 +96,7 @@ class Index:
       return None
     if objectIDs and len(objectIDs):
       # Fetching multiple objects
+      # @TODO: ElasticSearch for multiple objects
       try:
         return self.index.get_objects(objectIDs)
       except Exception as e:
@@ -275,19 +279,18 @@ class Index:
     return result
 
   def delete_by_query(self, params: dict=None):
+    # @NOTE: Doesn't return anything standardised yet (different things for Algolia and ElasticSearch)
     if not params or not len(params) or (('query' not in params or not len (params['query'])) and ('filters' not in params or not len (params['filters']))):
       # This makes sure that we don't delete everything! (I.e. that either params['query'] or params['filter'] exists and is non-empty)
       return None
     result = None
-    query = params['query'] if 'query' in params and params['query'] else ''
     if UsingAlgolia:
       try:
-        # @TODO: Check this is actually the Algolia command
-        result = self.index.delete_by_query(query=query, params=params)
+        # @TODO: Test that this works - taken from: https://www.algolia.com/doc/api-reference/api-methods/delete-by/?language=python#examples
+        result = self.index.delete_by(params=params)
       except Exception as e:
         print('Algolia: Couldn\'t delete records from index "' + self.index_name + '". ', e)
         sentry.captureException()
-    # @TODO: Look this up and finish it
     try:
       body = _params_to_query_dsl(params)
       res = es.delete_by_query(index=self.lowercase_index_name, body=body)
@@ -299,48 +302,78 @@ class Index:
       print('ElasticSearch: Couldn\'t delete records from index "' + self.lowercase_index_name + '". ', e)
     return result
 
-  def get_settings(self):
+  def get_index_properties(self):
+    """This is now interpreted as get_settings() for Algolia and get_mapping() for ElasticSearch.
+    It returns both, as {
+      'algolia': {},
+      'elasticsearch': {}
+    }
+    """
+    algolia_settings = None
+    elasticsearch_mapping = None
     if UsingAlgolia:
       try:
-        return self.index.get_settings()
+        algolia_settings = self.index.get_settings()
       except Exception as e:
         print('Algolia: Couldn\'t get settings from index "' + self.index_name + '". ', e)
         sentry.captureException()
-        return None
-    else:
-      return None
+    try:
+      elasticsearch_mapping = client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card')
+    except Exception as e:
+      print('ElasticSearch: Couldn\'t get settings from index "' + self.index_name + '". ', e)
+      sentry.captureException()
+    properties = {
+      'algolia': algolia_settings,
+      'elasticsearch': elasticsearch_mapping
+    }
+    return properties
 
-  def set_settings(self, settings: dict):
-    if UsingAlgolia:
+  def set_index_properties(self, properties: dict):
+    """This is now interpreted as set_settings() for Algolia and set_mapping() for ElasticSearch
+    It sets both, and expects {
+      algolia: {},
+      elasticsearch: {}
+    }
+    """
+    # @TODO: Return something
+    if not properties:
+      return None
+    if UsingAlgolia and 'algolia' in properties:
+      algolia_settings = properties.algolia
       try:
-        return self.index.set_settings(settings)
+        self.index.set_settings(algolia_settings)
       except Exception as e:
         print('Algolia: Couldn\'t set settings for index "' + self.index_name + '". ', e)
         sentry.captureException()
-        return None
-    else:
-      return None
+    if 'elasticsearch' in properties:
+      elasticsearch_mapping = properties['elasticsearch']
+      try:
+        client.IndicesClient(es).set_mapping(index='explaain__cards', doc_type='card', body=elasticsearch_mapping)
+      except Exception as e:
+        print('ElasticSearch: Couldn\'t set settings for index "' + self.index_name + '". ', e)
+        sentry.captureException()
+
 
 
 class Organisations(Index):
   def __init__(self):
-    self.index(index_name='organisations', doc_type='organisation')
+    self.init_index(index_name='organisations', doc_type='organisation')
 
 class Sources(Index):
   def __init__(self):
-    self.index(index_name='sources', doc_type='source')
+    self.init_index(index_name='sources', doc_type='source')
 
 class Users(Index):
   def __init__(self):
-    self.index(index_name='users', doc_type='user')
+    self.init_index(index_name='users', doc_type='user')
 
 class Cards(Index):
   def __init__(self, organisationID):
-    self.index(index_name=organisationID + '__Cards', doc_type='card')
+    self.init_index(index_name=organisationID + '__Cards', doc_type='card')
 
 class Files(Index):
   def __init__(self, organisationID):
-    self.index(index_name=organisationID + '__Files', doc_type='file')
+    self.init_index(index_name=organisationID + '__Files', doc_type='file')
 
 
 def _transform_to_elasticsearch(doc_type: str=None, obj: dict=None):

@@ -147,13 +147,13 @@ def setUpOrg(organisationID: str):
   print('Setting Up Organisation', organisationID)
   mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
   orgToCopySettingsFrom = 'explaain'
-  filesSettings = db.Files(orgToCopySettingsFrom).get_settings()
-  cardsSettings = db.Cards(orgToCopySettingsFrom).get_settings()
+  filesSettings = db.Files(orgToCopySettingsFrom).get_index_properties()
+  cardsSettings = db.Cards(orgToCopySettingsFrom).get_index_properties()
   print(filesSettings)
   print(cardsSettings)
   # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
-  db.Files(organisationID).set_settings(filesSettings)
-  db.Cards(organisationID).set_settings(cardsSettings)
+  db.Files(organisationID).set_index_properties(filesSettings)
+  db.Cards(organisationID).set_index_properties(cardsSettings)
   mp.track('admin', 'Org Setup: Indexes Created', { 'organisationID': organisationID })
   apiKeyParams = {
     'acl': ['search', 'browse', 'addObject', 'deleteObject'],
@@ -1154,38 +1154,38 @@ def startIndexing():
 #   "objectID": "744035020"
 # }, 'FdxDb09OPjebpJzmcWPb8Zcj8EP76lJSPO0lZLKQm2Gg=')
 
-indexFile({
-  "active": True,
-  "service": "gdrive",
-  "created": 1511972977,
-  "modified": 1516801100,
-  "service_name": "Google Drive",
-  "admin": False,
-  "apis": [
-    "storage"
-  ],
-  "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default gdrive:normal.storage.default",
-  "api": "meta",
-  "type": "account",
-  "organisationID": "explaain",
-  "addedBy": "jeremy@explaain.com",
-  "accountID": "282782204",
-  "googleRawCredentials": {
-    "client_id": "704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com",
-    "client_secret": "7fU16P8yZL-MHzMItnOw-SR0",
-    "refresh_token": "1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe",
-    "scopes": [
-      "https://www.googleapis.com/auth/drive.metadata.readonly",
-      "https://www.googleapis.com/auth/spreadsheets"
-    ],
-    "access_token": "ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM",
-    "token_uri": "https://accounts.google.com/o/oauth2/token",
-    "user_agent": None,
-    "token_expiry": False
-  },
-  "superService": "kloudless",
-  "objectID": "282782204"
-}, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
+# indexFile({
+#   "active": True,
+#   "service": "gdrive",
+#   "created": 1511972977,
+#   "modified": 1516801100,
+#   "service_name": "Google Drive",
+#   "admin": False,
+#   "apis": [
+#     "storage"
+#   ],
+#   "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default gdrive:normal.storage.default",
+#   "api": "meta",
+#   "type": "account",
+#   "organisationID": "explaain",
+#   "addedBy": "jeremy@explaain.com",
+#   "accountID": "282782204",
+#   "googleRawCredentials": {
+#     "client_id": "704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com",
+#     "client_secret": "7fU16P8yZL-MHzMItnOw-SR0",
+#     "refresh_token": "1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe",
+#     "scopes": [
+#       "https://www.googleapis.com/auth/drive.metadata.readonly",
+#       "https://www.googleapis.com/auth/spreadsheets"
+#     ],
+#     "access_token": "ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM",
+#     "token_uri": "https://accounts.google.com/o/oauth2/token",
+#     "user_agent": None,
+#     "token_expiry": False
+#   },
+#   "superService": "kloudless",
+#   "objectID": "282782204"
+# }, 'Fy8S2PZHhd3kUlp7mdT0MktgPk3N4bZCqhMoYXwSiTc1iNvpoos2uBVoq1jhWnaSq')
 
 
 # pp.pprint([var + ': ' + os.environ[var] for var in os.environ])
