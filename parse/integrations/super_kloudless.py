@@ -64,7 +64,7 @@ def getFile(accountInfo, fileID):
 def get_thumbnail(source, fileID):
   if not source or 'accountID' not in source or not fileID:
     return None
-  thumb = requests.get('https://api.kloudless.com/v1/accounts/' + source['accountID'] + '/storage/files/' + fileID + '/thumbnail',
+  thumb = requests.get('https://api.kloudless.com/v1/accounts/' + str(source['accountID']) + '/storage/files/' + str(fileID) + '/thumbnail',
     headers={ 'Authorization': 'APIKey q4djKR_UXs8MxmUv8M56WdTVihDK6Z7ci8JnL1qJvC2Xx40T' })
   return thumb.content
 
