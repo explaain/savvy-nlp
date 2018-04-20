@@ -146,14 +146,18 @@ def setUpOrg(organisationID: str):
   """
   print('Setting Up Organisation', organisationID)
   mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
-  orgToCopySettingsFrom = 'explaain'
-  filesSettings = db.Files(orgToCopySettingsFrom).get_index_properties()
-  cardsSettings = db.Cards(orgToCopySettingsFrom).get_index_properties()
-  print(filesSettings)
-  print(cardsSettings)
-  # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
-  db.Files(organisationID).set_index_properties(filesSettings)
-  db.Cards(organisationID).set_index_properties(cardsSettings)
+  try:
+    orgToCopySettingsFrom = 'explaain'
+    filesSettings = db.Files(orgToCopySettingsFrom).get_index_properties()
+    cardsSettings = db.Cards(orgToCopySettingsFrom).get_index_properties()
+    print(filesSettings)
+    print(cardsSettings)
+    # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
+    db.Files(organisationID).set_index_properties(filesSettings)
+    db.Cards(organisationID).set_index_properties(cardsSettings)
+  except Exception as e:
+    print('Copying settings didn\'t work')
+    sentry.captureMessage('Copying settings didn\'t work')
   mp.track('admin', 'Org Setup: Indexes Created', { 'organisationID': organisationID })
   apiKeyParams = {
     'acl': ['search', 'browse', 'addObject', 'deleteObject'],
@@ -416,9 +420,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
     try:
       os.remove(temp_filename)
     except Exception as e:
-      sentry.captureMessage('No thumbnail file to remove', extra={
-        'fileID': fileID
-      })
+      sentry.captureMessage('No file to remove')
     f['thumbnail'] = thumbnail_url
   try:
     print('f1')
@@ -680,6 +682,12 @@ def searchCards(user: dict=None, query: str='', params: dict=None):
     query = params['query']
   search_service = params['search_service'] if params and len(params) and 'search_service' in params else 'algolia'
   return db.Cards(user['organisationID']).search(query=query, params=params, search_service=search_service)
+
+def getCard(user: dict=None, objectID: str=None, params: dict=None):
+  if not user or not len(user) or 'organisationID' not in user or not objectID:
+    return None
+  search_service = params['search_service'] if params and len(params) and 'search_service' in params else 'algolia'
+  return db.Cards(user['organisationID']).get(objectID=objectID, search_service=search_service)
 
 def saveCard(card: dict, author:dict):
   # @TODO: Figure out whether sometimes an update will delete a field but it'll be automatically put back in

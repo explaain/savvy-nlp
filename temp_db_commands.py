@@ -48,6 +48,11 @@ query = 'brand colour'
 # , explain=True, size=12), indent=2, sort_keys=True))
 
 
+# pp.pprint(client.IndicesClient(es).get(index='_all'))
+
+pp.pprint(db.Client().list_indices(search_service='elasticsearch'))
+# pp.pprint([i['name'] for i in db.Client().list_indices(search_service='algolia')['items']])
+
 # pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
 
 # pp.pprint(client.IndicesClient(es).analyze(index='explaain__cards', body=
@@ -130,7 +135,7 @@ query = 'brand colour'
 # ))
 # pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
 
-pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
+# pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
 # pp.pprint(client.IndicesClient(es).close(index='explaain__cards'))
 # pp.pprint(client.IndicesClient(es).put_settings(index='explaain__cards', body=
 # {
@@ -152,6 +157,7 @@ pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
 # ))
 # pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
 
+# pp.pprint(client.NodesClient(es).info())
 # pp.pprint(client.ClusterClient(es).get_settings())
 # pp.pprint(client.ClusterClient(es).put_settings(body=
 # {

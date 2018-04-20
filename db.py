@@ -35,8 +35,17 @@ class Client:
     else:
       return None
 
-  def list_indices(self):
-    return self.client.list_indexes()
+  def list_indices(self, search_service='algolia'):
+    if search_service == 'algolia':
+      return self.client.list_indexes()
+    else:
+      indices = client.IndicesClient(es).get(index='_all')
+      # @NOTE: Currently only produces property 'name' for each index
+      if not indices:
+        return None
+      return {
+        'items': [{ 'name': key } for key in indices if key[0] != '.']
+      }
 
   # def delete_index(self, index_name: str=None):
   #   if index_name and len(index_name):
@@ -65,8 +74,11 @@ class Index:
       sentry.captureException()
       return None
 
-  def get_index_name(self):
-    return self.index_name
+  def get_index_name(self, search_service='algolia'):
+    if search_service == 'algolia':
+      return self.index_name
+    else:
+      return self.lowercase_index_name
 
   def search(self, query: str='', params: dict=None, search_service: str='algolia'):
     if not query:
@@ -77,16 +89,17 @@ class Index:
       if search_service == 'algolia' and UsingAlgolia:
         return self.index.search(query, params)
       else:
-        # @TODO: configure search and insert query
+        # @TODO: configure search and insert query (NOW DONE???)
+        body = _params_to_query_dsl(params)
         if query and len(query):
-          res = es.search(index=self.lowercase_index_name, q=query, body = {'query': {'match_all': {}}}, size=12)
+          res = es.search(index=self.get_index_name('elasticsearch'), q=query, body=body, size=12)
         else:
-          res = es.search(index=self.lowercase_index_name, body = {'query': {'match_all': {}}}, size=12)
+          res = es.search(index=self.get_index_name('elasticsearch'), body=body, size=12)
         return {
           'hits': [_transform_from_elasticsearch(self.doc_type, hit['_source'], id=hit['_id']) for hit in res['hits']['hits']]
         }
     except Exception as e:
-      print(search_service + ': Couldn\'t search for records in index "' + self.lowercase_index_name + '". ', e)
+      print(search_service + ': Couldn\'t search for records in index "' + self.get_index_name('elasticsearch') + '". ', e)
       sentry.captureException()
       return None
 
@@ -100,7 +113,7 @@ class Index:
       try:
         return self.index.get_objects(objectIDs)
       except Exception as e:
-        print('Algolia: Couldn\'t get records from index "' + self.index_name + '". ', e)
+        print('Algolia: Couldn\'t get records from index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
         return None
     else:
@@ -111,36 +124,43 @@ class Index:
           if allowFail:
             print('Algolia: Didn\'t find record in index, but this is OK so not throwing error')
           else:
-            print('Algolia: Couldn\'t get record from index "' + self.index_name + '". ', e)
+            print('Algolia: Couldn\'t get record from index "' + self.get_index_name('algolia') + '". ', e)
             sentry.captureException()
           return None
       else:
         try:
-          exists = es.exists(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
+          exists = es.exists(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=objectID)
           if exists:
-            res = es.get(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
+            res = es.get(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=objectID)
             print('From ElasticSearch:')
             res = _transform_from_elasticsearch(self.doc_type, res['_source'], id=res['_id'])
             pp.pprint(res)
             return res
           else:
-            print('From ElasticSearch: record from index "' + self.lowercase_index_name + '" doesn\'t exist. ')
+            print('From ElasticSearch: record from index "' + self.get_index_name('elasticsearch') + '" doesn\'t exist. ')
             return None
         except Exception as e:
           traceback.print_exc(file=sys.stdout)
           sentry.captureException()
-          print('ElasticSearch: Couldn\'t get record from index "' + self.lowercase_index_name + '". ', e)
+          print('ElasticSearch: Couldn\'t get record from index "' + self.get_index_name('elasticsearch') + '". ', e)
 
-  def browse(self, params=False):
+  def browse(self, params=False, search_service='algolia'):
     # @TODO: Add ElasticSearch here
-    try:
-      if params:
-        browsed = self.index.browse_all(params)
-      else:
-        browsed = self.index.browse_all()
-    except Exception as e:
-      print('Algolia: Couldn\'t browse index "' + index_name + '". ', e)
-      sentry.captureException()
+    if search_service == 'algolia':
+      try:
+        if params:
+          browsed = self.index.browse_all(params)
+        else:
+          browsed = self.index.browse_all()
+      except Exception as e:
+        print('Algolia: Couldn\'t browse index "' + index_name + '". ', e)
+        sentry.captureException()
+        return None
+    else:
+      search_results = self.search(params=params, search_service=search_service)
+      if not search_results or 'hits' not in search_results:
+        return None
+      browsed = search_results['hits']
     return [hit for hit in browsed]
 
   def add(self, toAdd):
@@ -159,7 +179,7 @@ class Index:
         else:
           result = self.index.add_object(record)
       except Exception as e:
-        print('Algolia: Couldn\'t add record(s) to index "' + self.index_name + '". ', e)
+        print('Algolia: Couldn\'t add record(s) to index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
         return None
     else:
@@ -172,13 +192,13 @@ class Index:
         else:
           body = ['{ "index" : {' + (records[i]['objectID'] if 'objectID' in records[i] and records[i]['objectID'] else '') + '} }\n' + json.dumps(record) for i, record in enumerate(records)]
         body = '\n'.join(body)
-        res = es.bulk(index=self.lowercase_index_name, doc_type=self.doc_type, body=body)
+        res = es.bulk(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, body=body)
       else:
         body = _transform_to_elasticsearch(self.doc_type, dict(record))
         if UsingAlgolia or ('objectID' in record and record['objectID']):
-          res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=(result['objectID'] if result else record['objectID']), body=body)
+          res = es.index(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=(result['objectID'] if result else record['objectID']), body=body)
         else:
-          res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, body=body)
+          res = es.index(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, body=body)
       print('ElasticSearch Success:')
       pp.pprint(res)
       if not UsingAlgolia:
@@ -186,7 +206,7 @@ class Index:
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
       sentry.captureException()
-      print('ElasticSearch: Couldn\'t add record(s) to index "' + self.lowercase_index_name + '". ', e)
+      print('ElasticSearch: Couldn\'t add record(s) to index "' + self.get_index_name('elasticsearch') + '". ', e)
     return result
 
   def save(self, toAdd: dict):
@@ -213,7 +233,7 @@ class Index:
         if UsingAlgolia:
           result = self.index.save_object(record)
     except Exception as e:
-      print('Algolia: Couldn\'t save record(s) to index "' + self.index_name + '". ', e)
+      print('Algolia: Couldn\'t save record(s) to index "' + self.get_index_name('algolia') + '". ', e)
       sentry.captureException()
       return None
     if not UsingAlgolia:
@@ -223,10 +243,10 @@ class Index:
         body = [_transform_to_elasticsearch(self.doc_type, dict(record)) for record in records]
         body = ['{ "index" : { "_id" : "' + records[i]['objectID'] + '" } }\n' + json.dumps(record) for i, record in enumerate(body)]
         body = '\n'.join(body)
-        res = es.bulk(index=self.lowercase_index_name, doc_type=self.doc_type, body=body)
+        res = es.bulk(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, body=body)
       else:
         body = _transform_to_elasticsearch(self.doc_type, dict(record))
-        res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=record['objectID'], body=body)
+        res = es.index(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=record['objectID'], body=body)
       print('ElasticSearch Success:')
       pp.pprint(res)
       if not UsingAlgolia:
@@ -234,7 +254,7 @@ class Index:
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
       sentry.captureException()
-      print('ElasticSearch: Couldn\'t save record(s) to index "' + self.lowercase_index_name + '". ', e)
+      print('ElasticSearch: Couldn\'t save record(s) to index "' + self.get_index_name('elasticsearch') + '". ', e)
     return result
 
   def partial_update(self, record: dict):
@@ -245,16 +265,16 @@ class Index:
         result = self.index.partial_update_object(record)
       except Exception as e:
         sentry.captureException()
-        print('Algolia: Couldn\'t save record to index "' + self.index_name + '". ', e)
+        print('Algolia: Couldn\'t save record to index "' + self.get_index_name('algolia') + '". ', e)
     try:
       body = _transform_to_elasticsearch(self.doc_type, dict(record))
-      res = es.index(index=self.lowercase_index_name, doc_type=self.doc_type, id=result['objectID'], body=body)
+      res = es.index(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=result['objectID'], body=body)
       if not UsingAlgolia:
         result = _transform_elasticsearch_result(res)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
       sentry.captureException()
-      print('ElasticSearch: Couldn\'t update record in index "' + self.lowercase_index_name + '". ', e)
+      print('ElasticSearch: Couldn\'t update record in index "' + self.get_index_name('elasticsearch') + '". ', e)
     return result
 
   def delete(self, objectID: str=None):
@@ -265,15 +285,15 @@ class Index:
       result = self.index.delete_object(objectID)
     except Exception as e:
       sentry.captureException()
-      print('Algolia: Couldn\'t delete record from index "' + self.index_name + '". ', e)
+      print('Algolia: Couldn\'t delete record from index "' + self.get_index_name('algolia') + '". ', e)
     try:
-      res = es.delete(index=self.lowercase_index_name, doc_type=self.doc_type, id=objectID)
+      res = es.delete(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=objectID)
       if not UsingAlgolia:
         result = _transform_elasticsearch_result(res)
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
       sentry.captureException()
-      print('ElasticSearch: Couldn\'t delete record from index "' + self.lowercase_index_name + '". ', e)
+      print('ElasticSearch: Couldn\'t delete record from index "' + self.get_index_name('elasticsearch') + '". ', e)
     return result
 
   def delete_by_query(self, params: dict=None):
@@ -284,20 +304,19 @@ class Index:
     result = None
     if UsingAlgolia:
       try:
-        # @TODO: Test that this works - taken from: https://www.algolia.com/doc/api-reference/api-methods/delete-by/?language=python#examples
         result = self.index.delete_by(params=params)
       except Exception as e:
-        print('Algolia: Couldn\'t delete records from index "' + self.index_name + '". ', e)
+        print('Algolia: Couldn\'t delete records from index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
     try:
       body = _params_to_query_dsl(params)
-      res = es.delete_by_query(index=self.lowercase_index_name, body=body)
+      res = es.delete_by_query(index=self.get_index_name('elasticsearch'), body=body)
       if not UsingAlgolia:
         result = res # @TODO: transform this result
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
       sentry.captureException()
-      print('ElasticSearch: Couldn\'t delete records from index "' + self.lowercase_index_name + '". ', e)
+      print('ElasticSearch: Couldn\'t delete records from index "' + self.get_index_name('elasticsearch') + '". ', e)
     return result
 
   def get_index_properties(self):
@@ -313,12 +332,12 @@ class Index:
       try:
         algolia_settings = self.index.get_settings()
       except Exception as e:
-        print('Algolia: Couldn\'t get settings from index "' + self.index_name + '". ', e)
+        print('Algolia: Couldn\'t get settings from index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
     try:
       elasticsearch_mapping = client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card')
     except Exception as e:
-      print('ElasticSearch: Couldn\'t get settings from index "' + self.index_name + '". ', e)
+      print('ElasticSearch: Couldn\'t get settings from index "' + self.get_index_name('elasticsearch') + '". ', e)
       sentry.captureException()
     properties = {
       'algolia': algolia_settings,
@@ -341,14 +360,14 @@ class Index:
       try:
         self.index.set_settings(algolia_settings)
       except Exception as e:
-        print('Algolia: Couldn\'t set settings for index "' + self.index_name + '". ', e)
+        print('Algolia: Couldn\'t set settings for index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
     if 'elasticsearch' in properties:
       elasticsearch_mapping = properties['elasticsearch']
       try:
         client.IndicesClient(es).set_mapping(index='explaain__cards', doc_type='card', body=elasticsearch_mapping)
       except Exception as e:
-        print('ElasticSearch: Couldn\'t set settings for index "' + self.index_name + '". ', e)
+        print('ElasticSearch: Couldn\'t set settings for index "' + self.get_index_name('elasticsearch') + '". ', e)
         sentry.captureException()
 
 
@@ -422,7 +441,7 @@ def _params_to_query_dsl(params: dict=None):
   if 'filters' in params:
     filters = params['filters'].split(' AND ')
     filter = [{
-      'term': { f.split(': ')[0]: f.split(': ')[1][1:-1] }
+      'term': { f.split(':')[0].strip(): ''.join(f.split(':')[1].strip().split('"')) }
     } for f in filters]
   query = {
     'query': {

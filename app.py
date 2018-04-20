@@ -63,10 +63,24 @@ def get_results():
 def search_cards():
   print('Starting to search cards!')
   pp.pprint(request.json)
-  if request.json['params'] and 'searchStrategy' in request.json['params']:
+  if 'params' in request.json and request.json['params'] and 'searchStrategy' in request.json['params']:
     request.json['params']['search_service'] = request.json['params']['searchStrategy']
     del(request.json['params']['searchStrategy'])
   result = index.searchCards(request.json['user'], request.json['query'], request.json['params'])
+  pp.pprint(result)
+  return jsonify(result)
+
+@app.route('/get-card', methods=['POST'])
+def get_card():
+  print('Starting to get card!')
+  pp.pprint(request.json)
+  params = None
+  if 'params' in request.json and request.json['params']:
+    params = request.json['params']
+    if 'searchStrategy' in params:
+      params['search_service'] = params['searchStrategy']
+      del(params['searchStrategy'])
+  result = index.getCard(user=request.json['user'], objectID=request.json['objectID'], params=params)
   pp.pprint(result)
   return jsonify(result)
 
