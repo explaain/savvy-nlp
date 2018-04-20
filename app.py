@@ -63,10 +63,14 @@ def get_results():
 def search_cards():
   print('Starting to search cards!')
   pp.pprint(request.json)
-  if 'params' in request.json and request.json['params'] and 'searchStrategy' in request.json['params']:
-    request.json['params']['search_service'] = request.json['params']['searchStrategy']
-    del(request.json['params']['searchStrategy'])
-  result = index.searchCards(request.json['user'], request.json['query'], request.json['params'])
+  params = None
+  if 'params' in request.json and request.json['params']:
+    params = request.json['params']
+    if 'searchStrategy' in params:
+      params['search_service'] = params['searchStrategy']
+      del(params['searchStrategy'])
+  result = index.searchCards(request.json['user'], request.json['query'], params)
+  pp.pprint('result1')
   pp.pprint(result)
   return jsonify(result)
 

@@ -172,6 +172,7 @@ class Index:
       records = toAdd
     if not record and not records:
       return None
+    result = None
     if UsingAlgolia:
       try:
         if records:
@@ -181,13 +182,10 @@ class Index:
       except Exception as e:
         print('Algolia: Couldn\'t add record(s) to index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
-        return None
-    else:
-      result = None
     try:
       if records:
         records = [_transform_to_elasticsearch(self.doc_type, dict(record)) for record in records]
-        if UsingAlgolia:
+        if result and 'objectIDs' in result:
           body = ['{ "index" : { "_id" : "' + result['objectIDs'][i] + '" } }\n' + json.dumps(record) for i, record in enumerate(records)]
         else:
           body = ['{ "index" : {' + (records[i]['objectID'] if 'objectID' in records[i] and records[i]['objectID'] else '') + '} }\n' + json.dumps(record) for i, record in enumerate(records)]
@@ -195,8 +193,10 @@ class Index:
         res = es.bulk(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, body=body)
       else:
         body = _transform_to_elasticsearch(self.doc_type, dict(record))
-        if UsingAlgolia or ('objectID' in record and record['objectID']):
-          res = es.index(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=(result['objectID'] if result else record['objectID']), body=body)
+        if (result and 'objectID' in result) or ('objectID' in record and record['objectID']):
+          print('Using objectID:', result['objectID'] if result and 'objectID' in result else record['objectID'])
+          print(result)
+          res = es.index(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=(result['objectID'] if result and 'objectID' in result else record['objectID']), body=body)
         else:
           res = es.index(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, body=body)
       print('ElasticSearch Success:')
@@ -443,13 +443,19 @@ def _params_to_query_dsl(params: dict=None):
     filter = [{
       'term': { f.split(':')[0].strip(): ''.join(f.split(':')[1].strip().split('"')) }
     } for f in filters]
-  query = {
-    'query': {
-      'bool': {
-        'filter': filter
+    query = {
+      'query': {
+        'bool': {
+          'filter': filter
+        }
       }
     }
-  }
+  else:
+    query = {
+      'query': {
+        'match_all': {}
+      }
+    }
   return query
 
 

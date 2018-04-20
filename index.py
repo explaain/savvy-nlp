@@ -680,7 +680,11 @@ def searchCards(user: dict=None, query: str='', params: dict=None):
   # The next 2 lines are pretty much (if not exactly) dealt with in db.Cards.search so should decide where best to put them
   if (not query or not len(query)) and params and len(params) and 'query' in params:
     query = params['query']
-  search_service = params['search_service'] if params and len(params) and 'search_service' in params else 'algolia'
+  if params and len(params) and 'search_service' in params:
+    search_service = params['search_service']
+    del(params['search_service'])
+  else:
+    search_service = 'algolia'
   return db.Cards(user['organisationID']).search(query=query, params=params, search_service=search_service)
 
 def getCard(user: dict=None, objectID: str=None, params: dict=None):
@@ -797,17 +801,25 @@ def saveCard(card: dict, author:dict):
   return { 'success': True, 'card': card }
 
 def deleteCard(card, author):
-  if not 'objectID':
+  if 'objectID' not in card:
     return { 'success': False, 'error': 'Card has no objectID' }
   if not author or 'organisationID' not in author or 'objectID' not in author:
     return { 'success': False, 'error': 'No author with correct details' }
   organisationID = author['organisationID']
   try:
     existingCard = db.Cards(organisationID).get(card['objectID'])
+    if not existingCard:
+      print('Not found in Algolia - trying ElasticSearch. objectID:', card['objectID'])
+      existingCard = db.Cards(organisationID).get(card['objectID'], search_service='elasticsearch')
   except Exception as e:
-    print('No existing card to delete.', e)
-    existingCard = None
     sentry.captureException()
+    print(e)
+    existingCard = None
+  if not existingCard:
+    error_message = 'No existing card to delete.'
+    print(error_message)
+    sentry.captureMessage(error_message)
+    return { 'success': False, 'error': error_message }
   verified = authorIsSavvy(existingCard, author)
   if verified:
     if 'service' in card and card['service']:
@@ -881,6 +893,8 @@ def verify(objectID: dict, author: dict, prop: str = None, approve: bool = True)
 
 def authorIsSavvy(card, author):
   print('Is Author Savvy?')
+  if not author or not len(author):
+    return None
   pp.pprint(card)
   pp.pprint(author)
   userIsAnAdmin = ('role' in author and author['role'] == 'admin')
@@ -888,9 +902,9 @@ def authorIsSavvy(card, author):
   cardExists = card and type(card) is dict
   print('cardExists', cardExists)
   print(type(card))
-  cardHasNoTopics = 'topics' not in card or not card['topics'] or not len(card['topics'])
+  cardHasNoTopics = card and ('topics' not in card or not card['topics'] or not len(card['topics']))
   print('cardHasNoTopics', cardHasNoTopics)
-  authorHasACardTopic = 'topics' in author and type(author['topics']) is list and 'topics' in card and len([topic for topic in author['topics'] if topic in card['topics']])
+  authorHasACardTopic = 'topics' in author and type(author['topics']) is list and card and 'topics' in card and len([topic for topic in author['topics'] if topic in card['topics']])
   print('authorHasACardTopic', authorHasACardTopic)
 
   verified = userIsAnAdmin or (cardExists and (cardHasNoTopics or authorHasACardTopic))

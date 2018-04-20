@@ -22,6 +22,7 @@ query = 'brand colour'
 
 # pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
 
+pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEXGgN'))
 # pp.pprint(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=4))
 # pp.pprint(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=5, explain=True))
 # print(json.dumps(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=5, explain=True), indent=2, sort_keys=True))
@@ -50,7 +51,7 @@ query = 'brand colour'
 
 # pp.pprint(client.IndicesClient(es).get(index='_all'))
 
-pp.pprint(db.Client().list_indices(search_service='elasticsearch'))
+# pp.pprint(db.Client().list_indices(search_service='elasticsearch'))
 # pp.pprint([i['name'] for i in db.Client().list_indices(search_service='algolia')['items']])
 
 # pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
