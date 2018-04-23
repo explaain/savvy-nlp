@@ -16,7 +16,8 @@ es = Elasticsearch(
 
 # @NOTE: Getting info about a particular index/cluster etc
 # pp.pprint(client.IndicesClient(es).stats(index='users'))
-# pp.pprint(client.IndicesClient(es).stats(index='matthew_rusk_62352643__files'))
+# pp.pprint(client.IndicesClient(es).stats(index='alborz_bozorgi_al_30068826__cards'))
+# pp.pprint(client.IndicesClient(es).stats(index='mohamad_el_boudi_19370086__cards'))
 # pp.pprint(client.IndicesClient(es).stats(index='financialtimes__cards'))
 # pp.pprint(client.IndicesClient(es).stats(index='matthew_rusk_62352643__cards'))
 
@@ -32,14 +33,68 @@ es = Elasticsearch(
 #   print(index_name)
 #   print(client.IndicesClient(es).stats(index=index_name)['_all']['primaries']['docs']['count'])
 
-query = 'katie hunt'
+query = 'savvy'
 
-# pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
+# pp.pprint(db.Cards('jillian_kowalchuk_44819851').search(query=query, search_service='elasticsearch'))
 
 
-# pp.pprint(es.search(index='users', q='testsavvy3', body = {'query': {'match_all': {}}}, size=100))
-# pp.pprint(es.get(index='users', doc_type='user', id='1YYB8mIBVmRs6EKT3KVW'))
-# pp.pprint(es.delete(index='users', doc_type='user', id='1YYB8mIBVmRs6EKT3KVW'))
+# pp.pprint(es.search(index='users', body = {'query': {'match_all': {}}}, size=100))
+# res = es.search(index='sources', q=query, body = {'query': {'match_all': {}}}, size=100)
+# pp.pprint(res)
+# pp.pprint([hit['_id'] for hit in res['hits']['hits']])
+# pp.pprint([hit['_id'] + ': ' + hit['_source']['addedBy'] if 'addedBy' in hit['_source'] else None for hit in res['hits']['hits']])
+# pp.pprint(res['hits']['hits'])
+# pp.pprint(es.search(index='organisations', body = {'query': {'match_all': {}}}, size=100))
+# pp.pprint(es.get(index='sources', doc_type='source', id='9IYW8mIBVmRs6EKTRK1Q'))
+# pp.pprint(es.delete(index='organisations', doc_type='organisation', id='Savvy_Test_38471264'))
+# pp.pprint(es.delete(index='users', doc_type='user', id='6KRm82IBFJlaWnBE59JA'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='701157581'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='717781852'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='717781852'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='717659592'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='717659592'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='707213261'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='707213261'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='698350271'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='698350271'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='717449552'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='717449552'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='717449302'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='717449302'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='707271521'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='707271521'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='707009831'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='707009831'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='706790801'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='706790801'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='717692572'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='717692572'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='717692552'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='717692552'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='717449572'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='717449572'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='717449452'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='717449452'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='698815861'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='698815861'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='698350251'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='698350251'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='QPWz82IBwpczb9a6pvPJ'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='QPWz82IBwpczb9a6pvPJ'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='712726292'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='712726292'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='711558252'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='711558252'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='707213221'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='707213221'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='707198911'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='707198911'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='707198831'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='707198831'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='698859021'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='698859021'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='713438322'))
+# pp.pprint(es.get(index='sources', doc_type='source', id='713438322'))
 
 
 # pp.pprint(es.search(index='users', body = {'query': {'match_all': {}}}, size=100))
@@ -235,8 +290,11 @@ query = 'katie hunt'
 # }
 # ))
 
-
-# pp.pprint(client.IndicesClient(es).delete(index='explaain__cards'))
+#
+# pp.pprint(client.IndicesClient(es).delete(index='savvy_test_27566448__cards'))
+# pp.pprint(client.IndicesClient(es).delete(index='savvy_test_27566448__files'))
+# pp.pprint(client.IndicesClient(es).delete(index='savvy_test_99753051__cards'))
+# pp.pprint(client.IndicesClient(es).delete(index='savvy_test_99753051__files'))
 
 # savvyCards = [card for card in db.Cards('explaain').browse() if (not 'service' in card or not card['service']) and 'fileID' not in card]
 # res = db.Cards('explaain').add(savvyCards)
