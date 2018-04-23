@@ -557,7 +557,7 @@ def indexFileContent(accountInfo, f):
     except Exception as e:
       print(e)
       sentry.captureException()
-      print('Something went wrong saving cards to Algolia!')
+      print('Something went wrong saving cards to the database!')
   print('Number of Cards Updated:', len(cards))
   if toPrint['cardsCreated']:
     pp.pprint(cards)

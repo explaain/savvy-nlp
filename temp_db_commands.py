@@ -14,15 +14,34 @@ es = Elasticsearch(
     scheme='https',
     port=9243,)
 
+# @NOTE: Getting info about a particular index/cluster etc
+# pp.pprint(client.IndicesClient(es).stats(index='matthew_rusk_62352643__files'))
+# pp.pprint(client.IndicesClient(es).stats(index='financialtimes__cards'))
+# pp.pprint(client.IndicesClient(es).stats(index='matthew_rusk_62352643__cards'))
+all_orgs = [
+  'explaain',
+  'Matthew_Rusk_62352643',
+  'yc',
+  'Andrew_Davies_29862274',
+  'financialtimes',
+]
+all_index_names = [org.lower() + '__cards' for org in all_orgs] + [org.lower() + '__files' for org in all_orgs] + ['organisations', 'sources', 'users']
+for index_name in all_index_names:
+  print(index_name)
+  print(client.IndicesClient(es).stats(index=index_name)['_all']['primaries']['docs']['count'])
 
-# pp.pprint(client.IndicesClient(es).stats(index='explaain__cards'))
-# pp.pprint(client.IndicesClient(es).stats(index='explaain__files'))
-
-query = 'brand colour'
+query = 'grace alexander'
 
 # pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
 
-pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEXGgN'))
+# pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEXGgN'))
+# pp.pprint(es.search(index='matthew_rusk_62352643__cards', q=query, body = {'query': {'match_all': {}}}, size=4))
+# res = es.search(index='matthew_rusk_62352643__cards',q=query, body = {'query': {'match_all': {}}})
+# res = db.Cards('Matthew_Rusk_62352643').search(query=query)
+# res = db.Cards('Matthew_Rusk_62352643').search(query=query, search_service='elasticsearch')
+# pp.pprint(res)
+# print(len(res['hits']))
+
 # pp.pprint(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=4))
 # pp.pprint(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=5, explain=True))
 # print(json.dumps(es.search(index='explaain__cards', q=query, body = {'query': {'match_all': {}}}, size=5, explain=True), indent=2, sort_keys=True))
@@ -55,6 +74,7 @@ pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEX
 # pp.pprint([i['name'] for i in db.Client().list_indices(search_service='algolia')['items']])
 
 # pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
+# pp.pprint(client.IndicesClient(es).get(index='matthew_rusk_62352643__cards'))
 
 # pp.pprint(client.IndicesClient(es).analyze(index='explaain__cards', body=
 # {
@@ -135,8 +155,9 @@ pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEX
 # }
 # ))
 # pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
-
 # pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
+
+
 # pp.pprint(client.IndicesClient(es).close(index='explaain__cards'))
 # pp.pprint(client.IndicesClient(es).put_settings(index='explaain__cards', body=
 # {
@@ -157,8 +178,10 @@ pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEX
 # }
 # ))
 # pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
+# pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
 
 # pp.pprint(client.NodesClient(es).info())
+# pp.pprint(client.CatClient(es).indices())
 # pp.pprint(client.ClusterClient(es).get_settings())
 # pp.pprint(client.ClusterClient(es).put_settings(body=
 # {
@@ -203,3 +226,97 @@ pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEX
 # savvyCards = [card for card in db.Cards('explaain').browse() if (not 'service' in card or not card['service']) and 'fileID' not in card]
 # res = db.Cards('explaain').add(savvyCards)
 # pp.pprint(res)
+
+def chunks(l, n):
+  """Yield successive n-sized chunks from l."""
+  for i in range(0, len(l), n):
+    yield l[i:i + n]
+
+# res = db.Files('Matthew_Rusk_62352643').browse()
+# print(len(res))
+
+# @NOTE: This copies everything from Algolia to ES
+# @NOTE: MAKE SURE UsingAlgolia = False in db.py!!!
+
+def copy_docs_from_algolia(index):
+  print(index.get_index_name())
+  all_cards = index.browse(search_service='algolia')
+  for card in all_cards:
+    if '__highlightResult' in card:
+      del(card['_highlightResult'])
+  all_card_chunks = list(chunks(all_cards, 500))
+  for chunk in all_card_chunks:
+    res = index.save(chunk)
+    print('len: ' + str(len(res['objectIDs'])))
+  print('\n\n\n\n\n\n')
+
+# copy_docs_from_algolia(index = db.Cards('financialtimes'))
+
+def reset_and_fill_all_indices():
+  all_orgs = [
+    'explaain',
+    'Matthew_Rusk_62352643',
+    'yc',
+    'Andrew_Davies_29862274',
+    'financialtimes',
+  ]
+  all_index_names = [org.lower() + '__cards' for org in all_orgs] + [org.lower() + '__files' for org in all_orgs] + ['organisations', 'sources', 'users']
+
+  all_card_indices = [db.Cards(org) for org in all_orgs]
+  all_file_indices = [db.Files(org) for org in all_orgs]
+  # all_indices = all_card_indices + all_file_indices + [db.Organisations(), db.Sources(), db.Users()]
+  all_indices = all_file_indices + [db.Organisations(), db.Sources(), db.Users()]
+
+  template_type = 'cards'
+  template = templates.get_template(template_type)
+  pp.pprint(client.IndicesClient(es).put_template(name=template_type, body=template))
+  # for org in all_orgs:
+  #   index_name = org.lower() + '__cards'
+  #   print(index_name)
+    # print(json.dumps(client.IndicesClient(es).get_mapping(index=index_name, doc_type='card'), indent=2))
+    # client.IndicesClient(es).close(index=index_name)
+    # try:
+    #   client.IndicesClient(es).put_mapping(index=index_name, doc_type='card', body=cards_template['mappings']['card'])
+    #   client.IndicesClient(es).put_settings(index=index_name, body=cards_template['settings'])
+    # except Exception as e:
+    #   print(e)
+    # client.IndicesClient(es).open(index=index_name)
+
+  template_type = 'files'
+  template = templates.get_template(template_type)
+  pp.pprint(client.IndicesClient(es).put_template(name=template_type, body=template))
+  # for org in all_orgs:
+  #   index_name = org.lower() + '__files'
+  #   print(index_name)
+    # client.IndicesClient(es).put_mapping(index=index_name, doc_type='file', body=files_template['mappings']['file'])
+
+  # for index_name in all_index_names:
+  #   print(index_name)
+  #   if client.IndicesClient(es).exists(index=index_name):
+  #     client.IndicesClient(es).delete(index=index_name)
+  #   client.IndicesClient(es).create(index=index_name)
+  for index in all_indices:
+    copy_docs_from_algolia(index=index)
+
+
+# reset_and_fill_all_indices()
+
+
+# Matt Rusk
+# ES: 3564
+# Al: len(15749)
+# New ES: 15749
+# FILES:
+# 19
+# 384
+# 384
+
+# Explaain
+# ES: 18478
+# Al: 9801
+# New ES: 23907
+
+# FT
+# ES: 111466
+# Al: 237461
+# New ES:

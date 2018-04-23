@@ -21,7 +21,7 @@ es = Elasticsearch(
     scheme='https',
     port=9243,)
 
-UsingAlgolia = True
+UsingAlgolia = False
 
 class Client:
   """docstring for Client"""
@@ -35,7 +35,7 @@ class Client:
     else:
       return None
 
-  def list_indices(self, search_service='algolia'):
+  def list_indices(self, search_service: str='elasticsearch'):
     if search_service == 'algolia':
       return self.client.list_indexes()
     else:
@@ -74,27 +74,29 @@ class Index:
       sentry.captureException()
       return None
 
-  def get_index_name(self, search_service='algolia'):
+  def get_index_name(self, search_service: str='elasticsearch'):
     if search_service == 'algolia':
       return self.index_name
     else:
       return self.lowercase_index_name
 
-  def search(self, query: str='', params: dict=None, search_service: str='algolia'):
+  def search(self, query: str='', params: dict=None, search_service: str='elasticsearch', size: int=10):
     if not query:
       query = ''
     if not len(query) and params and 'query' in params and params['query']:
       query = params['query']
     try:
       if search_service == 'algolia' and UsingAlgolia:
+        print('Searching Algolia!')
         return self.index.search(query, params)
       else:
+        print('Searching ElasticSearch!')
         # @TODO: configure search and insert query (NOW DONE???)
         body = _params_to_query_dsl(params)
         if query and len(query):
-          res = es.search(index=self.get_index_name('elasticsearch'), q=query, body=body, size=12)
+          res = es.search(index=self.get_index_name('elasticsearch'), q=query, body=body, size=size)
         else:
-          res = es.search(index=self.get_index_name('elasticsearch'), body=body, size=12)
+          res = es.search(index=self.get_index_name('elasticsearch'), body=body, size=size)
         return {
           'hits': [_transform_from_elasticsearch(self.doc_type, hit['_source'], id=hit['_id']) for hit in res['hits']['hits']]
         }
@@ -103,7 +105,7 @@ class Index:
       sentry.captureException()
       return None
 
-  def get(self, objectID: str=None, objectIDs: list=None, allowFail: bool=False, search_service: str='algolia'):
+  def get(self, objectID: str=None, objectIDs: list=None, allowFail: bool=False, search_service: str='elasticsearch'):
     # allowFail should only be True if it's fine for the object not to be found
     if not objectID and (not objectIDs or not len(objectIDs)):
       return None
@@ -144,7 +146,7 @@ class Index:
           sentry.captureException()
           print('ElasticSearch: Couldn\'t get record from index "' + self.get_index_name('elasticsearch') + '". ', e)
 
-  def browse(self, params=False, search_service='algolia'):
+  def browse(self, params=False, search_service: str='elasticsearch'):
     # @TODO: Add ElasticSearch here
     if search_service == 'algolia':
       try:
@@ -157,7 +159,9 @@ class Index:
         sentry.captureException()
         return None
     else:
-      search_results = self.search(params=params, search_service=search_service)
+      # @NOTE: 10,000 is the maximum number of results in an ElasticSearch search
+      #        We could use scroll() to get more results
+      search_results = self.search(params=params, search_service=search_service, size=10000)
       if not search_results or 'hits' not in search_results:
         return None
       browsed = search_results['hits']
@@ -248,7 +252,6 @@ class Index:
         body = _transform_to_elasticsearch(self.doc_type, dict(record))
         res = es.index(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type, id=record['objectID'], body=body)
       print('ElasticSearch Success:')
-      pp.pprint(res)
       if not UsingAlgolia:
         result = _transform_elasticsearch_result(res)
     except Exception as e:
@@ -491,7 +494,7 @@ def _params_to_query_dsl(params: dict=None):
 # #
 # pp.pprint(client.IndicesClient(es).put_template(name=template_type, body=template))
 # pp.pprint(client.IndicesClient(es).get_template(name=template_type))
-# pp.pprint(client.IndicesClient(es).get_mapping(index='2_explaain__cards', doc_type='card'))
+# pp.pprint(client.IndicesClient(es).get_mapping(index='financialtimes__cards', doc_type='card'))
 # res = client.IndicesClient(es).put_mapping(index='explaain__cards', doc_type='card', body=template['mappings']['card'])
 
 # res = es.get(index='explaain__cards', doc_type='card', id='450006879348')
