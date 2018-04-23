@@ -454,6 +454,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   createFileCard(accountInfo, f)
   cardsSaved = indexFileContent(accountInfo, f)
   f['cardsSaved'] = cardsSaved
+  f['organisationID'] = accountInfo['organisationID']
   notifyChanges(oldFile, f)
   if not Testing and cardsSaved:
     mp.track('admin', 'File Indexed', f)
