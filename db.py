@@ -339,7 +339,7 @@ class Index:
         print('Algolia: Couldn\'t get settings from index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
     try:
-      elasticsearch_mapping = client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card')
+      elasticsearch_mapping = client.IndicesClient(es).get_mapping(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type)
     except Exception as e:
       print('ElasticSearch: Couldn\'t get settings from index "' + self.get_index_name('elasticsearch') + '". ', e)
       sentry.captureException()

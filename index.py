@@ -80,7 +80,14 @@ def serveUserData(idToken: str):
   params = {
     'filters': 'firebase: "' + firebaseUid + '"'
   }
-  res = db.Users().search(params=params)
+  # res1 = db.Users().get(firebaseUid)
+  # res = { 'hits': [res1] }
+  res1 = db.Users().browse()
+  pp.pprint(res1)
+  res = { 'hits': [hit for hit in res1 if 'firebase' in hit and hit['firebase'] == firebaseUid] }
+  # res = db.Users().search(params=params)
+  print('First result!')
+  pp.pprint(res)
   if 'hits' in res and len(res['hits']):
     if len(res['hits']) > 1:
       print('More than one result for firebaseUid ' + firebaseUid + ' - aborting for security reasons!')
@@ -108,6 +115,7 @@ def serveUserData(idToken: str):
         # Add firebase details and save in db
         user['firebase'] = firebaseUid
         db.Users().save(user)
+        user['created'] = calendar.timegm(time.gmtime())
         mp.track('admin', 'Added Firebase Details to User', user)
         return user
       else:
@@ -126,11 +134,12 @@ def serveUserData(idToken: str):
           'firebase': firebaseUid,
           'organisationID': organisationID,
           'emails': [decoded_user['email']],
+          'created': calendar.timegm(time.gmtime()),
 
           # Algolia-specific
           'algoliaApiKey': organisation['algolia']['apiKey'],
 
-          'role': 'admin'
+          'role': 'admin',
         }
         db.Users().add(user)
         print('Created new user:', user)
@@ -178,7 +187,7 @@ def setUpOrg(organisationID: str):
     'hits': []
   }
   numAttempts = 0
-  results = db.Orgs().search(params=searchParams)
+  results = db.Organisations().search(params=searchParams)
   if len(results['hits']) and 'objectID' in results['hits'][0]:
     objectID = results['hits'][0]['objectID']
     print('objectID', objectID)
@@ -193,7 +202,7 @@ def setUpOrg(organisationID: str):
 
     }
     try:
-      res = db.Orgs().partial_update(organisation)
+      res = db.Organisations().partial_update(organisation)
       mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': objectID, 'organisationID': organisationID })
       return organisation
     except Exception as e:
@@ -217,7 +226,7 @@ def setUpOrg(organisationID: str):
         }
 
       }
-      db.Orgs().save(organisation)
+      db.Organisations().save(organisation)
       mp.track('admin', 'Org Setup: New Org Object Created', { 'objectID': organisationID, 'organisationID': organisationID })
       mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': organisationID, 'organisationID': organisationID })
     except Exception as e:
@@ -226,7 +235,7 @@ def setUpOrg(organisationID: str):
       print('Organisation Setup Failed')
       sentry.captureException()
       return None
-  allOrgs = db.Orgs().browse()
+  allOrgs = db.Organisations().browse()
   mp.track('admin', 'Organisation Setup Complete', { 'objectID': objectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
   print('Organisation Setup Complete', organisationID)
   return organisation
