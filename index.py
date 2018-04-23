@@ -82,6 +82,7 @@ def serveUserData(idToken: str):
   }
   # res1 = db.Users().get(firebaseUid)
   # res = { 'hits': [res1] }
+  # @TODO: This should happen by filtering in the search, not by returning everything then filtering
   res1 = db.Users().browse()
   pp.pprint(res1)
   res = { 'hits': [hit for hit in res1 if 'firebase' in hit and hit['firebase'] == firebaseUid] }
@@ -327,12 +328,18 @@ def indexAll(includingLastXSeconds=0):
     if accountID:
       organisationID = source['organisationID']
       source['accountID'] = accountID
-      num = indexFiles(source, includingLastXSeconds=includingLastXSeconds)
-      indexed.append({
-        'organisationID': organisationID,
-        'accountID': accountID,
-        'numberOfFiles': num
-      })
+      try:
+        num = indexFiles(source, includingLastXSeconds=includingLastXSeconds)
+      except Exception as e:
+        print(e)
+        sentry.captureException()
+        num = 0
+      if num and len(num):
+        indexed.append({
+          'organisationID': organisationID,
+          'accountID': accountID,
+          'numberOfFiles': num
+        })
     else:
       print('No accountID or objectID!!')
       sentry.captureMessage('No accountID or objectID!!', extra={
@@ -386,7 +393,11 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
         'lastIndexed': indexedFile['modified'] if indexedFile and 'modified' in indexedFile else 'Never!',
         'service': allServiceData['service']['serviceName'] if allServiceData and 'service' in allServiceData and 'serviceName' in allServiceData['service'] else None,
       })
-      indexFile(accountInfo, f['objectID'], actualFile=f)
+      try:
+        indexFile(accountInfo, f['objectID'], actualFile=f)
+      except Exception as e:
+        print(e)
+        sentry.captureException()
     else:
       filesTracker['notIndexing'].append({ 'title': f['title'] })
   print('indexing:')
