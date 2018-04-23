@@ -1,4 +1,4 @@
-import pprint, os, json, traceback, sys, db
+import pprint, os, json, traceback, sys, db, requests
 import templates
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
@@ -37,8 +37,9 @@ query = 'katie hunt'
 # pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
 
 
-pp.pprint(es.delete(index='users', doc_type='user', id='4YYU8GIBVmRs6EKTgX0l'))
-pp.pprint(es.delete(index='users', doc_type='user', id='gIYI8GIBVmRs6EKTwH0u'))
+# pp.pprint(es.search(index='users', q='testsavvy3', body = {'query': {'match_all': {}}}, size=100))
+# pp.pprint(es.get(index='users', doc_type='user', id='1YYB8mIBVmRs6EKT3KVW'))
+# pp.pprint(es.delete(index='users', doc_type='user', id='1YYB8mIBVmRs6EKT3KVW'))
 
 
 # pp.pprint(es.search(index='users', body = {'query': {'match_all': {}}}, size=100))
@@ -334,3 +335,23 @@ def reset_and_fill_all_indices():
 # ES: 111466
 # Al: 237461
 # New ES:
+
+
+
+
+
+
+# exports.slack = (eventName, details, data) => {
+#   console.log('Sending to Slack:', eventName, details, data)
+#   axios.post('https://hooks.zapier.com/hooks/catch/3134011/kv4k3j/', {
+#     event_name: eventName,
+#     event_details: details,
+#     data: data
+#   })
+# }
+
+# requests.post('https://hooks.zapier.com/hooks/catch/3134011/kv4k3j/', {
+#   'event_name': 'testing eventName',
+#   'event_details': 'details',
+#   'data': 'data'
+# })

@@ -144,6 +144,11 @@ def serveUserData(idToken: str):
         db.Users().add(user)
         print('Created new user:', user)
         mp.track('admin', 'Created User in Database after very first Google login', user)
+        requests.post('https://hooks.zapier.com/hooks/catch/3134011/kv4k3j/', {
+          'event_name': 'New User! *' + (decoded_user['name'] if 'name' in decoded_user else displayName['uid']) + '* just signed in on Chrome for the first time',
+          'event_details': '@channel',
+          'data': 'data'
+        })
         return user
     else:
       return False
