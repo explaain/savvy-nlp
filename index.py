@@ -334,7 +334,7 @@ def indexAll(includingLastXSeconds=0):
         print(e)
         sentry.captureException()
         num = 0
-      if num and len(num):
+      if num:
         indexed.append({
           'organisationID': organisationID,
           'accountID': accountID,
