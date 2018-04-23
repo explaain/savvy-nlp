@@ -119,7 +119,8 @@ def serveUserData(idToken: str):
         mp.track('admin', 'Added Firebase Details to User', user)
         return user
       else:
-        organisationID = decoded_user['name'].replace(' ', '_') + '_' + str(random.randint(10000000, 99999999))
+        # Remove all special characters, then replace ' ' with '_', then reduce '__' to '_', then add '__<random_number>' to the end
+        organisationID = re.sub(r'(_)\1+', r'\1', re.sub(r'\s', '_', re.sub(r'[^\w]', ' ', decoded_user['name']))) + '_' + str(random.randint(10000000, 99999999))
         # Create new organisation!
         organisation = setUpOrg(organisationID)
         print('organisation')
