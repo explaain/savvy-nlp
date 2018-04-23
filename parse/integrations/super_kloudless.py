@@ -20,7 +20,7 @@ def getAccount(accountID):
   account = kloudless.Account(id=accountID)
   return account
 
-def listFiles(accountInfo, after=False, number=500):
+def listFiles(accountInfo, after=False, number=50):
   account = getAccount(accountInfo['accountID'])
   recent = []
   if after:
