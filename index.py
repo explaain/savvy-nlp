@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pprint, os, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys, db
+import pprint, os, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys, db, re
 from raven import Client as SentryClient
 from parse import services, entityNlp
 import xmljson
@@ -120,7 +120,8 @@ def serveUserData(idToken: str):
         return user
       else:
         # Remove all special characters, then replace ' ' with '_', then reduce '__' to '_', then add '__<random_number>' to the end
-        organisationID = re.sub(r'(_)\1+', r'\1', re.sub(r'\s', '_', re.sub(r'[^\w]', ' ', decoded_user['name']))) + '_' + str(random.randint(10000000, 99999999))
+        full_name = decoded_user['name'] if 'name' in decoded_user else decoded_user['email'] if 'email' in decoded_user else decoded_user['uid']
+        organisationID = re.sub(r'(_)\1+', r'\1', re.sub(r'\s', '_', re.sub(r'[^\w]', ' ', full_name))) + '_' + str(random.randint(10000000, 99999999))
         # Create new organisation!
         organisation = setUpOrg(organisationID)
         print('organisation')
@@ -454,7 +455,7 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   cardsSaved = indexFileContent(accountInfo, f)
   f['cardsSaved'] = cardsSaved
   notifyChanges(oldFile, f)
-  if not Testing:
+  if not Testing and cardsSaved:
     mp.track('admin', 'File Indexed', f)
   print('File Indexed with ' + str(cardsSaved) + ' updated cards: ' + (f['title'] if 'title' in f else ''))
 
