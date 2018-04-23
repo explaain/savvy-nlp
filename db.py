@@ -30,6 +30,7 @@ class Client:
     self.client = algoliasearch.Client(app_id, api_key)
 
   def index(self, index_name: str=None):
+    # @TODO: What happens with this when it's ElasticSearch???
     if index_name:
       return self.client.init_index(index_name)
     else:
@@ -365,13 +366,14 @@ class Index:
       except Exception as e:
         print('Algolia: Couldn\'t set settings for index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
-    if 'elasticsearch' in properties:
-      elasticsearch_mapping = properties['elasticsearch']
-      try:
-        client.IndicesClient(es).set_mapping(index='explaain__cards', doc_type='card', body=elasticsearch_mapping)
-      except Exception as e:
-        print('ElasticSearch: Couldn\'t set settings for index "' + self.get_index_name('elasticsearch') + '". ', e)
-        sentry.captureException()
+    # @NOTE: templates do this for us automatically so currently not bothering to set mappings manually
+    # if 'elasticsearch' in properties:
+    #   elasticsearch_mapping = properties['elasticsearch']
+    #   try:
+    #     client.IndicesClient(es).set_mapping(index='explaain__cards', doc_type='card', body=elasticsearch_mapping)
+    #   except Exception as e:
+    #     print('ElasticSearch: Couldn\'t set settings for index "' + self.get_index_name('elasticsearch') + '". ', e)
+    #     sentry.captureException()
 
 
 
