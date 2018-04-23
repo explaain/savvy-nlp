@@ -15,27 +15,37 @@ es = Elasticsearch(
     port=9243,)
 
 # @NOTE: Getting info about a particular index/cluster etc
+# pp.pprint(client.IndicesClient(es).stats(index='users'))
 # pp.pprint(client.IndicesClient(es).stats(index='matthew_rusk_62352643__files'))
 # pp.pprint(client.IndicesClient(es).stats(index='financialtimes__cards'))
 # pp.pprint(client.IndicesClient(es).stats(index='matthew_rusk_62352643__cards'))
-all_orgs = [
-  'explaain',
-  'Matthew_Rusk_62352643',
-  'yc',
-  'Andrew_Davies_29862274',
-  'financialtimes',
-]
-all_index_names = [org.lower() + '__cards' for org in all_orgs] + [org.lower() + '__files' for org in all_orgs] + ['organisations', 'sources', 'users']
-for index_name in all_index_names:
-  print(index_name)
-  print(client.IndicesClient(es).stats(index=index_name)['_all']['primaries']['docs']['count'])
 
-query = 'grace alexander'
+# all_orgs = [
+#   'explaain',
+#   'Matthew_Rusk_62352643',
+#   'yc',
+#   'Andrew_Davies_29862274',
+#   'financialtimes',
+# ]
+# all_index_names = [org.lower() + '__cards' for org in all_orgs] + [org.lower() + '__files' for org in all_orgs] + ['organisations', 'sources', 'users']
+# for index_name in all_index_names:
+#   print(index_name)
+#   print(client.IndicesClient(es).stats(index=index_name)['_all']['primaries']['docs']['count'])
+
+query = 'katie hunt'
 
 # pp.pprint(db.Cards('explaain').search(query=query, search_service='elasticsearch'))
 
+
+pp.pprint(es.delete(index='users', doc_type='user', id='4YYU8GIBVmRs6EKTgX0l'))
+pp.pprint(es.delete(index='users', doc_type='user', id='gIYI8GIBVmRs6EKTwH0u'))
+
+
+# pp.pprint(es.search(index='users', body = {'query': {'match_all': {}}}, size=100))
+# pp.pprint(es.get(index='users', doc_type='user', id='vZweCaZEWlZPx0gpQn2b1B7DFAZ2'))
 # pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEXGgN'))
 # pp.pprint(es.search(index='matthew_rusk_62352643__cards', q=query, body = {'query': {'match_all': {}}}, size=4))
+# pp.pprint(es.search(index='financialtimes__cards', q=query, body = {'query': {'match_all': {}}}, size=4))
 # res = es.search(index='matthew_rusk_62352643__cards',q=query, body = {'query': {'match_all': {}}})
 # res = db.Cards('Matthew_Rusk_62352643').search(query=query)
 # res = db.Cards('Matthew_Rusk_62352643').search(query=query, search_service='elasticsearch')
@@ -196,6 +206,10 @@ query = 'grace alexander'
 #   }
 # }
 # ))
+
+
+# pp.pprint(client.IndicesClient(es).get_mapping(index='users', doc_type='user'))
+
 
 # pp.pprint(client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card'))
 # # pp.pprint(client.IndicesClient(es).get_field_mapping(index='explaain__cards', doc_type='card', fields='description' ))
