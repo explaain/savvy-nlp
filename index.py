@@ -1054,6 +1054,7 @@ def reIndex():
   s.enter(60 * minsInterval, 1, reIndex)
 
 def startIndexing():
+  print('hi')
   # indexAll(includingLastXSeconds=0)
   # s.enter(60 * minsInterval, 1, reIndex)
   # s.run()
