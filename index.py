@@ -128,9 +128,9 @@ def serveUserData(idToken: str):
         print('organisation')
         pp.pprint(organisation)
 
-        # Algolia-specific
-        if not organisation or 'algolia' not in organisation or 'apiKey' not in organisation['algolia']:
-          return None
+        # # Algolia-specific
+        # if not organisation or 'algolia' not in organisation or 'apiKey' not in organisation['algolia']:
+        #   return None
 
         # Create new user!
         user = {
@@ -154,6 +154,10 @@ def serveUserData(idToken: str):
         })
         return user
     else:
+      sentry.captureMessage('Couldn\'t return any user data!', extra={
+        'params': params,
+        'firebaseUid': firebaseUid
+      })
       return False
 
 def setUpOrg(organisationID: str):
@@ -1090,11 +1094,34 @@ def startIndexing():
 # indexFiles(accountInfo)
 
 # indexAll()
-# indexFile({
-#   'organisationID': 'explaain',
-#   'accountID': '282782204',
-#   'superService': 'kloudless',
-# }, 'FIpeUA6-qJgZTLvISKr3n2v0BMmTqXsQN5-GkQ_yR8yOycticQbP2Trz4qdW08xsl')
+indexFiles({
+  'objectID': '282782204',
+  'accountID': '282782204',
+  'active': True,
+  'addedBy': 'jeremy@explaain.com',
+  'admin': False,
+  'api': 'meta',
+  'apis': ['storage'],
+  'created': 1511972977,
+  'effective_scope': 'gdrive:normal.storage.default '
+                     'gdrive:normal.storage.default '
+                     'gdrive:normal.storage.default',
+  'googleRawCredentials': {'access_token': 'ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM',
+                           'client_id': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
+                           'client_secret': '7fU16P8yZL-MHzMItnOw-SR0',
+                           'refresh_token': '1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe',
+                           'scopes': ['https://www.googleapis.com/auth/drive.metadata.readonly',
+                                      'https://www.googleapis.com/auth/spreadsheets'],
+                           'token_expiry': False,
+                           'token_uri': 'https://accounts.google.com/o/oauth2/token',
+                           'user_agent': None},
+  'modified': 1516801100,
+  'organisationID': 'explaain',
+  'service': 'gdrive',
+  'service_name': 'Google Drive',
+  'superService': 'kloudless',
+  'type': 'account'
+})
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204',
