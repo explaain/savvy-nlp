@@ -85,6 +85,13 @@ def serveUserData(idToken: str):
   # @TODO: This should happen by filtering in the search, not by returning everything then filtering
   res1 = db.Users().browse()
   pp.pprint(res1)
+  if not res1 or not len(res1):
+    try:
+      raise Exception('Couldn\'t get users!')
+    except Exception as error:
+      print('Caught this error: ' + repr(error))
+      sentry.captureException(error)
+    return None
   res = { 'hits': [hit for hit in res1 if 'firebase' in hit and hit['firebase'] == firebaseUid] }
   # res = db.Users().search(params=params)
   print('First result!')
@@ -1040,14 +1047,14 @@ words = open('dictionaryWords.txt').read().split('\n')
 
 
 s = sched.scheduler(time.time, time.sleep)
-minsInterval = 10
+minsInterval = 20
 
 def reIndex():
   indexAll()
   s.enter(60 * minsInterval, 1, reIndex)
 
 def startIndexing():
-  indexAll(includingLastXSeconds=0)
+  # indexAll(includingLastXSeconds=0)
   s.enter(60 * minsInterval, 1, reIndex)
   s.run()
 
@@ -1094,34 +1101,34 @@ def startIndexing():
 # indexFiles(accountInfo)
 
 # indexAll()
-indexFiles({
-  'objectID': '282782204',
-  'accountID': '282782204',
-  'active': True,
-  'addedBy': 'jeremy@explaain.com',
-  'admin': False,
-  'api': 'meta',
-  'apis': ['storage'],
-  'created': 1511972977,
-  'effective_scope': 'gdrive:normal.storage.default '
-                     'gdrive:normal.storage.default '
-                     'gdrive:normal.storage.default',
-  'googleRawCredentials': {'access_token': 'ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM',
-                           'client_id': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
-                           'client_secret': '7fU16P8yZL-MHzMItnOw-SR0',
-                           'refresh_token': '1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe',
-                           'scopes': ['https://www.googleapis.com/auth/drive.metadata.readonly',
-                                      'https://www.googleapis.com/auth/spreadsheets'],
-                           'token_expiry': False,
-                           'token_uri': 'https://accounts.google.com/o/oauth2/token',
-                           'user_agent': None},
-  'modified': 1516801100,
-  'organisationID': 'explaain',
-  'service': 'gdrive',
-  'service_name': 'Google Drive',
-  'superService': 'kloudless',
-  'type': 'account'
-})
+# indexFiles({
+#   'objectID': '282782204',
+#   'accountID': '282782204',
+#   'active': True,
+#   'addedBy': 'jeremy@explaain.com',
+#   'admin': False,
+#   'api': 'meta',
+#   'apis': ['storage'],
+#   'created': 1511972977,
+#   'effective_scope': 'gdrive:normal.storage.default '
+#                      'gdrive:normal.storage.default '
+#                      'gdrive:normal.storage.default',
+#   'googleRawCredentials': {'access_token': 'ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM',
+#                            'client_id': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
+#                            'client_secret': '7fU16P8yZL-MHzMItnOw-SR0',
+#                            'refresh_token': '1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe',
+#                            'scopes': ['https://www.googleapis.com/auth/drive.metadata.readonly',
+#                                       'https://www.googleapis.com/auth/spreadsheets'],
+#                            'token_expiry': False,
+#                            'token_uri': 'https://accounts.google.com/o/oauth2/token',
+#                            'user_agent': None},
+#   'modified': 1516801100,
+#   'organisationID': 'explaain',
+#   'service': 'gdrive',
+#   'service_name': 'Google Drive',
+#   'superService': 'kloudless',
+#   'type': 'account'
+# })
 # indexFile({
 #   'organisationID': 'explaain',
 #   'accountID': '282782204',
