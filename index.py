@@ -269,6 +269,7 @@ def addSource(source: dict=None):
       sentry.captureMessage(e)
       return { 'success': False, 'error': e }
   print('source:', source)
+  # TODO: Check whether a source with this accountID (and organisationID/service combo) already exists
   try:
     res = db.Sources().add(source)
   except Exception as e:
@@ -299,14 +300,13 @@ def addSource(source: dict=None):
   #   numAttempts += 1
   #   numIndexed = indexFiles(source)
   try:
-    track.slack('New Source Connected! *' + user_to_name(source['organisationID']) + '* connected *' + source['service'] + '*')
+    track.slack('New Source Connected! *' + source['organisationID'] + '* connected up to *' + source['service'] + '*')
   except Exception as e:
     print(e)
     sentry.captureException()
   return {
     'success': True,
     'source': source,
-    'numIndexed': numIndexed
   }
 
 def listSources():
@@ -358,6 +358,10 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   pp.pprint(integrationData)
   if not integrationData or 'module' not in integrationData:
     print('No module defined')
+    sentry.captureMessage('No module defined', extra={
+      'integrationData': integrationData,
+      'allServiceData': allServiceData,
+    })
     return False
   integration = integrationData['module']
   try:
@@ -366,14 +370,20 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
   except Exception as e:
     traceback.print_exc(file=sys.stdout)
     print(e)
+    sentry.captureException()
     files = None
   if not files or not len(files):
     print('No files retrieved')
+    sentry.captureMessage('No files retrieved', extra={
+      'integrationData': integrationData,
+      'allServiceData': allServiceData,
+    })
     return None
   filesTracker = {
     'indexing': [],
     'notIndexing': []
   }
+  print('files')
   pp.pprint(files)
   indexedFiles = db.Files(accountInfo['organisationID']).get(objectIDs=[f['objectID'] for f in files])
   # print('actualFiles')
@@ -410,43 +420,68 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
     mp.track('admin', 'Files Indexed', {**accountInfo, **other})
   return len(files)
 
-def indexFile(accountInfo: dict, fileID: str, actualFile=None):
+def indexFile(accountInfo: dict=None, fileID: str=None, actualFile: dict=None):
+  if not accountInfo or 'organisationID' not in accountInfo or not fileID:
+    print('Couldn\'t index file - missing info', accountInfo, fileID)
+    sentry.captureMessage('Couldn\'t index file - missing info', extra={
+      'accountInfo': accountInfo,
+      'fileID': fileID,
+      'actualFile': actualFile,
+    })
+    return None
   integrationData = services.getIntegrationData(accountInfo=accountInfo, specificCard=actualFile)
   print('integrationData')
   pp.pprint(integrationData)
   if not integrationData or 'module' not in integrationData:
     print('No module defined')
+    sentry.captureMessage('No module defined', extra={
+      'accountInfo': accountInfo,
+      'fileID': fileID,
+      'actualFile': actualFile,
+      'integrationData': integrationData,
+    })
     return False
   integration = integrationData['module']
+  f = None
   if actualFile:
     keys = ['objectID', 'service', 'source', 'title', 'modified']
     keysInActualFile = [(key in actualFile and actualFile[key]) for key in keys]
     if keysInActualFile.count(False) == 0:
       f = actualFile
-  else:
+  if not f:
     try:
       f = integration.getFile(accountInfo, fileID=fileID)
     except Exception as e:
       print(e)
       sentry.captureException()
-      f = None
-  if f is None:
+      return False
+  if not f:
+    sentry.captureMessage('Couldn\'t get file', extra={
+      'accountInfo': accountInfo,
+      'fileID': fileID,
+      'actualFile': actualFile,
+      'integrationData': integrationData,
+    })
     return False
   if hasattr(integration, 'get_thumbnail'):
-    thumbnail_file = integration.get_thumbnail(accountInfo, fileID=fileID)
-    blob = google_bucket.blob('assets/' + accountInfo['organisationID'] + '/thumb_' + fileID)
-    temp_filename = 'temp_thumb.png'
-    out_file = open(temp_filename, 'wb')
-    out_file.write(thumbnail_file)
-    out_file = open(temp_filename, 'rb')
-    blob.upload_from_file(out_file, content_type='image/png')
-    res = blob.make_public()
-    thumbnail_url = blob.public_url
+    try:
+      thumbnail_file = integration.get_thumbnail(accountInfo, fileID=fileID)
+      blob = google_bucket.blob('assets/' + accountInfo['organisationID'] + '/thumb_' + fileID)
+      temp_filename = 'temp_thumb.png'
+      out_file = open(temp_filename, 'wb')
+      out_file.write(thumbnail_file)
+      out_file = open(temp_filename, 'rb')
+      blob.upload_from_file(out_file, content_type='image/png')
+      res = blob.make_public()
+      thumbnail_url = blob.public_url
+      f['thumbnail'] = thumbnail_url
+    except Exception as e:
+      print('Couldn\'t get thumbnail', e)
+      sentry.captureException()
     try:
       os.remove(temp_filename)
     except Exception as e:
       sentry.captureMessage('No file to remove')
-    f['thumbnail'] = thumbnail_url
   try:
     print('f1')
     print(f)
@@ -464,22 +499,30 @@ def indexFile(accountInfo: dict, fileID: str, actualFile=None):
   cardsSaved = indexFileContent(accountInfo, f)
   f['cardsSaved'] = cardsSaved
   f['organisationID'] = accountInfo['organisationID']
-  notifyChanges(oldFile, f)
+  # notifyChanges(oldFile, f)
   if not Testing and cardsSaved:
     mp.track('admin', 'File Indexed', f)
   print('File Indexed with ' + str(cardsSaved) + ' updated cards: ' + (f['title'] if 'title' in f else ''))
 
-def indexFileContent(accountInfo, f):
-  print('indexFileContent')
-
+def indexFileContent(accountInfo: dict=None, f: dict=None):
+  if not accountInfo or 'organisationID' not in accountInfo or not f or 'objectID' not in f:
+    print('Couldn\'t index file content - missing info', accountInfo, f)
+    sentry.captureMessage('Couldn\'t index file - missing info', extra={
+      'accountInfo': accountInfo,
+      'f': f,
+    })
+    return False
   # Create new cards
-  print('accountInfo')
-  print(accountInfo)
-  integrationData = services.getIntegrationData(accountInfo=accountInfo)
+  integrationData = services.getIntegrationData(accountInfo=accountInfo, specificCard=actualFile)
   print('integrationData')
   pp.pprint(integrationData)
   if not integrationData or 'module' not in integrationData:
     print('No module defined')
+    sentry.captureMessage('No module defined', extra={
+      'accountInfo': accountInfo,
+      'f': f,
+      'integrationData': integrationData,
+    })
     return False
   integration = integrationData['module']
   cards = None
@@ -546,6 +589,17 @@ def indexFileContent(accountInfo, f):
         objectIDsToReplace[tempObjectID] = realObjectID
       else:
         print('Abandoning Smart Replace')
+        sentry.captureMessage('Abandoning Smart Replace', extra={
+          'accountInfo': accountInfo,
+          'f': f,
+          'integrationData': integrationData,
+          'cards': cards,
+          'oldCards': oldCards,
+          'oldCard': oldCard,
+          'realObjectID': realObjectID,
+          'newCard': newCard,
+          'tempObjectID': tempObjectID,
+        })
         smartReplace = False
   if smartReplace:
     print('Smart Replace!')
@@ -577,6 +631,7 @@ def indexFileContent(accountInfo, f):
     try:
       blob.upload_from_string('\n'.join(newFreeze))
     except Exception as e:
+      sentry.captureException()
       print(e)
     try:
       db.Cards(accountInfo['organisationID']).add(cards)
