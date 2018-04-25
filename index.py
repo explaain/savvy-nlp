@@ -196,7 +196,7 @@ def setUpOrg(organisationID: str=None):
     db.Files(organisationID).create_index()
   except Exception as e:
     print('Failed to create new Cards and Files indices')
-    sentry.captureMessage('Failed to create new Cards and Files indices')
+    sentry.captureException()
     mp.track('admin', 'Failed to create new Cards and Files indices', { 'organisationID': organisationID })
     return None
   mp.track('admin', 'Org Setup: Indexes Created', { 'organisationID': organisationID })

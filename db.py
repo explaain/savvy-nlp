@@ -89,7 +89,9 @@ class Index:
 
   def create_index(self):
     # ElasticSearch Only
-    es_client.IndicesClient(es).create(index=get_index_name('elasticsearch'))
+    # @TODO: Handle case where index already exists
+    es_client.IndicesClient(es).create(index=self.get_index_name('elasticsearch'))
+    return self.get_index_name('elasticsearch')
 
   def search(self, query: str='', params: dict=None, search_service: str='elasticsearch', size: int=10):
     if not query:

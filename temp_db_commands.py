@@ -4,7 +4,7 @@ import templates
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
-from elasticsearch import client
+from elasticsearch import client as es_client
 
 # Loads .env into environment variables
 from pathlib import Path  # python3 only
@@ -21,11 +21,11 @@ es = Elasticsearch(
     port=9243,)
 
 # @NOTE: Getting info about a particular index/cluster etc
-# pp.pprint(client.IndicesClient(es).stats(index='users'))
-# pp.pprint(client.IndicesClient(es).stats(index='alborz_bozorgi_al_30068826__cards'))
-# pp.pprint(client.IndicesClient(es).stats(index='mohamad_el_boudi_19370086__cards'))
-# pp.pprint(client.IndicesClient(es).stats(index='financialtimes__cards'))
-# pp.pprint(client.IndicesClient(es).stats(index='matthew_rusk_62352643__cards'))
+# pp.pprint(es_client.IndicesClient(es).stats(index='users'))
+# pp.pprint(es_client.IndicesClient(es).stats(index='alborz_bozorgi_al_30068826__cards'))
+# pp.pprint(es_client.IndicesClient(es).stats(index='mohamad_el_boudi_19370086__cards'))
+# pp.pprint(es_client.IndicesClient(es).stats(index='financialtimes__cards'))
+# pp.pprint(es_client.IndicesClient(es).stats(index='matthew_rusk_62352643__cards'))
 
 # all_orgs = [
 #   'explaain',
@@ -37,7 +37,7 @@ es = Elasticsearch(
 # all_index_names = [org.lower() + '__cards' for org in all_orgs] + [org.lower() + '__files' for org in all_orgs] + ['organisations', 'sources', 'users']
 # for index_name in all_index_names:
 #   print(index_name)
-#   print(client.IndicesClient(es).stats(index=index_name)['_all']['primaries']['docs']['count'])
+#   print(es_client.IndicesClient(es).stats(index=index_name)['_all']['primaries']['docs']['count'])
 
 query = 'savvy'
 
@@ -140,15 +140,15 @@ query = 'savvy'
 # , explain=True, size=12), indent=2, sort_keys=True))
 
 
-# pp.pprint(client.IndicesClient(es).get(index='_all'))
+# pp.pprint(es_client.IndicesClient(es).get(index='_all'))
 
 # pp.pprint(db.Client().list_indices(search_service='elasticsearch'))
 # pp.pprint([i['name'] for i in db.Client().list_indices(search_service='algolia')['items']])
 
-# pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
-# pp.pprint(client.IndicesClient(es).get(index='matthew_rusk_62352643__cards'))
+# pp.pprint(es_client.IndicesClient(es).get(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).get(index='matthew_rusk_62352643__cards'))
 
-# pp.pprint(client.IndicesClient(es).analyze(index='explaain__cards', body=
+# pp.pprint(es_client.IndicesClient(es).analyze(index='explaain__cards', body=
 # {
 #   "tokenizer":  "standard",
 #   "filter": [
@@ -163,8 +163,8 @@ query = 'savvy'
 # ))
 
 
-# pp.pprint(client.IndicesClient(es).close(index='explaain__cards'))
-# pp.pprint(client.IndicesClient(es).put_settings(index='explaain__cards', body=
+# pp.pprint(es_client.IndicesClient(es).close(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).put_settings(index='explaain__cards', body=
 # {
 #   "analysis": {
 #     "filter": {
@@ -200,10 +200,10 @@ query = 'savvy'
 #   }
 # }
 # ))
-# pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).open(index='explaain__cards'))
 
-# pp.pprint(client.IndicesClient(es).close(index='explaain__cards'))
-# pp.pprint(client.IndicesClient(es).put_settings(index='explaain__cards', body=
+# pp.pprint(es_client.IndicesClient(es).close(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).put_settings(index='explaain__cards', body=
 # {
 #   "analysis": {
 #     "filter": {
@@ -226,12 +226,12 @@ query = 'savvy'
 #   }
 # }
 # ))
-# pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
-# pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).open(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).get(index='explaain__cards'))
 
 
-# pp.pprint(client.IndicesClient(es).close(index='explaain__cards'))
-# pp.pprint(client.IndicesClient(es).put_settings(index='explaain__cards', body=
+# pp.pprint(es_client.IndicesClient(es).close(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).put_settings(index='explaain__cards', body=
 # {
 #   "analysis": {
 #     "analyzer" : {
@@ -249,13 +249,13 @@ query = 'savvy'
 #   }
 # }
 # ))
-# pp.pprint(client.IndicesClient(es).open(index='explaain__cards'))
-# pp.pprint(client.IndicesClient(es).get(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).open(index='explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).get(index='explaain__cards'))
 
-# pp.pprint(client.NodesClient(es).info())
-# pp.pprint(client.CatClient(es).indices())
-# pp.pprint(client.ClusterClient(es).get_settings())
-# pp.pprint(client.ClusterClient(es).put_settings(body=
+# pp.pprint(es_client.NodesClient(es).info())
+# pp.pprint(es_client.CatClient(es).indices())
+# pp.pprint(es_client.ClusterClient(es).get_settings())
+# pp.pprint(es_client.ClusterClient(es).put_settings(body=
 # {
 #   'persistent': {
 #     'cluster': {
@@ -270,15 +270,15 @@ query = 'savvy'
 # ))
 
 
-# pp.pprint(client.IndicesClient(es).get_mapping(index='users', doc_type='user'))
+# pp.pprint(es_client.IndicesClient(es).get_mapping(index='users', doc_type='user'))
 
 
-# pp.pprint(client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card'))
-# # pp.pprint(client.IndicesClient(es).get_field_mapping(index='explaain__cards', doc_type='card', fields='description' ))
+# pp.pprint(es_client.IndicesClient(es).get_mapping(index='explaain__cards', doc_type='card'))
+# # pp.pprint(es_client.IndicesClient(es).get_field_mapping(index='explaain__cards', doc_type='card', fields='description' ))
 #
 #
 #
-# pp.pprint(client.IndicesClient(es).analyze(index='explaain__cards', body=
+# pp.pprint(es_client.IndicesClient(es).analyze(index='explaain__cards', body=
 # {
 #   "field": "description",
 #   "text": "purple colours"
@@ -297,10 +297,10 @@ query = 'savvy'
 # ))
 
 #
-# pp.pprint(client.IndicesClient(es).delete(index='savvy_test_27566448__cards'))
-# pp.pprint(client.IndicesClient(es).delete(index='savvy_test_27566448__files'))
-# pp.pprint(client.IndicesClient(es).delete(index='savvy_test_99753051__cards'))
-# pp.pprint(client.IndicesClient(es).delete(index='savvy_test_99753051__files'))
+# pp.pprint(es_client.IndicesClient(es).delete(index='savvy_test_27566448__cards'))
+# pp.pprint(es_client.IndicesClient(es).delete(index='savvy_test_27566448__files'))
+# pp.pprint(es_client.IndicesClient(es).delete(index='savvy_test_99753051__cards'))
+# pp.pprint(es_client.IndicesClient(es).delete(index='savvy_test_99753051__files'))
 
 # savvyCards = [card for card in db.Cards('explaain').browse() if (not 'service' in card or not card['service']) and 'fileID' not in card]
 # res = db.Cards('explaain').add(savvyCards)
@@ -348,32 +348,32 @@ def reset_and_fill_all_indices():
 
   template_type = 'cards'
   template = templates.get_template(template_type)
-  pp.pprint(client.IndicesClient(es).put_template(name=template_type, body=template))
+  pp.pprint(es_client.IndicesClient(es).put_template(name=template_type, body=template))
   # for org in all_orgs:
   #   index_name = org.lower() + '__cards'
   #   print(index_name)
-    # print(json.dumps(client.IndicesClient(es).get_mapping(index=index_name, doc_type='card'), indent=2))
-    # client.IndicesClient(es).close(index=index_name)
+    # print(json.dumps(es_client.IndicesClient(es).get_mapping(index=index_name, doc_type='card'), indent=2))
+    # es_client.IndicesClient(es).close(index=index_name)
     # try:
-    #   client.IndicesClient(es).put_mapping(index=index_name, doc_type='card', body=cards_template['mappings']['card'])
-    #   client.IndicesClient(es).put_settings(index=index_name, body=cards_template['settings'])
+    #   es_client.IndicesClient(es).put_mapping(index=index_name, doc_type='card', body=cards_template['mappings']['card'])
+    #   es_client.IndicesClient(es).put_settings(index=index_name, body=cards_template['settings'])
     # except Exception as e:
     #   print(e)
-    # client.IndicesClient(es).open(index=index_name)
+    # es_client.IndicesClient(es).open(index=index_name)
 
   template_type = 'files'
   template = templates.get_template(template_type)
-  pp.pprint(client.IndicesClient(es).put_template(name=template_type, body=template))
+  pp.pprint(es_client.IndicesClient(es).put_template(name=template_type, body=template))
   # for org in all_orgs:
   #   index_name = org.lower() + '__files'
   #   print(index_name)
-    # client.IndicesClient(es).put_mapping(index=index_name, doc_type='file', body=files_template['mappings']['file'])
+    # es_client.IndicesClient(es).put_mapping(index=index_name, doc_type='file', body=files_template['mappings']['file'])
 
   # for index_name in all_index_names:
   #   print(index_name)
-  #   if client.IndicesClient(es).exists(index=index_name):
-  #     client.IndicesClient(es).delete(index=index_name)
-  #   client.IndicesClient(es).create(index=index_name)
+  #   if es_client.IndicesClient(es).exists(index=index_name):
+  #     es_client.IndicesClient(es).delete(index=index_name)
+  #   es_client.IndicesClient(es).create(index=index_name)
   for index in all_indices:
     copy_docs_from_algolia(index=index)
 
@@ -405,7 +405,7 @@ source_params = {
 # all_users = db.Users().browse(params=params)
 # pp.pprint(db.Users().browse(params=email_params))
 # pp.pprint(db.Users().browse())
-pp.pprint(db.Sources().browse(params=source_params))
+# pp.pprint(db.Sources().browse(params=source_params))
 
 
 # body={   'query': {   'bool': {   'filter': [   {   'term': {   'firebase': 'vZweCaZEWlZPx0gpQn2b1B7DFAZ2'}}]}}}
@@ -432,7 +432,7 @@ pp.pprint(db.Sources().browse(params=source_params))
 # res = es.search(index='users', body=body)
 # res = es.search(index='users', q=params['filters'])
 # res = es.search(index='sources', q=source_params['filters'])
-pp.pprint(res)
+# pp.pprint(res)
 
 
 
