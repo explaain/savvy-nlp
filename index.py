@@ -4,6 +4,7 @@ from raven import Client as SentryClient
 from parse import services, entityNlp
 import xmljson
 import firebase_admin
+import track
 from firebase_admin import credentials as firebaseCredentials
 from firebase_admin import auth as firebaseAuth
 from google.cloud import storage as google_storage
@@ -704,7 +705,9 @@ def searchCards(user: dict=None, query: str='', params: dict=None):
     del(params['search_service'])
   else:
     search_service = 'algolia'
-  return db.Cards(user['organisationID']).search(query=query, params=params, search_service=search_service)
+  results = db.Cards(user['organisationID']).search(query=query, params=params, search_service=search_service)
+  track.slack('*' + user_to_name(user) + '* searched and got *' + str(len(results['hits'])) + ' results*.')
+  return results
 
 def getCard(user: dict=None, objectID: str=None, params: dict=None):
   if not user or not len(user) or 'organisationID' not in user or not objectID:
@@ -987,6 +990,24 @@ def notifyChanges(oldFile, newFile):
 
 
 words = open('dictionaryWords.txt').read().split('\n')
+
+def user_to_name(user):
+  pp.pprint('user_to_name')
+  pp.pprint(user)
+  org_name = user['organisationID'] if 'organisationID' in user and user['organisationID'] else None
+  user_name = str(user.get('first', '')) + ' ' + str(user.get('last' , ''))
+  if len(user_name) < 2:
+    user_name = user['emails'][0] if 'emails' in user and user['emails'] and len(user['emails']) else user.get('email', None)
+  if not user_name:
+    user_name = user.get('objectID', None)
+  if org_name:
+    if user_name:
+      user_name = user_name + '(' + org_name + ')'
+    else:
+      user_name = org_name + ' member'
+  if not user_name:
+    user_name = 'Unknown User'
+  return user_name
 
 
 # pp.pprint(saveCard({

@@ -53,7 +53,9 @@ query = 'savvy'
 # pp.pprint(es.search(index='organisations', body = {'query': {'match_all': {}}}, size=100))
 # pp.pprint(es.get(index='sources', doc_type='source', id='9IYW8mIBVmRs6EKTRK1Q'))
 # pp.pprint(es.delete(index='organisations', doc_type='organisation', id='Savvy_Test_38471264'))
-pp.pprint(es.delete(index='users', doc_type='user', id='wbpk_GIBFJlaWnBEVzXY'))
+# pp.pprint(es.delete(index='users', doc_type='user', id='Zf1u_GIBwpczb9a69jeC'))
+# pp.pprint(es.delete(index='sources', doc_type='source', id='E7pv_GIBFJlaWnBEuEvs'))
+# pp.pprint(es.delete(index='organisations', doc_type='organisation', id='Savvy_User4_77917906'))
 # pp.pprint(es.delete(index='sources', doc_type='source', id='701157581'))
 # pp.pprint(es.delete(index='sources', doc_type='source', id='717781852'))
 # pp.pprint(es.get(index='sources', doc_type='source', id='717781852'))
@@ -476,3 +478,18 @@ source_params = {
 #   'event_details': 'details',
 #   'data': 'data'
 # })
+
+
+
+
+
+
+
+
+
+# pp.pprint(es_client.IndicesClient(es).delete(index='savvy_user4_77917906__cards'))
+# pp.pprint(es_client.IndicesClient(es).delete(index='savvy_user4_77917906__files'))
+
+
+payload={"text": "This is a line of text in a channel.\nAnd this is another line of text."}
+requests.post('https://hooks.slack.com/services/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', json=payload)
