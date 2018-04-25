@@ -315,13 +315,14 @@ def indexAll(includingLastXSeconds=0):
   """Indexes all files from all sources that have been updated since their own lastUpdated value"""
   sources = listSources()
   print('sources:')
-  print(sources)
+  print(sources[:5])
   mp.track('admin', 'Beginning Global Index', {
     # 'accounts': sources,
     'numberOfAccounts': len(sources)
   })
   indexed = []
   for source in sources:
+    print('source')
     print(source)
     accountID = source.get('accountID', source.get('objectID', None))
     if accountID:

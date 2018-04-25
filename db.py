@@ -123,8 +123,9 @@ class Index:
         else:
           print('mode 3')
           res = es.search(index=self.get_index_name('elasticsearch'), body=body, size=size)
-        print('res')
-        pp.pprint(res)
+        print('-- START OF RES --')
+        pp.pprint(json.dumps(res)[:500])
+        print('-- END OF RES --')
         return {
           'hits': [_transform_from_elasticsearch(self.doc_type, hit['_source'], id=hit['_id']) for hit in res['hits']['hits']]
         }
@@ -195,7 +196,7 @@ class Index:
         return None
       browsed = search_results['hits']
       print('browsed')
-      pp.pprint(browsed)
+      pp.pprint(browsed[:5])
       return browsed
 
   def add(self, toAdd):
