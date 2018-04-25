@@ -2,11 +2,17 @@
 # @TODO: browse()
 
 import pprint, os, json, traceback, sys
+from dotenv import load_dotenv
 import templates
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
 from elasticsearch import client
+
+# Loads .env into environment variables
+from pathlib import Path  # python3 only
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
 
 pp = pprint.PrettyPrinter(indent=4) #, width=160)
 
@@ -17,7 +23,7 @@ sentry = SentryClient(
 es = Elasticsearch(
 # https://elastic:z5X0jw5hyJRzpEIOvFQmWwxN@ad56f010315f958f3a4d179dc36e6554.us-east-1.aws.found.io:9243/
     ['https://ad56f010315f958f3a4d179dc36e6554.us-east-1.aws.found.io:9243/'],
-    http_auth=('elastic', 'z5X0jw5hyJRzpEIOvFQmWwxN'),
+    http_auth=('elastic', os.getenv('ELASTIC_PWD')),
     scheme='https',
     port=9243,)
 
@@ -93,9 +99,14 @@ class Index:
       else:
         print('Searching ElasticSearch!')
         # @TODO: configure search and insert query (NOW DONE???)
-        body = _params_to_query_dsl(params)
+        # body = _params_to_query_dsl(params)
+        body = _params_to_query_dsl()
+        pp.pprint('body')
+        pp.pprint(body)
         if query and len(query):
           res = es.search(index=self.get_index_name('elasticsearch'), q=query, body=body, size=size)
+        elif params and 'filters' in params:
+          res = es.search(index=self.get_index_name('elasticsearch'), q=params['filters'], body=body, size=size)
         else:
           res = es.search(index=self.get_index_name('elasticsearch'), body=body, size=size)
         return {
@@ -441,9 +452,9 @@ def _params_to_query_dsl(params: dict=None):
   # Currently only handles term-based filters (i.e. not ranges, text searches...)
   # Only handles filters separated by 'AND'
   # Assumes each value is in "quotes"
-  if not params:
-    return None
-  if 'filters' in params:
+  # if not params:
+  #   return None
+  if params and 'filters' in params:
     filters = params['filters'].split(' AND ')
     filter = [{
       'term': { f.split(':')[0].strip(): ''.join(f.split(':')[1].strip().split('"')) }

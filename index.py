@@ -83,39 +83,43 @@ def serveUserData(idToken: str):
   # res1 = db.Users().get(firebaseUid)
   # res = { 'hits': [res1] }
   # @TODO: This should happen by filtering in the search, not by returning everything then filtering
-  res1 = db.Users().browse()
-  pp.pprint(res1)
-  if not res1 or not len(res1):
-    try:
-      raise Exception('Couldn\'t get users!')
-    except Exception as error:
-      print('Caught this error: ' + repr(error))
-      sentry.captureException()
-    return None
-  res = { 'hits': [hit for hit in res1 if 'firebase' in hit and hit['firebase'] == firebaseUid] }
-  # res = db.Users().search(params=params)
+  # all_users = db.Users().browse()
+  # pp.pprint(all_users)
+  # if not all_users or not len(all_users):
+  #   print('Couldn\'t fetch users from ElasticSearch!')
+  #   sentry.captureMessage('Couldn\'t fetch users from ElasticSearch!', extra={
+  #     'all_users': all_users,
+  #     'firebaseUid': firebaseUid,
+  #     'decoded_user': decoded_user,
+  #   })
+  #   return None
+  # res = { 'hits': [hit for hit in all_users if 'firebase' in hit and hit['firebase'] == firebaseUid] }
+  res = db.Users().search(params=params)
   print('First result!')
   pp.pprint(res)
   if 'hits' in res and len(res['hits']):
     if len(res['hits']) > 1:
-      print('More than one result for firebaseUid ' + firebaseUid + ' - aborting for security reasons!')
+      print('More than one result for firebaseUid ' + str(firebaseUid) + ' - aborting for security reasons!')
       sentry.captureMessage('More than one result for this firebaseUid - aborting for security reasons!', extra={
         'user': decoded_user,
+        'firebaseUid': firebaseUid,
+        'hits': res['hits'],
       })
       return False # @TODO: return something more useful in errors?
     user = res['hits'][0]
     if '_highlightResult' in user:
       del user['_highlightResult']
+    print('Serving back user:')
     print(user)
     return user
   else:
     if 'email' in decoded_user:
       # Match user to existing one (e.g. created from Slack) by email
-      params = {
+      email_params = {
         'filters': 'emails: "' + decoded_user['email'] + '"'
       }
-      res = db.Users().search(params=params)
-      if 'hits' in res and len(res['hits']):
+      res = db.Users().search(params=email_params)
+      if res and 'hits' in res and len(res['hits']):
         user = res['hits'][0]
         if '_highlightResult' in user:
           del user['_highlightResult']
@@ -161,7 +165,8 @@ def serveUserData(idToken: str):
         })
         return user
     else:
-      sentry.captureMessage('Couldn\'t return any user data!', extra={
+      print('Couldn\'t return or create any user data!')
+      sentry.captureMessage('Couldn\'t return or create any user data!', extra={
         'params': params,
         'firebaseUid': firebaseUid
       })
