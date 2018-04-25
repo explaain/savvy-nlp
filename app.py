@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, pprint, index, cards
+from dotenv import load_dotenv
 # import bugsnag, os, pprint
 from raven import Client as SentryClient
 from flask_cors import CORS, cross_origin
@@ -126,7 +127,16 @@ def save_to_savvy():
   print(results)
   return jsonify({'results': results})
 
-if __name__ == '__main__':
+try:
+  # Loads .env into environment variables
+  from pathlib import Path  # python3 only
+  env_path = Path('.') / '.env'
+  load_dotenv(dotenv_path=env_path)
+except Exception as e:
+  print(e)
+  sentry.captureException()
+
+if __name__ == '__main__' and os.getenv('SAVVY_SERVER') == 'True':
   # Bind to PORT if defined, otherwise default to 5000.
   port = int(os.environ.get('PORT', 5050))
   app.run(host='0.0.0.0', port=port)
