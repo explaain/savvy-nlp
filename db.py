@@ -182,6 +182,7 @@ class Index:
           browsed = self.index.browse_all(params)
         else:
           browsed = self.index.browse_all()
+        return [hit for hit in browsed]
       except Exception as e:
         print('Algolia: Couldn\'t browse index "' + index_name + '". ', e)
         sentry.captureException()
@@ -193,7 +194,9 @@ class Index:
       if not search_results or 'hits' not in search_results:
         return None
       browsed = search_results['hits']
-    return [hit for hit in browsed]
+      print('browsed')
+      pp.pprint(browsed)
+      return browsed
 
   def add(self, toAdd):
     record = None
