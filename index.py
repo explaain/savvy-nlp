@@ -1370,3 +1370,32 @@ def startIndexing():
 #     'user_agent': None}
 #
 # indexFile(source, '162ba61cf493693f')
+
+
+
+# indexFiles({
+#   "organisationID": "Savvy_User4_50014706",
+#   "superService": "kloudless",
+#   "service": "gdrive",
+#   "accountID": 301251343,
+#   "access_token": "RDa7SWgGhU7lcGOXXBiPIvX0yL3e5M",
+#   "raw_source": {
+#     "id": 301251343,
+#     "account": "savvyuser4@gmail.com",
+#     "active": True,
+#     "service": "gdrive",
+#     "created": "2018-04-25T10:53:15.235887Z",
+#     "modified": "2018-04-25T14:45:30.082237Z",
+#     "service_name": "Google Drive",
+#     "admin": False,
+#     "apis": [
+#       "storage"
+#     ],
+#     "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default",
+#     "api": "meta",
+#     "type": "account"
+#   },
+#   "scope": "gdrive:normal.storage",
+#   "addedBy": "savvyuser4@gmail.com",
+#   "title": "Google Drive"
+# })
