@@ -165,11 +165,11 @@ def serveUserData(idToken: str):
     db.Users().add(user) # @TODO: Get and check result from this?
     print('Created new user:', user)
     mp.track('admin', 'Created User in Database after very first Google login', user)
-    requests.post('https://hooks.zapier.com/hooks/catch/3134011/kv4k3j/', {
-      'event_name': 'New User! *' + (firebase_user['name'] if 'name' in firebase_user else displayName['uid']) + '* just signed in on Chrome for the first time',
-      'event_details': '@channel',
-      'data': 'data'
-    })
+    try:
+      track.slack('New User Created! *' + (firebase_user['name'] if 'name' in firebase_user else user_to_name(user)) + '*')
+    except Exception as e:
+      print(e)
+      sentry.captureException()
     return user
 
 
@@ -220,6 +220,7 @@ def setUpOrg(organisationID: str=None):
 
   allOrgs = db.Organisations().browse() # @TODO: Sort this as it won't necessarily get total number
   mp.track('admin', 'Organisation Setup Complete', { 'objectID': objectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
+  track.slack('New Organisation Created: *' + organisationID + '*')
   print('Organisation Setup Complete', organisationID)
   return organisation
 
@@ -297,6 +298,11 @@ def addSource(source: dict=None):
   #   time.sleep(5)
   #   numAttempts += 1
   #   numIndexed = indexFiles(source)
+  try:
+    track.slack('New Source Connected! *' + user_to_name(source['organisationID']) + '* connected *' + source['service'] + '*')
+  except Exception as e:
+    print(e)
+    sentry.captureException()
   return {
     'success': True,
     'source': source,
