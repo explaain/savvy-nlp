@@ -233,15 +233,21 @@ def setUpDomain(organisationID: str):
   # zones = cf.zones.dns_records.get('1f89549d5561f64fbf1553214c85e960')
   # zone = [z for z in zones if z['name'] == 'heysavvy.com']
 
-def addSource(source: dict):
+def addSource(source: dict=None):
   """This is for when a user adds a new source,
   such as connecting up their Google Drive.
   It automatically indexes all files after connecting.
   """
+  if not source:
+    e = 'No source provided!'
+    print(e)
+    sentry.captureMessage(e)
+    return { 'success': False, 'error': e }
   for key in [ 'organisationID', 'service' ]:
     if key not in source:
       e = 'source must contain \'' + key + '\''
       print(e)
+      sentry.captureMessage(e)
       return { 'success': False, 'error': e }
   if 'superService' in source and source['superService'] == 'google':
     if 'code' in source and 'scopes' in source:
@@ -258,27 +264,38 @@ def addSource(source: dict):
     elif 'access_token' not in source and 'refresh_token' not in source and 'id_token' not in source:
       e = 'source must contain either: both "code" and "scopes"; or "access_token" and "refresh_token" and "id_token"'
       print(e)
+      sentry.captureMessage(e)
       return { 'success': False, 'error': e }
   print('source:', source)
-  res = db.Sources().add(source)
+  try:
+    res = db.Sources().add(source)
+  except Exception as e:
+    print(e)
+    sentry.captureException()
+    return { 'success': False, 'error': e }
   source['objectID'] = str(res['objectID'])
   allSources = db.Sources().browse()
   source['totalSources'] = len(allSources)
   mp.track('admin', 'Source Added', source)
 
-
+  # @TODO Check this is still necessary and stable
   # If either DB Index doesn't exist then create them, create api keys and add this to organisations index
   indices = db.Client().list_indices()
   if not any(i['name'] == db.Files(source['organisationID']).get_index_name() for i in indices['items']) or not any(i['name'] == db.Cards(source['organisationID']).get_index_name() for i in indices['items']):
     setUpOrg(source['organisationID'])
 
-  # Index all files from source
-  numIndexed = 0
-  numAttempts = 0
-  while numIndexed == 0 and numAttempts < 20:
-    time.sleep(5)
-    numAttempts += 1
-    numIndexed = indexFiles(source)
+  # @NOTE: Now not indexing here because:
+  # (a) it never works first time (with Kloudless at least - it always says 0 files)
+  # (b) we want to return success to the browser that at least it's connected, and not wait 5 * 20 seconds
+  # (c) we are separating out indexing into a separate app
+  # @TODO: Send a request to the indexing app to start trying to index this source
+  # # Index all files from source
+  # numIndexed = 0
+  # numAttempts = 0
+  # while numIndexed == 0 and numAttempts < 20:
+  #   time.sleep(5)
+  #   numAttempts += 1
+  #   numIndexed = indexFiles(source)
   return {
     'success': True,
     'source': source,

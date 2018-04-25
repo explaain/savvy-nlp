@@ -53,7 +53,7 @@ query = 'savvy'
 # pp.pprint(es.search(index='organisations', body = {'query': {'match_all': {}}}, size=100))
 # pp.pprint(es.get(index='sources', doc_type='source', id='9IYW8mIBVmRs6EKTRK1Q'))
 # pp.pprint(es.delete(index='organisations', doc_type='organisation', id='Savvy_Test_38471264'))
-# pp.pprint(es.delete(index='users', doc_type='user', id='6KRm82IBFJlaWnBE59JA'))
+pp.pprint(es.delete(index='users', doc_type='user', id='wbpk_GIBFJlaWnBEVzXY'))
 # pp.pprint(es.delete(index='sources', doc_type='source', id='701157581'))
 # pp.pprint(es.delete(index='sources', doc_type='source', id='717781852'))
 # pp.pprint(es.get(index='sources', doc_type='source', id='717781852'))
