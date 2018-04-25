@@ -218,8 +218,8 @@ def setUpOrg(organisationID: str=None):
   mp.track('admin', 'Org Setup: New Org Object Created', { 'objectID': organisationID, 'organisationID': organisationID })
   mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': organisationID, 'organisationID': organisationID })
 
-  allOrgs = db.Organisations().browse() # @TODO: Sort this as it won't necessarily get total number
-  mp.track('admin', 'Organisation Setup Complete', { 'objectID': objectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
+  totalOrgs = db.Organisations().get_size()
+  mp.track('admin', 'Organisation Setup Complete', { 'objectID': objectID, 'organisationID': organisationID, 'totalOrgs': totalOrgs })
   track.slack('New Organisation Created: *' + organisationID + '*')
   print('Organisation Setup Complete', organisationID)
   return organisation
@@ -277,8 +277,7 @@ def addSource(source: dict=None):
     sentry.captureException()
     return { 'success': False, 'error': e }
   source['objectID'] = str(res['objectID'])
-  allSources = db.Sources().browse()
-  source['totalSources'] = len(allSources)
+  source['totalSources'] = db.Sources().get_size()
   mp.track('admin', 'Source Added', source)
 
   # @TODO Check this is still necessary and stable
@@ -315,8 +314,10 @@ def listSources():
 def indexAll(includingLastXSeconds=0):
   """Indexes all files from all sources that have been updated since their own lastUpdated value"""
   sources = listSources()
+  print('sources:')
+  print(sources)
   mp.track('admin', 'Beginning Global Index', {
-    'accounts': sources,
+    # 'accounts': sources,
     'numberOfAccounts': len(sources)
   })
   indexed = []
@@ -344,6 +345,10 @@ def indexAll(includingLastXSeconds=0):
         'source': source,
       })
     # db.Sources().save(source)
+
+    # NOTE: This is to save memory
+    # TODO: Check this doesn't mess anything up
+    del(source)
   mp.track('admin', 'Completed Global Index', {
     'accounts': indexed,
     'numberOfAccounts': len(indexed)
@@ -1121,256 +1126,15 @@ def reIndex():
 
 def startIndexing():
   print('hi')
-  indexAll(includingLastXSeconds=0)
+  indexAll()
   s.enter(60 * minsInterval, 1, reIndex)
   s.run()
 
-# indexAll()
-
-# requests.post('https://savvy-api--live.herokuapp.com/notify/send', json={
-#   "recipient": {
-#     "email": "jeremy@heysavvy.com"
-#   },
-#   "type": "CARD_UPDATED",
-#   "payload": {
-#     "message": "An issue on 🐞 Sifter has been resolved! Here it is: \n\n> *This is a testing issue*\n\nClick here to view it on Sifter: https://savvy.sifterapp.com/projects/50281/issues/4314315"
-#   }
-# })
 
 
 """Below here is stuff for testing"""
 
-# indexAll(includingLastXSeconds=10000)
-
-
-# accountInfo = {'organisationID': 'acme', 'accountID': 288094069}
-# accountInfo = {
-#   "service": "zoho",
-#   "organisationID": "explaain",
-#   "superService": False,
-#   "accountID": "savvy",
-#   "token": "1461d2e158c6e83ffa4a45e4e32c9c01",
-#   "email": "jeremy@heysavvy.com",
-#   "objectID": "bugtracker.zoho.eu/portal/savvy"
-# }
-# # kloudlessDrives.listFiles(accountInfo)
-#
-# indexFiles(accountInfo, allFiles=True)
-# accountInfo = {
-#   "service": "gsites",
-#   "organisationID": "financialtimes",
-#   "superService": False,
-#   "accountID": "https://sites.google.com/ft.com",
-#   "email": "testsavvy3@gmail.com",
-#   "password": "nakestest9",
-#   "objectID": "https://sites.google.com/ft.com"
-# }
-# indexFiles(accountInfo)
-
 # indexAll()
-# indexFiles({
-#   'objectID': '282782204',
-#   'accountID': '282782204',
-#   'active': True,
-#   'addedBy': 'jeremy@explaain.com',
-#   'admin': False,
-#   'api': 'meta',
-#   'apis': ['storage'],
-#   'created': 1511972977,
-#   'effective_scope': 'gdrive:normal.storage.default '
-#                      'gdrive:normal.storage.default '
-#                      'gdrive:normal.storage.default',
-#   'googleRawCredentials': {'access_token': 'ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM',
-#                            'client_id': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
-#                            'client_secret': '7fU16P8yZL-MHzMItnOw-SR0',
-#                            'refresh_token': '1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe',
-#                            'scopes': ['https://www.googleapis.com/auth/drive.metadata.readonly',
-#                                       'https://www.googleapis.com/auth/spreadsheets'],
-#                            'token_expiry': False,
-#                            'token_uri': 'https://accounts.google.com/o/oauth2/token',
-#                            'user_agent': None},
-#   'modified': 1516801100,
-#   'organisationID': 'explaain',
-#   'service': 'gdrive',
-#   'service_name': 'Google Drive',
-#   'superService': 'kloudless',
-#   'type': 'account'
-# })
-# indexFile({
-#   'organisationID': 'explaain',
-#   'accountID': '282782204',
-#   'superService': 'kloudless',
-# }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
-# indexFile({
-#   'organisationID': 'explaain',
-#   'accountID': '282782204'
-# }, 'J13B2DLXBLT8HsALzNTfviaXVscPNm5RtgnSv_KPbZgSMJAe0vNj5M5ipz')
-# indexFile({
-#   'organisationID': 'explaain',
-#   'accountID': '282782204',
-#   'superService': 'kloudless'
-# }, 'F5c2i-hLpBOPeaTNaH65opIarzBxzAcJyHAsgKAZXXVHwsZBA08BV8ANIOnb6ShY3')
-# }, 'F88bWIq-LWUFA72bVPTHSBrJni_zNfEufrlqw8Hc--DkNBTM4u7InvdV8JcVurbpT')
-# indexFile({
-#   'organisationID': 'askporter',
-#   'accountID': '284151319'
-# }, 'FtORrzfQkKOM6NOR_ZgkDcBmP258Sne-HAMXW32x2F29Xr1VGyK2JKsqCq0eu704P')
-# indexFileContent({'objectID': 'FVNDMMXfVj99RqJMyz1xiFpk63kKA44NqCKEKimaUF1F63QxFJmvnRuuGKN2JyLXY', 'title': 'Policy Tracker for GE2017.com', 'modified': '1499418614', 'created': 'null'})
-
-# indexFile({
-#   'username': 'admin',
-#   'password': 'h3110w0r1d',
-#   'siteDomain': 'explaain',
-#   'accountID': 'https://explaain.atlassian.net/wiki/',
-#   'service': 'confluence',
-#   'organisationID': 'explaain',
-# }, '1572866')
-
-# xmlstring = open('parse/sample3.xml').read()
-# # print(xmlstring)
-# kloudlessDrives.xmlFindText(xmlstring)
-
-
-
-
-
-
-
-
-
-# #
-# # indexFiles({
-# indexFile({
-#   'id': 297914432,
-#   'account': 'ycxsavvy@gmail.com',
-#   'active': True,
-#   'service': 'gdrive',
-#   'created': '2018-03-19T12:44:35.215342Z',
-#   'modified': '2018-03-19T12:44:36.638379Z',
-#   'service_name': 'Google Drive',
-#   'admin': False,
-#   'apis': [
-#     'storage'
-#   ],
-#   'effective_scope': 'gdrive:normal.storage.default gdrive:normal.storage.default',
-#   'api': 'meta',
-#   'type': 'account',
-#   'organisationID': 'yc',
-#   'addedBy': 'ycxsavvy@gmail.com',
-#   'superService': 'kloudless',
-#   'googleRawCredentials': {
-#     'client_id': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
-#     'client_secret': '7fU16P8yZL-MHzMItnOw-SR0',
-#     'refresh_token': '1/zs_yDlL6E5xvLOrdsMjU9QweY-BO5CHI2MVW6hMfDME',
-#     'scopes': [
-#       'https://www.googleapis.com/auth/drive.metadata.readonly',
-#       'https://www.googleapis.com/auth/spreadsheets'
-#     ],
-#     'access_token': 'ya29.GluDBVfVhHj7y0EWv2q0IFwHfXZ737PddPa1FvamfVsRdNZOn_NeAjC10Wh92SWXbOGdbr54ULsf7mSEoZcUY3H7aesWzpCex5NaklOxr6vYC-nX4DjEvEn3gnrS',
-#     'token_uri': 'https://accounts.google.com/o/oauth2/token',
-#     'user_agent': None,
-#     'token_expiry': False
-#   },
-#   'accountID': '297914432',
-#   'objectID': '297914432'
-# # })
-# # }, 'F6YPc2AKLZCV5Cw-xkulsn-kiol39N48MdknZXsMZQiu0tDP3EyBkqerkj2raiLNE')
-
-
-# indexAll()
-#
-# indexFile({
-#   "organisationID": "Savvy_Test_99753051",
-#   "service": "dropbox",
-#   "accountID": 299031109,
-#   "access_token": "yzzxUZH6du4uCHZ2AOpyF1NGAM7ZWz",
-#   "raw_source": {
-#     "id": 299031109,
-#     "account": "testsavvy3@gmail.com",
-#     "active": True,
-#     "service": "dropbox",
-#     "created": "2018-03-30T14:10:03.992811Z",
-#     "modified": "2018-03-31T11:18:19.181813Z",
-#     "service_name": "Dropbox",
-#     "admin": False,
-#     "apis": [
-#       "storage"
-#     ],
-#     "effective_scope": "dropbox:normal.storage.default dropbox:normal.storage.default",
-#     "api": "meta",
-#     "type": "account"
-#   },
-#   "scope": "dropbox:normal.storage",
-#   "addedBy": "testsavvy3@gmail.com",
-#   "title": "Dropbox",
-#   "superService": "kloudless",
-#   "objectID": "744035020"
-# }, 'FdxDb09OPjebpJzmcWPb8Zcj8EP76lJSPO0lZLKQm2Gg=')
-
-# indexFile({
-#   "active": True,
-#   "service": "gdrive",
-#   "created": 1511972977,
-#   "modified": 1516801100,
-#   "service_name": "Google Drive",
-#   "admin": False,
-#   "apis": [
-#     "storage"
-#   ],
-#   "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default gdrive:normal.storage.default",
-#   "api": "meta",
-#   "type": "account",
-#   "organisationID": "explaain",
-#   "addedBy": "jeremy@explaain.com",
-#   "accountID": "282782204",
-#   "googleRawCredentials": {
-#     "client_id": "704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com",
-#     "client_secret": "7fU16P8yZL-MHzMItnOw-SR0",
-#     "refresh_token": "1/C8I4lAbq5V6sS_cP_D20-LzoVgsxoXvcPnDVHeeu8DL_4bO2yQLPXnB3KXSmfHDe",
-#     "scopes": [
-#       "https://www.googleapis.com/auth/drive.metadata.readonly",
-#       "https://www.googleapis.com/auth/spreadsheets"
-#     ],
-#     "access_token": "ya29.GluDBYXRUy_Xla35MBZIythzFrBHtkbCpWi_9EsBGjGK77YKNaK7aIoH55mw2Ru8-tpBW4ArjQ0HF5L5tIUZwxRALIhDtctn6GbZafKEsmUKNNKoTGvLbVl6zfEM",
-#     "token_uri": "https://accounts.google.com/o/oauth2/token",
-#     "user_agent": None,
-#     "token_expiry": False
-#   },
-#   "superService": "kloudless",
-#   "objectID": "282782204"
-# }, 'Fy8S2PZHhd3kUlp7mdT0MktgPk3N4bZCqhMoYXwSiTc1iNvpoos2uBVoq1jhWnaSq')
-
-
-# pp.pprint([var + ': ' + os.environ[var] for var in os.environ])
-
-
-#
-# source = {   'access_token': 'ya29.GluWBas4lqycjRobeUke5AWjeWNqphLZN4M_gWkcY0YfiC0er4fvw_z1h0akMle0-X79aMpGjTg9NWfRX6-khcqEJj0XuI_jRm6w4YOfwCZsFzy1amF2isfa_mKP',
-#     'code': '4/AAAPQUlZqLo985b_9slclk2DYKGJVk8d3t1OXhZJBVivxAq_NM5nUNDR6MFQAqwc5mkdQ-LtFLnz1i2rvffwZjg',
-#     'id_token': {   'at_hash': '0Y3Lg94fJ29-AfcsQO4klg',
-#                     'aud': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
-#                     'azp': '704974264220-lmbsg98tj0f3q09lv4tk6ha46flit4f0.apps.googleusercontent.com',
-#                     'email': 'jeremy@explaain.com',
-#                     'email_verified': True,
-#                     'exp': 1523119243,
-#                     'hd': 'explaain.com',
-#                     'iat': 1523115643,
-#                     'iss': 'accounts.google.com',
-#                     'sub': '104380110279658920175'},
-#     'objectID': '826182612',
-#     'organisationID': 'explaain',
-#     'refresh_token': '1/t1CV_co7Ruo4pBgCGfXGhqVPn9oDn-t_a-3VL6Q0MYU',
-#     'revoke_uri': 'https://accounts.google.com/o/oauth2/revoke',
-#     'scopes': ['https://www.googleapis.com/auth/gmail.readonly'],
-#     'service': 'gmail',
-#     'superService': 'google',
-#     'title': 'Gmail',
-#     'token_expiry': datetime.datetime(2018, 4, 7, 16, 40, 43, 784752),
-#     'totalSources': 72,
-#     'user_agent': None}
-#
-# indexFile(source, '162ba61cf493693f')
-
 
 
 # indexFiles({

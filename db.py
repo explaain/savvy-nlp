@@ -87,6 +87,11 @@ class Index:
     else:
       return self.lowercase_index_name
 
+  def get_size(self, search_service: str='elasticsearch'):
+    stats = es_client.IndicesClient(es).stats(index=self.get_index_name('elasticsearch'))
+    size = stats.get('_all', {}).get('primaries', {}).get('docs', {}).get('count', None)
+    return size
+
   def create_index(self):
     # ElasticSearch Only
     # @TODO: Handle case where index already exists
@@ -110,11 +115,16 @@ class Index:
         pp.pprint('body')
         pp.pprint(body)
         if query and len(query):
+          print('mode 1')
           res = es.search(index=self.get_index_name('elasticsearch'), q=query, body=body, size=size)
         elif params and 'filters' in params:
+          print('mode 2')
           res = es.search(index=self.get_index_name('elasticsearch'), q=params['filters'], body=body, size=size)
         else:
+          print('mode 3')
           res = es.search(index=self.get_index_name('elasticsearch'), body=body, size=size)
+        print('res')
+        pp.pprint(res)
         return {
           'hits': [_transform_from_elasticsearch(self.doc_type, hit['_source'], id=hit['_id']) for hit in res['hits']['hits']]
         }
@@ -164,7 +174,7 @@ class Index:
           sentry.captureException()
           print('ElasticSearch: Couldn\'t get record from index "' + self.get_index_name('elasticsearch') + '". ', e)
 
-  def browse(self, params=False, search_service: str='elasticsearch'):
+  def browse(self, params=None, search_service: str='elasticsearch'):
     # @TODO: Add ElasticSearch here
     if search_service == 'algolia':
       try:

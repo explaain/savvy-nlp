@@ -489,3 +489,5 @@ source_params = {
 
 # pp.pprint(es_client.IndicesClient(es).delete(index='savvy_user4_77917906__cards'))
 # pp.pprint(es_client.IndicesClient(es).delete(index='savvy_user4_77917906__files'))
+
+print(db.Cards('explaain').get_size())
