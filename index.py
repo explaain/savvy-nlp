@@ -54,7 +54,7 @@ def getEntityTypes(text: str):
     entityTypes = entityNlp.getEntityTypes(text)
   except Exception as e:
     print('tried to get entities')
-    print(e)
+    traceback.print_exc(file=sys.stdout)
     entityTypes = []
   return entityTypes
 
@@ -69,7 +69,7 @@ def serveUserData(idToken: str):
     print(firebase_user)
     firebaseUid = firebase_user['uid']
   except Exception as e:
-    print(e)
+    traceback.print_exc(file=sys.stdout)
     sentry.captureException()
     return False
   if not firebaseUid or not len(firebaseUid):
@@ -149,7 +149,7 @@ def serveUserData(idToken: str):
       if not organisation or not len(organisation) or 'objectID' not in organisation:
         raise Exception('Couldn\'t create organisation')
     except Exception as e:
-      print(e)
+      traceback.print_exc(file=sys.stdout)
       sentry.captureException()
     print('organisation')
     pp.pprint(organisation)
@@ -168,7 +168,7 @@ def serveUserData(idToken: str):
     try:
       track.slack('New User Created! *' + (firebase_user['name'] if 'name' in firebase_user else user_to_name(user)) + '*')
     except Exception as e:
-      print(e)
+      traceback.print_exc(file=sys.stdout)
       sentry.captureException()
     return user
 
@@ -210,7 +210,7 @@ def setUpOrg(organisationID: str=None):
   try:
     db.Organisations().save(organisation)
   except Exception as e:
-    print(e)
+    traceback.print_exc(file=sys.stdout)
     mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
     print('Organisation Setup Failed')
     sentry.captureException()
@@ -273,7 +273,7 @@ def addSource(source: dict=None):
   try:
     res = db.Sources().add(source)
   except Exception as e:
-    print(e)
+    traceback.print_exc(file=sys.stdout)
     sentry.captureException()
     return { 'success': False, 'error': e }
   source['objectID'] = str(res['objectID'])
@@ -302,7 +302,7 @@ def addSource(source: dict=None):
   try:
     track.slack('New Source Connected! *' + source['organisationID'] + '* connected up to *' + source['service'] + '*')
   except Exception as e:
-    print(e)
+    traceback.print_exc(file=sys.stdout)
     sentry.captureException()
   return {
     'success': True,
@@ -329,7 +329,7 @@ def indexAll(includingLastXSeconds=0):
       try:
         num = indexFiles(source, includingLastXSeconds=includingLastXSeconds)
       except Exception as e:
-        print(e)
+        traceback.print_exc(file=sys.stdout)
         sentry.captureException()
         num = 0
       if num:
@@ -349,9 +349,17 @@ def indexAll(includingLastXSeconds=0):
     'numberOfAccounts': len(indexed)
   })
 
-def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
+def indexFiles(accountInfo: dict=None, allFiles=False, includingLastXSeconds=0):
   """Indexes all files from a single source that have been updated since their own lastUpdated value"""
   print('indexFiles')
+  if not accountInfo or 'organisationID' not in accountInfo:
+    print('Couldn\'t index files - missing source info', accountInfo)
+    sentry.captureMessage('Couldn\'t index files - missing source info', extra={
+      'accountInfo': accountInfo,
+      'allFiles': allFiles,
+      'includingLastXSeconds': includingLastXSeconds,
+    })
+    return None
   integrationData = services.getIntegrationData(accountInfo=accountInfo)
   allServiceData = services.getAllServiceData(accountInfo=accountInfo)
   print('integrationData1')
@@ -369,7 +377,6 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
     files = integration.listFiles(accountInfo)
   except Exception as e:
     traceback.print_exc(file=sys.stdout)
-    print(e)
     sentry.captureException()
     files = None
   if not files or not len(files):
@@ -404,7 +411,7 @@ def indexFiles(accountInfo, allFiles=False, includingLastXSeconds=0):
       try:
         indexFile(accountInfo, f['objectID'], actualFile=f)
       except Exception as e:
-        print(e)
+        traceback.print_exc(file=sys.stdout)
         sentry.captureException()
     else:
       filesTracker['notIndexing'].append({ 'title': f['title'] })
@@ -452,7 +459,7 @@ def indexFile(accountInfo: dict=None, fileID: str=None, actualFile: dict=None):
     try:
       f = integration.getFile(accountInfo, fileID=fileID)
     except Exception as e:
-      print(e)
+      traceback.print_exc(file=sys.stdout)
       sentry.captureException()
       return False
   if not f:
@@ -513,7 +520,7 @@ def indexFileContent(accountInfo: dict=None, f: dict=None):
     })
     return False
   # Create new cards
-  integrationData = services.getIntegrationData(accountInfo=accountInfo, specificCard=actualFile)
+  integrationData = services.getIntegrationData(accountInfo=accountInfo, specificCard=f)
   print('integrationData')
   pp.pprint(integrationData)
   if not integrationData or 'module' not in integrationData:
@@ -537,7 +544,6 @@ def indexFileContent(accountInfo: dict=None, f: dict=None):
       contentArray = integration.getContentForCards(accountInfo, f['objectID']) # Should only take first one!!!
     except Exception as e:
       traceback.print_exc(file=sys.stdout)
-      print(e)
       contentArray = None
     if not contentArray:
       return 0
@@ -632,11 +638,11 @@ def indexFileContent(accountInfo: dict=None, f: dict=None):
       blob.upload_from_string('\n'.join(newFreeze))
     except Exception as e:
       sentry.captureException()
-      print(e)
+      traceback.print_exc(file=sys.stdout)
     try:
       db.Cards(accountInfo['organisationID']).add(cards)
     except Exception as e:
-      print(e)
+      traceback.print_exc(file=sys.stdout)
       sentry.captureException()
       print('Something went wrong saving cards to the database!')
   print('Number of Cards Updated:', len(cards))
@@ -791,7 +797,7 @@ def saveCard(card: dict, author:dict):
     try:
       existingCard = db.Cards(organisationID).get(card['objectID'])
     except Exception as e:
-      print(e)
+      traceback.print_exc(file=sys.stdout)
       print('objectID provided but no existing card found')
   verified = authorIsSavvy(existingCard if existingCard else card, author)
   if not verified:
@@ -866,7 +872,7 @@ def saveCard(card: dict, author:dict):
         print('Saving card to integration!')
         serviceCard = integration.saveCard(source, card)
     except Exception as e:
-      print(e)
+      traceback.print_exc(file=sys.stdout)
       serviceCard = None
       sentry.captureException()
     # Assemble final card
@@ -896,7 +902,7 @@ def deleteCard(card, author):
       existingCard = db.Cards(organisationID).get(card['objectID'], search_service='elasticsearch')
   except Exception as e:
     sentry.captureException()
-    print(e)
+    traceback.print_exc(file=sys.stdout)
     existingCard = None
   if not existingCard:
     error_message = 'No existing card to delete.'
@@ -922,14 +928,14 @@ def deleteCard(card, author):
         try:
           serviceCard = integration.deleteFile(source, card)
         except Exception as e:
-          print(e)
+          traceback.print_exc(file=sys.stdout)
           serviceCard = {}
     try:
       db.Cards(organisationID).delete(card['objectID'])
       notifyChanges(card, None)
       return { 'success': True, 'card': None }
     except Exception as e:
-      print(e)
+      traceback.print_exc(file=sys.stdout)
       sentry.captureException()
       return { 'success': False, 'error': 'Couldn\'t delete card' }
   else:
