@@ -1,16 +1,22 @@
 import pprint, os, json, traceback, sys, db, requests
+from dotenv import load_dotenv
 import templates
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
 from elasticsearch import client
 
+# Loads .env into environment variables
+from pathlib import Path  # python3 only
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
 pp = pprint.PrettyPrinter(indent=1) #, width=160)
 
 es = Elasticsearch(
 # https://elastic:z5X0jw5hyJRzpEIOvFQmWwxN@ad56f010315f958f3a4d179dc36e6554.us-east-1.aws.found.io:9243/
     ['https://ad56f010315f958f3a4d179dc36e6554.us-east-1.aws.found.io:9243/'],
-    http_auth=('elastic', 'z5X0jw5hyJRzpEIOvFQmWwxN'),
+    http_auth=('elastic', os.getenv('ELASTIC_PWD')),
     scheme='https',
     port=9243,)
 
@@ -39,7 +45,7 @@ query = 'savvy'
 
 
 # pp.pprint(es.search(index='users', body = {'query': {'match_all': {}}}, size=100))
-# res = es.search(index='sources', q=query, body = {'query': {'match_all': {}}}, size=100)
+# res = es.search(index='sources', body = {'query': {'match_all': {}}}, size=100)
 # pp.pprint(res)
 # pp.pprint([hit['_id'] for hit in res['hits']['hits']])
 # pp.pprint([hit['_id'] + ': ' + hit['_source']['addedBy'] if 'addedBy' in hit['_source'] else None for hit in res['hits']['hits']])
@@ -97,7 +103,7 @@ query = 'savvy'
 # pp.pprint(es.get(index='sources', doc_type='source', id='713438322'))
 
 
-# pp.pprint(es.search(index='users', body = {'query': {'match_all': {}}}, size=100))
+# pp.pprint(es.search(index='mohamad_el_boudi_19370086__cards', q='spécifiques des sociétés', body = {'query': {'match_all': {}}}, size=100))
 # pp.pprint(es.get(index='users', doc_type='user', id='vZweCaZEWlZPx0gpQn2b1B7DFAZ2'))
 # pp.pprint(es.get(index='explaain__cards', doc_type='card', id='Comu1GIBYGsTCJWEXGgN'))
 # pp.pprint(es.search(index='matthew_rusk_62352643__cards', q=query, body = {'query': {'match_all': {}}}, size=4))
@@ -373,6 +379,63 @@ def reset_and_fill_all_indices():
 
 
 # reset_and_fill_all_indices()
+
+
+
+firebaseUid = 'vZweCaZEWlZPx0gpQn2b1B7DFAZ2'
+params = {
+  'filters': 'firebase: "' + firebaseUid + '"'
+}
+email = 'jeremy@explaain.com'
+email_params = {
+  'filters': 'emails: "' + email + '"'
+}
+author = {
+  'organisationID': 'explaain',
+}
+card = {
+  'service': 'gdrive'
+}
+source_params = {
+  'filters': 'organisationID:' + author['organisationID'] + ' AND service:' + card['service']
+}
+# res1 = db.Users().get(firebaseUid)
+# res = { 'hits': [res1] }
+# @TODO: This should happen by filtering in the search, not by returning everything then filtering
+# all_users = db.Users().browse(params=params)
+# pp.pprint(db.Users().browse(params=email_params))
+# pp.pprint(db.Users().browse())
+pp.pprint(db.Sources().browse(params=source_params))
+
+
+# body={   'query': {   'bool': {   'filter': [   {   'term': {   'firebase': 'vZweCaZEWlZPx0gpQn2b1B7DFAZ2'}}]}}}
+# body = {
+#   'query': {
+#     'bool': {
+#       'filter': [
+#         { 'term': { 'firebase': 'vZweCaZEWlZPx0gpQn2b1B7DFAZ2' } }
+#       ]
+#     }
+#   }
+# }
+# body = {
+#   'query': {
+#     'filtered': {
+#       'query': {
+#         'bool': {
+#           'must': [{'match': {'firebase': 'vZweCaZEWlZPx0gpQn2b1B7DFAZ2'}}],
+#         }
+#       }
+#     }
+#   }
+# }
+# res = es.search(index='users', body=body)
+# res = es.search(index='users', q=params['filters'])
+# res = es.search(index='sources', q=source_params['filters'])
+pp.pprint(res)
+
+
+
 
 
 # Matt Rusk

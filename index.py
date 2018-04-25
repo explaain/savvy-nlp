@@ -64,9 +64,9 @@ def serveUserData(idToken: str):
   """
   firebaseUid = None
   try:
-    decoded_user = firebaseAuth.verify_id_token(idToken)
-    print(decoded_user)
-    firebaseUid = decoded_user['uid']
+    firebase_user = firebaseAuth.verify_id_token(idToken)
+    print(firebase_user)
+    firebaseUid = firebase_user['uid']
   except Exception as e:
     print(e)
     sentry.captureException()
@@ -74,7 +74,7 @@ def serveUserData(idToken: str):
   if not firebaseUid or not len(firebaseUid):
     print('Blank firebaseUid - aborting for security reasons!')
     sentry.captureMessage('Blank firebaseUid - aborting for security reasons!', extra={
-      'user': decoded_user,
+      'user': firebase_user,
     })
     return False
   params = {
@@ -90,7 +90,7 @@ def serveUserData(idToken: str):
   #   sentry.captureMessage('Couldn\'t fetch users from ElasticSearch!', extra={
   #     'all_users': all_users,
   #     'firebaseUid': firebaseUid,
-  #     'decoded_user': decoded_user,
+  #     'firebase_user': firebase_user,
   #   })
   #   return None
   # res = { 'hits': [hit for hit in all_users if 'firebase' in hit and hit['firebase'] == firebaseUid] }
@@ -98,10 +98,11 @@ def serveUserData(idToken: str):
   print('First result!')
   pp.pprint(res)
   if 'hits' in res and len(res['hits']):
+    # User already exists in db
     if len(res['hits']) > 1:
       print('More than one result for firebaseUid ' + str(firebaseUid) + ' - aborting for security reasons!')
       sentry.captureMessage('More than one result for this firebaseUid - aborting for security reasons!', extra={
-        'user': decoded_user,
+        'user': firebase_user,
         'firebaseUid': firebaseUid,
         'hits': res['hits'],
       })
@@ -112,155 +113,111 @@ def serveUserData(idToken: str):
     print('Serving back user:')
     print(user)
     return user
+  if not 'email' in firebase_user:
+    # No email captured by Firebase login
+    print('No existing user nor email captured by Firebase login!')
+    sentry.captureMessage('No existing user nor email captured by Firebase login!', extra={
+      'params': params,
+      'firebaseUid': firebaseUid
+    })
+    return None
+  # Match user to existing one (e.g. created from Slack or invited to join) by email
+  email_params = {
+    'filters': 'emails: "' + firebase_user['email'] + '"'
+  }
+  res = db.Users().search(params=email_params)
+  if res and 'hits' in res and len(res['hits']):
+    user = res['hits'][0]
+    if '_highlightResult' in user:
+      del user['_highlightResult']
+    print('Found this match by email:', user)
+    # Add firebase details and save in db
+    user['firebase'] = firebaseUid
+    user['created'] = calendar.timegm(time.gmtime())
+    db.Users().save(user) # @TODO: Get and check result from this?
+    mp.track('admin', 'Added Firebase Details to User', user)
+    print('Serving back user (just added firebase details to it):')
+    return user
   else:
-    if 'email' in decoded_user:
-      # Match user to existing one (e.g. created from Slack) by email
-      email_params = {
-        'filters': 'emails: "' + decoded_user['email'] + '"'
-      }
-      res = db.Users().search(params=email_params)
-      if res and 'hits' in res and len(res['hits']):
-        user = res['hits'][0]
-        if '_highlightResult' in user:
-          del user['_highlightResult']
-        print('Found this match by email:', user)
-        # Add firebase details and save in db
-        user['firebase'] = firebaseUid
-        user['created'] = calendar.timegm(time.gmtime())
-        db.Users().save(user)
-        mp.track('admin', 'Added Firebase Details to User', user)
-        print('Serving back user (just added firebase details to it):')
-        return user
-      else:
-        # Remove all special characters, then replace ' ' with '_', then reduce '__' to '_', then add '__<random_number>' to the end
-        full_name = decoded_user['name'] if 'name' in decoded_user else decoded_user['email'] if 'email' in decoded_user else decoded_user['uid']
-        organisationID = re.sub(r'(_)\1+', r'\1', re.sub(r'\s', '_', re.sub(r'[^\w]', ' ', str(full_name)))) + '_' + str(random.randint(10000000, 99999999))
-        # Create new organisation!
-        organisation = setUpOrg(organisationID)
-        print('organisation')
-        pp.pprint(organisation)
+    # Remove all special characters, then replace ' ' with '_', then reduce '__' to '_', then add '__<random_number>' to the end
+    full_name = firebase_user['name'] if 'name' in firebase_user else firebase_user['email'] if 'email' in firebase_user else firebase_user['uid']
+    organisationID = re.sub(r'(_)\1+', r'\1', re.sub(r'\s', '_', re.sub(r'[^\w]', ' ', str(full_name)))) + '_' + str(random.randint(10000000, 99999999))
+    # Create new organisation!
+    try:
+      organisation = setUpOrg(organisationID)
+      if not organisation or not len(organisation) or 'objectID' not in organisation:
+        raise Exception('Couldn\'t create organisation')
+    except Exception as e:
+      print(e)
+      sentry.captureException()
+    print('organisation')
+    pp.pprint(organisation)
 
-        # # Algolia-specific
-        # if not organisation or 'algolia' not in organisation or 'apiKey' not in organisation['algolia']:
-        #   return None
+    # Create new user!
+    user = {
+      'firebase': firebaseUid,
+      'organisationID': organisationID,
+      'emails': [firebase_user['email']],
+      'created': calendar.timegm(time.gmtime()),
+      'role': 'admin',
+    }
+    db.Users().add(user) # @TODO: Get and check result from this?
+    print('Created new user:', user)
+    mp.track('admin', 'Created User in Database after very first Google login', user)
+    requests.post('https://hooks.zapier.com/hooks/catch/3134011/kv4k3j/', {
+      'event_name': 'New User! *' + (firebase_user['name'] if 'name' in firebase_user else displayName['uid']) + '* just signed in on Chrome for the first time',
+      'event_details': '@channel',
+      'data': 'data'
+    })
+    return user
 
-        # Create new user!
-        user = {
-          'firebase': firebaseUid,
-          'organisationID': organisationID,
-          'emails': [decoded_user['email']],
-          'created': calendar.timegm(time.gmtime()),
 
-          # Algolia-specific
-          'algoliaApiKey': organisation['algolia']['apiKey'],
-
-          'role': 'admin',
-        }
-        db.Users().add(user)
-        print('Created new user:', user)
-        mp.track('admin', 'Created User in Database after very first Google login', user)
-        requests.post('https://hooks.zapier.com/hooks/catch/3134011/kv4k3j/', {
-          'event_name': 'New User! *' + (decoded_user['name'] if 'name' in decoded_user else displayName['uid']) + '* just signed in on Chrome for the first time',
-          'event_details': '@channel',
-          'data': 'data'
-        })
-        return user
-    else:
-      print('Couldn\'t return or create any user data!')
-      sentry.captureMessage('Couldn\'t return or create any user data!', extra={
-        'params': params,
-        'firebaseUid': firebaseUid
-      })
-      return False
-
-def setUpOrg(organisationID: str):
-  """ For now this just sets up Cards and Files Algolia Indices,
+def setUpOrg(organisationID: str=None):
+  """ For now this just sets up Cards and Files Indices,
   Creates algoliaApiKey and saves this to organisations index.
   Currently only called from Slack (savvy-api, slack-interface.js).
   """
-  print('Setting Up Organisation', organisationID)
-  mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
-  try:
-    orgToCopySettingsFrom = 'explaain'
-    filesSettings = db.Files(orgToCopySettingsFrom).get_index_properties()
-    cardsSettings = db.Cards(orgToCopySettingsFrom).get_index_properties()
-    print(filesSettings)
-    print(cardsSettings)
-    # Probably worth making this happen every reindex for all other indices for when explaain__Cards and explaain__Files settigns get updated
-    db.Files(organisationID).set_index_properties(filesSettings)
-    db.Cards(organisationID).set_index_properties(cardsSettings)
-  except Exception as e:
-    print('Copying settings didn\'t work')
-    sentry.captureMessage('Copying settings didn\'t work')
-  mp.track('admin', 'Org Setup: Indexes Created', { 'organisationID': organisationID })
-  apiKeyParams = {
-    'acl': ['search', 'browse', 'addObject', 'deleteObject'],
-    'indexes': [organisationID + '__*'],
-    'description': 'Access only for organisation ' + organisationID
-  }
-  print('apiKeyParams', apiKeyParams)
-
-  # Algolia-specific
-  algoliaApiKey = algoliaClient.add_api_key(apiKeyParams)
-  print('algoliaApiKey', algoliaApiKey)
-
-  mp.track('admin', 'Org Setup: API Key Created', { 'organisationID': organisationID })
+  if not organisationID:
+    return None
   searchParams = {
     'filters': 'organisationID: "' + organisationID + '"'
   }
-  results = {
-    'hits': []
-  }
-  numAttempts = 0
   results = db.Organisations().search(params=searchParams)
-  if len(results['hits']) and 'objectID' in results['hits'][0]:
-    objectID = results['hits'][0]['objectID']
-    print('objectID', objectID)
-    organisation = {
-      'objectID': objectID,
-      'name': organisationID, # Still saving this for now in case of legacy issues
+  if results and 'hits' in results and results['hits'] and len(results['hits']):
+    print('Organisation with organisationID ' + organisationID + ' already exists!')
+    sentry.captureMessage('Organisation with organisationID ' + organisationID + ' already exists!')
+    mp.track('admin', 'Organisation with organisationID ' + organisationID + ' already exists!', { 'organisationID': organisationID })
+    return None
+  print('Setting Up Organisation', organisationID)
+  mp.track('admin', 'Setting Up Organisation', { 'organisationID': organisationID })
+  try:
+    # Create new indices
+    db.Cards(organisationID).create_index()
+    db.Files(organisationID).create_index()
+  except Exception as e:
+    print('Failed to create new Cards and Files indices')
+    sentry.captureMessage('Failed to create new Cards and Files indices')
+    mp.track('admin', 'Failed to create new Cards and Files indices', { 'organisationID': organisationID })
+    return None
+  mp.track('admin', 'Org Setup: Indexes Created', { 'organisationID': organisationID })
+  objectID = organisationID
+  organisation = {
+    'objectID': objectID,
+    'organisationID': organisationID,
+    'name': organisationID, # Still saving this for now in case of legacy issues
+  }
+  try:
+    db.Organisations().save(organisation)
+  except Exception as e:
+    print(e)
+    mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
+    print('Organisation Setup Failed')
+    sentry.captureException()
+    return None
+  mp.track('admin', 'Org Setup: New Org Object Created', { 'objectID': organisationID, 'organisationID': organisationID })
+  mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': organisationID, 'organisationID': organisationID })
 
-      # Algolia-specific
-      'algolia': {
-        'apiKey': algoliaApiKey['key']
-      }
-
-    }
-    try:
-      res = db.Organisations().partial_update(organisation)
-      mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': objectID, 'organisationID': organisationID })
-      return organisation
-    except Exception as e:
-      print(e)
-      mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
-      print('Organisation Setup Failed')
-      sentry.captureException()
-      return None
-  else:
-    # Assume organisation needs creating, and create one!
-    try:
-      objectID = organisationID
-      organisation = {
-        'objectID': objectID,
-        'organisationID': organisationID,
-        'name': organisationID, # Still saving this for now in case of legacy issues
-
-        # Algolia-specific
-        'algolia': {
-          'apiKey': algoliaApiKey['key']
-        }
-
-      }
-      db.Organisations().save(organisation)
-      mp.track('admin', 'Org Setup: New Org Object Created', { 'objectID': organisationID, 'organisationID': organisationID })
-      mp.track('admin', 'Org Setup: API Key Saved to Org', { 'objectID': organisationID, 'organisationID': organisationID })
-    except Exception as e:
-      print(e)
-      mp.track('admin', 'Organisation Setup Failed', { 'organisationID': organisationID })
-      print('Organisation Setup Failed')
-      sentry.captureException()
-      return None
-  allOrgs = db.Organisations().browse()
+  allOrgs = db.Organisations().browse() # @TODO: Sort this as it won't necessarily get total number
   mp.track('admin', 'Organisation Setup Complete', { 'objectID': objectID, 'organisationID': organisationID, 'totalOrgs': len(allOrgs) })
   print('Organisation Setup Complete', organisationID)
   return organisation

@@ -7,7 +7,7 @@ import templates
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
-from elasticsearch import client
+from elasticsearch import client as es_client
 
 # Loads .env into environment variables
 from pathlib import Path  # python3 only
@@ -46,7 +46,7 @@ class Client:
     if search_service == 'algolia':
       return self.client.list_indexes()
     else:
-      indices = client.IndicesClient(es).get(index='_all')
+      indices = es_client.IndicesClient(es).get(index='_all')
       # @NOTE: Currently only produces property 'name' for each index
       if not indices:
         return None
@@ -86,6 +86,10 @@ class Index:
       return self.index_name
     else:
       return self.lowercase_index_name
+
+  def create_index(self):
+    # ElasticSearch Only
+    es_client.IndicesClient(es).create(index=get_index_name('elasticsearch'))
 
   def search(self, query: str='', params: dict=None, search_service: str='elasticsearch', size: int=10):
     if not query:
@@ -350,7 +354,7 @@ class Index:
         print('Algolia: Couldn\'t get settings from index "' + self.get_index_name('algolia') + '". ', e)
         sentry.captureException()
     try:
-      elasticsearch_mapping = client.IndicesClient(es).get_mapping(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type)
+      elasticsearch_mapping = es_client.IndicesClient(es).get_mapping(index=self.get_index_name('elasticsearch'), doc_type=self.doc_type)
     except Exception as e:
       print('ElasticSearch: Couldn\'t get settings from index "' + self.get_index_name('elasticsearch') + '". ', e)
       sentry.captureException()
@@ -381,7 +385,7 @@ class Index:
     # if 'elasticsearch' in properties:
     #   elasticsearch_mapping = properties['elasticsearch']
     #   try:
-    #     client.IndicesClient(es).set_mapping(index='explaain__cards', doc_type='card', body=elasticsearch_mapping)
+    #     es_client.IndicesClient(es).set_mapping(index='explaain__cards', doc_type='card', body=elasticsearch_mapping)
     #   except Exception as e:
     #     print('ElasticSearch: Couldn\'t set settings for index "' + self.get_index_name('elasticsearch') + '". ', e)
     #     sentry.captureException()
@@ -497,26 +501,26 @@ def _params_to_query_dsl(params: dict=None):
 
 #
 # res = es.search(index='explaain__cards', q='darren', body={'query': {'match_all': {}}})
-# res = client.IndicesClient(es).get(index='explaain__cards')
-# res = client.IndicesClient(es).get(index='testingtesting__cards')
+# res = es_client.IndicesClient(es).get(index='explaain__cards')
+# res = es_client.IndicesClient(es).get(index='testingtesting__cards')
 # pp.pprint(res)
 
 # template_type = 'cards'
 # template = templates.get_template(template_type)
 # pp.pprint(template)
 # #
-# pp.pprint(client.IndicesClient(es).put_template(name=template_type, body=template))
-# pp.pprint(client.IndicesClient(es).get_template(name=template_type))
-# pp.pprint(client.IndicesClient(es).get_mapping(index='financialtimes__cards', doc_type='card'))
-# res = client.IndicesClient(es).put_mapping(index='explaain__cards', doc_type='card', body=template['mappings']['card'])
+# pp.pprint(es_client.IndicesClient(es).put_template(name=template_type, body=template))
+# pp.pprint(es_client.IndicesClient(es).get_template(name=template_type))
+# pp.pprint(es_client.IndicesClient(es).get_mapping(index='financialtimes__cards', doc_type='card'))
+# res = es_client.IndicesClient(es).put_mapping(index='explaain__cards', doc_type='card', body=template['mappings']['card'])
 
 # res = es.get(index='explaain__cards', doc_type='card', id='450006879348')
 
 # pp.pprint(res)
 # pp.pprint(Client().list_indices())
-# pp.pprint(client.IndicesClient(es).delete('explaain__cards'))
-# pp.pprint(client.IndicesClient(es).delete('explaain__files'))
-# pp.pprint(client.IndicesClient(es).delete(index='Guzel_Akhatova_29560673__Cards'))
+# pp.pprint(es_client.IndicesClient(es).delete('explaain__cards'))
+# pp.pprint(es_client.IndicesClient(es).delete('explaain__files'))
+# pp.pprint(es_client.IndicesClient(es).delete(index='Guzel_Akhatova_29560673__Cards'))
 # pp.pprint([index['name'] + ': ' + str(index['entries']) for index in Client().list_indices()['items']])
 
 
