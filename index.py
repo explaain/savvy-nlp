@@ -90,7 +90,7 @@ def serveUserData(idToken: str):
       raise Exception('Couldn\'t get users!')
     except Exception as error:
       print('Caught this error: ' + repr(error))
-      sentry.captureException(error)
+      sentry.captureException()
     return None
   res = { 'hits': [hit for hit in res1 if 'firebase' in hit and hit['firebase'] == firebaseUid] }
   # res = db.Users().search(params=params)
