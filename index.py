@@ -1004,13 +1004,11 @@ def user_to_name(user):
   user_name = str(user.get('first', '')) + ' ' + str(user.get('last' , ''))
   if len(user_name) < 2:
     user_name = user['emails'][0] if 'emails' in user and user['emails'] and len(user['emails']) else user.get('email', None)
-  if not user_name:
-    user_name = user.get('objectID', None)
   if org_name:
     if user_name:
-      user_name = user_name + '(' + org_name + ')'
+      user_name = user_name + ' (' + org_name + ')'
     else:
-      user_name = org_name + ' member'
+      user_name = org_name + ' member (ID: ' + user.get('objectID', user.get('uid', 'unknown user')) + ')'
   if not user_name:
     user_name = 'Unknown User'
   return user_name
