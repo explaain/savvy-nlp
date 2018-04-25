@@ -126,14 +126,15 @@ def serveUserData(idToken: str):
         print('Found this match by email:', user)
         # Add firebase details and save in db
         user['firebase'] = firebaseUid
-        db.Users().save(user)
         user['created'] = calendar.timegm(time.gmtime())
+        db.Users().save(user)
         mp.track('admin', 'Added Firebase Details to User', user)
+        print('Serving back user (just added firebase details to it):')
         return user
       else:
         # Remove all special characters, then replace ' ' with '_', then reduce '__' to '_', then add '__<random_number>' to the end
         full_name = decoded_user['name'] if 'name' in decoded_user else decoded_user['email'] if 'email' in decoded_user else decoded_user['uid']
-        organisationID = re.sub(r'(_)\1+', r'\1', re.sub(r'\s', '_', re.sub(r'[^\w]', ' ', full_name))) + '_' + str(random.randint(10000000, 99999999))
+        organisationID = re.sub(r'(_)\1+', r'\1', re.sub(r'\s', '_', re.sub(r'[^\w]', ' ', str(full_name)))) + '_' + str(random.randint(10000000, 99999999))
         # Create new organisation!
         organisation = setUpOrg(organisationID)
         print('organisation')
