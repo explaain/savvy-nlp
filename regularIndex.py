@@ -15,7 +15,7 @@ except Exception as e:
 try:
   indexing = os.getenv('SAVVY_INDEXING')
   print(indexing)
-  if indexing:
+  if indexing == 'True':
     index.startIndexing()
 except Exception as e:
   print(e)
