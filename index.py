@@ -1107,7 +1107,7 @@ def user_to_name(user):
 
 
 s = sched.scheduler(time.time, time.sleep)
-minsInterval = 20
+minsInterval = 10
 
 def reIndex():
   indexAll()
@@ -1115,9 +1115,9 @@ def reIndex():
 
 def startIndexing():
   print('hi')
-  # indexAll(includingLastXSeconds=0)
-  # s.enter(60 * minsInterval, 1, reIndex)
-  # s.run()
+  indexAll(includingLastXSeconds=0)
+  s.enter(60 * minsInterval, 1, reIndex)
+  s.run()
 
 # indexAll()
 
