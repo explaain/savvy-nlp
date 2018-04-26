@@ -278,6 +278,11 @@ def addSource(source: dict=None):
     return { 'success': False, 'error': e }
   source['objectID'] = str(res['objectID'])
   source['totalSources'] = db.Sources().get_size()
+  try: # TODO: Shouldn't need a try/except here
+    source['created'] = calendar.timegm(time.gmtime())
+  except Exception as e:
+    traceback.print_exc(file=sys.stdout)
+    sentry.captureException()
   mp.track('admin', 'Source Added', source)
 
   # @TODO Check this is still necessary and stable
@@ -1164,3 +1169,6 @@ def startIndexing():
 #   "addedBy": "savvyuser4@gmail.com",
 #   "title": "Google Drive"
 # })
+
+
+# indexFiles()
