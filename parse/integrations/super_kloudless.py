@@ -69,8 +69,8 @@ def get_thumbnail(source, fileID):
   return thumb.content
 
 def kloudlessToFile(f, accountInfo):
-  print('kloudlessToFile')
-  pp.pprint(f)
+  # print('kloudlessToFile')
+  # pp.pprint(f)
   subServiceData = getSubServiceByMimeType(f['mime_type'], accountInfo)
   file = {
     'objectID': f['id'],
@@ -87,7 +87,7 @@ def kloudlessToFile(f, accountInfo):
   }
   if subServiceData and 'serviceName' in subServiceData:
     file['subService'] = subServiceData['serviceName']
-  pp.pprint(file)
+  # pp.pprint(file)
   return file
 
 def getExportedFileData(accountInfo, fileID):
@@ -109,10 +109,12 @@ def getExportedFileData(accountInfo, fileID):
   pp.pprint(exportParams)
   if exportParams['type'] == 'retrieve':
     exportedFile = account.files.retrieve(fileID)
-    print('exportedFile')
-    pp.pprint(exportedFile)
+    # print('exportedFile')
+    # pp.pprint(exportedFile)
   elif exportParams['type'] == 'raw':
     exportedFile = account.raw(raw_uri = exportParams['raw_uri'] if 'raw_uri' in exportParams else '', raw_method=exportParams['raw_method'] if 'raw_method' in exportParams else '')
+  else:
+    exportedFile = None
   return {
     'exportedFile': exportedFile,
     'driveService': driveService
@@ -126,9 +128,9 @@ def getExportedFileData(accountInfo, fileID):
 def getContentForCards(accountInfo, fileID):
   print('getContentForCards')
   exportedFileData = getExportedFileData(accountInfo, fileID)
-  print('exportedFileData')
-  pp.pprint(exportedFileData)
-  return exportedFileData['driveService'].fileToCardData(exportedFileData['exportedFile']) if exportedFileData and 'exportedFile' in exportedFileData else None
+  # print('exportedFileData')
+  # pp.pprint(exportedFileData)
+  return exportedFileData['driveService'].fileToCardData(exportedFileData['exportedFile']) if exportedFileData and 'exportedFile' in exportedFileData and exportedFileData['exportedFile'] else None
 
 
 def getFileUrl(id, mimeType):

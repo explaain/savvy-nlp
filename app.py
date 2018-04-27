@@ -36,7 +36,15 @@ def add_source():
 @app.route('/get-user', methods=['POST'])
 def get_user():
   print('Starting to get user data!')
-  results = index.serveUserData(request.json['idToken'])
+  results = index.get_user(request.json['idToken'])
+  print('API Returning:')
+  pp.pprint(results)
+  return jsonify({'results': results})
+
+@app.route('/get-user-files', methods=['POST'])
+def get_user_files():
+  print('Starting to get user files!')
+  results = index.get_user_files(request.json['idToken'])
   print('API Returning:')
   pp.pprint(results)
   return jsonify({'results': results})

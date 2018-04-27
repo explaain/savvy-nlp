@@ -481,13 +481,31 @@ source_params = {
 
 
 
+# pp.pprint(db.Sources().browse())
+# pp.pprint(db.Cards('Jonny_Bottomley_57407779').delete_by_query(params={
+#   'filters': 'service:trello'
+# }))
+# pp.pprint(db.Cards('Jonny_Bottomley_57407779').get_size())
+# pp.pprint(db.Cards('Jonny_Bottomley_57407779').search('care awareness'))
 
 
-
+print(json.dumps(es.search(index='explaain__cards', body= {
+  'query': {
+    'multi_match': {
+      'query':  'yc application',
+      'type':   'most_fields',
+      'fields': [ 'title^3', 'description^2', 'cells.value^1.5', 'listCards^1.5', 'fileTitle^0.8', 'context^0.5' ]
+    },
+    # 'multi_match': {
+    #   'query':  'yc application',
+    #   'fields': [ ]
+    # }
+  }
+}, explain=True), indent=2))
 
 
 
 # pp.pprint(es_client.IndicesClient(es).delete(index='savvy_user4_77917906__cards'))
 # pp.pprint(es_client.IndicesClient(es).delete(index='savvy_user4_77917906__files'))
 
-db.Sources().browse()
+# pp.pprint(db.Sources().browse())

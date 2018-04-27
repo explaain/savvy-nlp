@@ -58,11 +58,15 @@ def getEntityTypes(text: str):
     entityTypes = []
   return entityTypes
 
-def serveUserData(idToken: str):
+def get_user(idToken: str=None):
   """ Returns user data from our Database (Algolia),
   once the user has logged in through Firebase (if it can't verify user token it gives up immediately).
   Currently only called from frontend in (auth.js)
   """
+  if not idToken or not len(idToken):
+    print('No idToken provided')
+    sentry.captureMessage('No idToken provided')
+    return None
   firebaseUid = None
   try:
     firebase_user = firebaseAuth.verify_id_token(idToken)
@@ -172,6 +176,55 @@ def serveUserData(idToken: str):
       sentry.captureException()
     return user
 
+def get_user_sources(user: dict=None):
+  if not user or 'organisationID' not in user:
+    return None
+  params = {
+    'filters': 'organisationID:' + user['organisationID'],
+  }
+  sources = db.Sources().browse(params)
+  return sources
+
+def get_user_files(idToken: str=None):
+  # if not idToken or not len(idToken):
+  #   print('No idToken provided')
+  #   sentry.captureMessage('No idToken provided')
+  #   return None
+  # user = get_user(idToken)
+  user = {
+    "slack": "U04NVHJFD",
+    "organisationID": "explaain",
+    "first": "Jeremy",
+    "last": "Evans",
+    "role": "member",
+    "firebase": "vZweCaZEWlZPx0gpQn2b1B7DFAZ2",
+    "algoliaApiKey": "88bd0a77faff65d4ace510fbf172a4e1",
+    "emails": [
+      "jeremy@explaain.com"
+    ],
+    "topics": [
+      "sales"
+    ],
+  }
+  print('user')
+  pp.pprint(user)
+  return db.Files(user['organisationID']).browse()
+  # sources = get_user_sources(user)
+  # print('sources')
+  # print(len(sources))
+  # pp.pprint(sources)
+  # sources_with_files = [{
+  #   'superService': source.get('superService', None),
+  #   'service': source.get('service', None),
+  #   'service_name': source.get('service_name', None),
+  #   'subService': source.get('subService', None),
+  #   'files': get_files_list(source),
+  # } for source in sources]
+  # print('sources_with_files')
+  # pp.pprint(sources_with_files)
+  # print('sources_with_files Length')
+  # print(len(json.dumps(sources_with_files)))
+  # return sources_with_files
 
 def setUpOrg(organisationID: str=None):
   """ For now this just sets up Cards and Files Indices,
@@ -303,6 +356,8 @@ def addSource(source: dict=None):
   #   time.sleep(5)
   #   numAttempts += 1
   #   numIndexed = indexFiles(source)
+  files = get_files_list(source)
+  indexFiles(source)
   try:
     track.slack('New Source Connected! *' + source['organisationID'] + '* connected up to *' + source['service'] + '*')
   except Exception as e:
@@ -311,14 +366,19 @@ def addSource(source: dict=None):
   return {
     'success': True,
     'source': source,
+    'files': files,
   }
 
 def listSources():
   return db.Sources().browse()
 
-def indexAll(includingLastXSeconds=0):
+def indexAll(includingLastXSeconds=0, filter_by_service: str=None):
   """Indexes all files from all sources that have been updated since their own lastUpdated value"""
   sources = listSources()
+  if not sources or not len(sources):
+    print('Failed to load sources!')
+    sentry.captureMessage('Failed to load sources!')
+    return None
   print('sources:')
   print(sources[:5])
   mp.track('admin', 'Beginning Global Index', {
@@ -326,6 +386,8 @@ def indexAll(includingLastXSeconds=0):
     'numberOfAccounts': len(sources)
   })
   indexed = []
+  if filter_by_service and len(filter_by_service):
+    sources = [source for source in sources if 'service' in source and source['service'] == filter_by_service]
   for source in sources:
     print('source')
     print(source)
@@ -360,7 +422,7 @@ def indexAll(includingLastXSeconds=0):
     'numberOfAccounts': len(indexed)
   })
 
-def indexFiles(accountInfo: dict=None, allFiles=False, includingLastXSeconds=0):
+def indexFiles(accountInfo: dict=None, allFiles=False, includingLastXSeconds=0, new_files_only=False):
   """Indexes all files from a single source that have been updated since their own lastUpdated value"""
   print('indexFiles')
   if not accountInfo or 'organisationID' not in accountInfo:
@@ -408,11 +470,15 @@ def indexFiles(accountInfo: dict=None, allFiles=False, includingLastXSeconds=0):
   # pp.pprint(files)
   # print('indexedFiles')
   # pp.pprint(indexedFiles)
-  for f in files:
+  if 'filter_files' in accountInfo and accountInfo['filter_files'] and type(accountInfo['filter_files']) is list:
+    files_to_index = [file for file in files if file['objectID'] in accountInfo['filter_files']]
+  else:
+    files_to_index = files
+  for f in files_to_index:
     indexedFileArray = [iFile for iFile in indexedFiles['results'] if iFile and iFile['objectID'] == f['objectID']]
     indexedFile = indexedFileArray[0] if len(indexedFileArray) else None
 
-    if allFiles or not indexedFile or 'modified' not in indexedFile or not indexedFile['modified'] or indexedFile['modified'] < f['modified'] or calendar.timegm(time.gmtime()) - includingLastXSeconds < f['modified']:
+    if (new_files_only and not indexedFile) or (not new_files_only and ( allFiles or not indexedFile or 'modified' not in indexedFile or not indexedFile['modified'] or indexedFile['modified'] < f['modified'] or calendar.timegm(time.gmtime()) - includingLastXSeconds < f['modified'])):
       filesTracker['indexing'].append({
         'title': f['title'],
         'modified': f['modified'],
@@ -660,6 +726,33 @@ def indexFileContent(accountInfo: dict=None, f: dict=None):
   if toPrint['cardsCreated']:
     pp.pprint(cards)
   return len(cards)
+
+def get_files_list(source):
+  if not source or 'organisationID' not in source:
+    print('Couldn\'t get files list - missing source info', source)
+    sentry.captureMessage('Couldn\'t get files list - missing source info', extra={
+      'source': source,
+    })
+    return None
+  integration_data = services.getIntegrationData(accountInfo=source)
+  if not integration_data or 'module' not in integration_data:
+    print('No module defined')
+    sentry.captureMessage('No module defined', extra={
+      'integration_data': integration_data,
+    })
+    return False
+  integration = integration_data['module']
+  print('Service Integration')
+  print(integration)
+  try:
+    files = integration.listFiles(source)
+  except Exception as e:
+    print(e)
+    files = []
+  print('files')
+  pp.pprint(files)
+  return files
+
 
 def createFileCard(accountInfo, f):
   card = {
@@ -1143,6 +1236,26 @@ def startIndexing():
 # indexAll()
 
 
+# indexFile({
+#   "active": True,
+#   "service": "gdrive",
+#   "created": 1511972977,
+#   "modified": 1516801100,
+#   "service_name": "Google Drive",
+#   "admin": False,
+#   "apis": [
+#     "storage"
+#   ],
+#   "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default gdrive:normal.storage.default",
+#   "api": "meta",
+#   "type": "account",
+#   "organisationID": "explaain",
+#   "addedBy": "jeremy@explaain.com",
+#   "accountID": "282782204",
+#   "superService": "kloudless"
+# }, 'F2a0XaF05SJtNYdZT6RlgX7cDt4GwxYz8Noh9WOwFzFO4UENFxaEhzVhVC2gpHJGZ')
+
+
 # indexFiles({
 #   "organisationID": "Savvy_User4_50014706",
 #   "superService": "kloudless",
@@ -1167,8 +1280,75 @@ def startIndexing():
 #   },
 #   "scope": "gdrive:normal.storage",
 #   "addedBy": "savvyuser4@gmail.com",
-#   "title": "Google Drive"
+#   "title": "Google Drive",
+#   'filter_files': []
 # })
 
 
-# indexFiles()
+# indexAll(filter_by_service='gdrive')
+#
+# indexFiles({'access_token': 'n1NnqmBOW8iSggA5KnglmnL9Z226NA',
+#   'accountID': 301357573,
+#   'addedBy': 'tim@thelandapp.com',
+#   'objectID': 'VP3sAWMBwpczb9a6Qplb',
+#   'organisationID': 'Tim_Hopkin_92953214',
+#   'raw_source': {'account': 'tim@thelandapp.com',
+#                  'active': True,
+#                  'admin': False,
+#                  'api': 'meta',
+#                  'apis': ['storage'],
+#                  'created': '2018-04-26T12:27:28.312378Z',
+#                  'effective_scope': 'gdrive:normal.storage.default '
+#                                     'gdrive:normal.storage.default',
+#                  'id': 301357573,
+#                  'modified': '2018-04-26T12:27:29.815708Z',
+#                  'service': 'gdrive',
+#                  'service_name': 'Google Drive',
+#                  'type': 'account'},
+#   'scope': 'gdrive:normal.storage',
+#   'service': 'gdrive',
+#   'superService': 'kloudless',
+#   'title': 'Google Drive'}, new_files_only=True)
+
+# indexFiles({'objectID': 'I8XsAWMBFJlaWnBEDldu',
+#   'organisationID': 'Tim_Hopkin_92953214',
+#   'service': 'trello',
+#   'title': 'Trello',
+#   'token': 'cc9b32013d9a2f314838e7a9ac26ef4eef0a50432c40fbe3c78ef5fc31b91ed8'})
+
+# get_user_files()
+#
+# indexFiles({
+#   "organisationID": "soham_trivedi_16267537",
+#   "superService": "kloudless",
+#   "service": "gdrive",
+#   "accountID": 301467186,
+#   "access_token": "mBmiNbWh06RBzn5EFanV2Irs5rwR4o",
+#   "raw_source": {
+#     "id": 301467186,
+#     "account": "soham@techalchemy.co",
+#     "active": True,
+#     "service": "gdrive",
+#     "created": "2018-04-27T13:44:41.561578Z",
+#     "modified": "2018-04-27T13:44:42.870781Z",
+#     "service_name": "Google Drive",
+#     "admin": False,
+#     "apis": [
+#       "storage"
+#     ],
+#     "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default",
+#     "api": "meta",
+#     "type": "account"
+#   },
+#   "scope": "gdrive:normal.storage",
+#   "addedBy": "soham@techalchemy.co",
+#   "title": "Google Drive"
+# })
+
+# indexFiles({
+#   "organisationID": "soham_trivedi_16267537",
+#   "service": "trello",
+#   "token": "27e4a02b55a3424ddada439a3c93b68eca6d042949a4a3e2353d0e2bd577e1b7",
+#   "title": "Trello",
+#   "objectID": "UNBZB2MBFJlaWnBEkK-W",
+# })

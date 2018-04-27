@@ -5,9 +5,22 @@ from .formats import xml_doc
 pp = pprint.PrettyPrinter(indent=1, width=160)
 
 def getExportParams(fileData, type: str = 'getContent'):
-  return {
-    'type': 'retrieve'
-  }
+  print("fileData['mimeType']")
+  print(fileData['mimeType'])
+  mimeTypes_we_can_export = [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.google-apps.document',
+    'application/vnd.google-apps.spreadsheet',
+    'application/vnd.google-apps.presentation',
+  ]
+  if fileData and 'mimeType' in fileData and fileData['mimeType'] and fileData['mimeType'] in mimeTypes_we_can_export:
+    return {
+      'type': 'retrieve'
+    }
+  else:
+    return None
 
 def fileToCardData(exportedFile):
   xmlContent = fileToContent(exportedFile)

@@ -1,18 +1,21 @@
 # ELASTICSEARCH TODOS:
 # @TODO: browse()
 
-import pprint, os, json, traceback, sys
+import pprint, os, json, traceback, sys, datetime, calendar, time
 from dotenv import load_dotenv
 import templates
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
 from elasticsearch import client as es_client
+from mixpanel import Mixpanel
 
 # Loads .env into environment variables
 from pathlib import Path  # python3 only
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
+
+mp = Mixpanel('e3b4939c1ae819d65712679199dfce7e')
 
 pp = pprint.PrettyPrinter(indent=4) #, width=160)
 
@@ -114,6 +117,8 @@ class Index:
         body = _params_to_query_dsl()
         pp.pprint('body')
         pp.pprint(body)
+        start_time = time.time()
+        print('Time of Sending ES Request: ', datetime.datetime.now())
         if query and len(query):
           print('mode 1')
           res = es.search(index=self.get_index_name('elasticsearch'), q=query, body=body, size=size)
@@ -123,6 +128,21 @@ class Index:
         else:
           print('mode 3')
           res = es.search(index=self.get_index_name('elasticsearch'), body=body, size=size)
+        print('Time of Receiving ES Result:', datetime.datetime.now())
+        end_time = time.time()
+        try:
+          duration = float(int((end_time - start_time) * 1000)) / 1000
+          print('-- DURATION --', duration)
+          mp.track('admin', 'ElasticSearch Response', {
+            'duration': duration,
+            'query': query,
+            'params': params,
+            'size': size,
+            'environment': 'local' if 'HOME' in os.environ and os.environ['HOME'] == '/Users/jeremy' else 'production',
+          })
+        except Exception as e:
+          traceback.print_exc(file=sys.stdout)
+          sentry.captureException()
         print('-- START OF RES --')
         pp.pprint(json.dumps(res)[:500])
         print('-- END OF RES --')

@@ -252,7 +252,7 @@ cards_template = {
       },
       'analyzer': {
         'english': {
-          'tokenizer':  'standard',
+          'tokenizer': 'standard',
           'filter': [
             'english_possessive_stemmer',
             'lowercase',
