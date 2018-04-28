@@ -248,3 +248,32 @@ def saveCard(source: dict, card: dict):
 # }, 'FptwaKolhPnYFPLUWBubCo3ASpk14lLPhK_ndV0jmlaQg6hmdRX0zb5Autwinmcce')
 
 # pp.pprint(listAccounts())
+
+
+
+# listFiles({
+#   "organisationID": "soham_trivedi_16267537",
+#   "superService": "kloudless",
+#   "service": "gdrive",
+#   "accountID": 301467186,
+#   "access_token": "mBmiNbWh06RBzn5EFanV2Irs5rwR4o",
+#   "raw_source": {
+#     "id": 301467186,
+#     "account": "soham@techalchemy.co",
+#     "active": True,
+#     "service": "gdrive",
+#     "created": "2018-04-27T13:44:41.561578Z",
+#     "modified": "2018-04-27T13:44:42.870781Z",
+#     "service_name": "Google Drive",
+#     "admin": False,
+#     "apis": [
+#       "storage"
+#     ],
+#     "effective_scope": "gdrive:normal.storage.default gdrive:normal.storage.default",
+#     "api": "meta",
+#     "type": "account"
+#   },
+#   "scope": "gdrive:normal.storage",
+#   "addedBy": "soham@techalchemy.co",
+#   "title": "Google Drive"
+# })

@@ -1235,8 +1235,8 @@ def startIndexing():
 
 # indexAll()
 
-
-# indexFile({
+#
+# indexFiles({
 #   "active": True,
 #   "service": "gdrive",
 #   "created": 1511972977,
@@ -1253,7 +1253,7 @@ def startIndexing():
 #   "addedBy": "jeremy@explaain.com",
 #   "accountID": "282782204",
 #   "superService": "kloudless"
-# }, 'F2a0XaF05SJtNYdZT6RlgX7cDt4GwxYz8Noh9WOwFzFO4UENFxaEhzVhVC2gpHJGZ')
+# })
 
 
 # indexFiles({
