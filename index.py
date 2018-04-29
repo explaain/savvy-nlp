@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import pprint, os, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys, db, re
+import pprint, os, datetime, sched, time, calendar, json, requests, random, difflib, traceback, sys, db, re, inspect
 from raven import Client as SentryClient
 from parse import services, entityNlp
 import xmljson
 import firebase_admin
-import track
+import track, code_context
 from firebase_admin import credentials as firebaseCredentials
 from firebase_admin import auth as firebaseAuth
 from google.cloud import storage as google_storage
@@ -866,11 +866,13 @@ def fileCardsToFreeze(cards):
   return freeze
 
 def searchCards(user: dict=None, query: str='', params: dict=None):
+  code_context.time_check(inspect.stack())
   if not user or not len(user) or 'organisationID' not in user:
     return None
   # The next 2 lines are pretty much (if not exactly) dealt with in db.Cards.search so should decide where best to put them
   if (not query or not len(query)) and params and len(params) and 'query' in params:
     query = params['query']
+  search_service = 'algolia'
   if params and len(params):
     if 'search_service' in params:
       search_service = params['search_service']
@@ -879,10 +881,9 @@ def searchCards(user: dict=None, query: str='', params: dict=None):
       del(params['hitsPerPage'])
     if 'searchStrategy' in params:
       del(params['searchStrategy'])
-  else:
-    search_service = 'algolia'
   results = db.Cards(user['organisationID']).search(query=query, params=params, search_service=search_service)
   track.slack('*' + user_to_name(user) + '* searched and got *' + str(len(results['hits'])) + ' results*.')
+  code_context.time_check(inspect.stack())
   return results
 
 def getCard(user: dict=None, objectID: str=None, params: dict=None):

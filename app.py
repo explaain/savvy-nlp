@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import os, pprint, index, cards
+import os, pprint, time, inspect
+import index, cards, code_context
 from dotenv import load_dotenv
 # import bugsnag, os, pprint
 from raven import Client as SentryClient
@@ -36,9 +37,15 @@ def add_source():
 @app.route('/get-user', methods=['POST'])
 def get_user():
   print('Starting to get user data!')
+  if 'LAST_TIME_CHECK' in os.environ:
+    del(os.environ['LAST_TIME_CHECK'])
+  code_context.time_check(inspect.stack())
+  start_time = time.time()
   results = index.get_user(request.json['idToken'])
   print('API Returning:')
   pp.pprint(results)
+  code_context.time_check(inspect.stack())
+  print('⏳⏳⏳ TOTAL DURATION: ' + str(time.time() - start_time))
   return jsonify({'results': results})
 
 @app.route('/get-user-files', methods=['POST'])
@@ -71,6 +78,10 @@ def get_results():
 @app.route('/search-cards', methods=['POST'])
 def search_cards():
   print('Starting to search cards!')
+  if 'LAST_TIME_CHECK' in os.environ:
+    del(os.environ['LAST_TIME_CHECK'])
+  code_context.time_check()
+  start_time = time.time()
   pp.pprint(request.json)
   params = None
   if 'params' in request.json and request.json['params']:
@@ -81,6 +92,8 @@ def search_cards():
   result = index.searchCards(request.json['user'], request.json['query'], params)
   pp.pprint('result1')
   pp.pprint(result)
+  code_context.time_check()
+  print('⏳⏳⏳ TOTAL DURATION: ' + str(time.time() - start_time))
   return jsonify(result)
 
 @app.route('/get-card', methods=['POST'])

@@ -1,9 +1,9 @@
 # ELASTICSEARCH TODOS:
 # @TODO: browse()
 
-import pprint, os, json, traceback, sys, datetime, calendar, time
+import pprint, os, json, traceback, sys, datetime, calendar, time, inspect
 from dotenv import load_dotenv
-import templates
+import templates, code_context
 from raven import Client as SentryClient
 from algoliasearch import algoliasearch
 from elasticsearch import Elasticsearch
@@ -102,6 +102,7 @@ class Index:
     return self.get_index_name('elasticsearch')
 
   def search(self, query: str='', params: dict=None, search_service: str='elasticsearch', size: int=10):
+    code_context.time_check(inspect.stack())
     if not query:
       query = ''
     if not len(query) and params and 'query' in params and params['query']:
@@ -148,10 +149,12 @@ class Index:
         print('-- START OF RES --')
         pp.pprint(json.dumps(res)[:500])
         print('-- END OF RES --')
+        code_context.time_check(inspect.stack())
         return {
           'hits': [_transform_from_elasticsearch(self.doc_type, hit['_source'], id=hit['_id']) for hit in res['hits']['hits']]
         }
     except Exception as e:
+      traceback.print_exc(file=sys.stdout)
       print(search_service + ': Couldn\'t search for records in index "' + self.get_index_name('elasticsearch') + '". ', e)
       sentry.captureException()
       return None
