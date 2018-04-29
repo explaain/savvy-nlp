@@ -112,21 +112,21 @@ class Index:
         return self.index.search(query, params)
       else:
         print('Searching ElasticSearch!')
-        # @TODO: configure search and insert query (NOW DONE???)
-        # body = _params_to_query_dsl(params)
-        body = _params_to_query_dsl()
-        pp.pprint('body')
-        pp.pprint(body)
+        if not params:
+          params = {}
+        if len(query) and ('query' not in params or not params['query']):
+          params['query'] = query
+        body = _params_to_query_dsl(params)
         start_time = time.time()
         print('Time of Sending ES Request: ', datetime.datetime.now())
-        if query and len(query):
-          print('mode 1')
-          res = es.search(index=self.get_index_name('elasticsearch'), q=query, body=body, size=size)
-        elif params and 'filters' in params:
-          print('mode 2')
+        if params and 'filters' in params and not query:
+          # Straightforward filters-based search with no text query
+          # TODO: Remove this - should be handled by _params_to_query_dsl()
+          print('Mode A')
           res = es.search(index=self.get_index_name('elasticsearch'), q=params['filters'], body=body, size=size)
         else:
-          print('mode 3')
+          # All other searches (text-based queries with or without filters - or even just a blank search)
+          print('Mode B')
           res = es.search(index=self.get_index_name('elasticsearch'), body=body, size=size)
         print('Time of Receiving ES Result:', datetime.datetime.now())
         end_time = time.time()
@@ -365,6 +365,13 @@ class Index:
         sentry.captureException()
     try:
       body = _params_to_query_dsl(params)
+      if not body or 'query' not in body or not len(body['query']) or ('match_all' in body['query'] and not len(body['query']['match_all'])):
+        sentry.captureMessage('Nearly deleted every document in index! Check delete_by_query() function for bugs.', extra={
+          'params': params,
+          'body': body,
+          'index_name': self.get_index_name('elasticsearch'),
+        })
+        return None
       res = es.delete_by_query(index=self.get_index_name('elasticsearch'), body=body)
       if not UsingAlgolia:
         result = res # @TODO: transform this result
@@ -489,30 +496,57 @@ def _transform_elasticsearch_result(res: dict=None):
     }
 
 def _params_to_query_dsl(params: dict=None):
+  """ If params['query'] exists then this assumes it's a user searching by text.
+  If not then this acts like a pure filter (like a database query), e.g. for delete_by_query()
+  """
   # Currently only handles term-based filters (i.e. not ranges, text searches...)
   # Only handles filters separated by 'AND'
   # Assumes each value is in "quotes"
-  # if not params:
-  #   return None
-  if params and 'filters' in params:
-    filters = params['filters'].split(' AND ')
-    filter = [{
-      'term': { f.split(':')[0].strip(): ''.join(f.split(':')[1].strip().split('"')) }
-    } for f in filters]
-    query = {
-      'query': {
-        'bool': {
-          'filter': filter
-        }
-      }
-    }
-  else:
-    query = {
+  if not params:
+    return {
       'query': {
         'match_all': {}
       }
     }
-  return query
+  query_dsl = {
+    'query': {
+      'bool': {}
+    }
+  }
+  if 'query' in params:
+    # NOTE: This only works for cards!
+    query_dsl['query']['bool']['must'] = {
+      'multi_match': {
+        'query': params['query'],
+        'type': 'most_fields',
+        'fields': [
+          'title^3',
+          'description^2',
+          'cells.value^1.5',
+          'listCards^1.5',
+          'fileTitle^0.8',
+          'context^0.5',
+          'creator^0.5',
+          'entityTypes^0.2',
+          'fileFormat^0.2',
+          'fileType^0.2',
+          'fileUrl^0.2',
+          'format^0.2',
+          'modifier^0.2',
+          'service^0.2',
+          'subService^0.2',
+          'superService^0.2',
+          'type^0.2',
+        ]
+      },
+    }
+  if 'filters' in params:
+    filters = params['filters'].split(' AND ')
+    filter = [{
+      'term': { f.split(':')[0].strip(): ''.join(f.split(':')[1].strip().split('"')) }
+    } for f in filters]
+    query_dsl['query']['bool']['filter'] = filter
+  return query_dsl
 
 
 # # Sources()

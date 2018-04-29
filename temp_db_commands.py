@@ -492,42 +492,71 @@ source_params = {
 # pp.pprint(db.Files('soham_trivedi_16267537').browse())
 
 
-res = es.search(index='explaain__cards', body= {
+res = es.search(index='explaain__cards', body={
   'query': {
-    'multi_match': {
-      'query':  'yc application',
-      'type':   'most_fields',
-      'fields': [
-        'title^3',
-        'description^2',
-        'cells.value^1.5',
-        'listCards^1.5',
-        'fileTitle^0.8',
-        'context^0.5',
-        'creator^0.5',
-        'entityTypes^0.2',
-        'fileFormat^0.2',
-        'fileType^0.2',
-        'fileUrl^0.2',
-        'format^0.2',
-        'modifier^0.2',
-        'service^0.2',
-        'subService^0.2',
-        'superService^0.2',
-        'type^0.2',
-      ]
-    },
-    # 'multi_match': {
-    #   'query':  'yc application',
-    #   'fields': [ ]
-    # }
+    'bool': {
+      'must': {
+        'multi_match': {
+          'query': 'yc application',
+          'type': 'most_fields',
+          'fields': [
+            'title^3',
+            'description^2',
+            'cells.value^1.5',
+            'listCards^1.5',
+            'fileTitle^0.8',
+            'context^0.5',
+            'creator^0.5',
+            'entityTypes^0.2',
+            'fileFormat^0.2',
+            'fileType^0.2',
+            'fileUrl^0.2',
+            'format^0.2',
+            'modifier^0.2',
+            'service^0.2',
+            'subService^0.2',
+            'superService^0.2',
+            'type^0.2',
+          ]
+        },
+      },
+      # 'filter': [
+      #   {'term': { 'type': 'file' }}
+      # ]
+    }
   }
 })
 # }, explain=True)
 
+res = db.Cards('explaain').search()
+# res = db.Cards('explaain').search('yc application', params={'filters': 'type:file'})
+
+# pp.pprint(res)
+
+res = {
+  'hits': {
+    'hits': [{'_source': hit} for hit in res['hits']] if res else []
+  }
+}
+
 # print(json.dumps(res, indent=2))
-print(json.dumps([hit for hit in res['hits']['hits']], indent=2))
-pp.pprint([hit.get('title', '') + '\n' + hit.get('description', '') + '\n' + '\n'.join(hit.get('listCards', [])) + '\n' + '\n'.join([cell['content'] for cell in hit.get('cells', [])]) + '\n' + hit.get('fileTitle', '') for hit in res['hits']['hits']])
+# print(json.dumps([hit['_source'] for hit in res['hits']['hits']], indent=2))
+print('\n\n')
+for hit in res['hits']['hits']:
+  for key in ['title', 'description']:
+    if key in hit['_source'] and hit['_source'][key]:
+      print(hit['_source'][key])
+  for key in ['listCards']:
+    if key in hit['_source'] and hit['_source'][key]:
+      print('\n'.join(hit['_source'].get(key, [])))
+  for key in ['cells']:
+    if key in hit['_source'] and hit['_source'][key]:
+      print('\n'.join([cell['content'] for cell in hit['_source'].get('cells', [])]))
+  for key in ['fileTitle']:
+    if key in hit['_source'] and hit['_source'][key]:
+      print(('> ' if key == 'fileTitle' else '') + hit['_source'][key])
+  # print(hit['_source'].get('title', '') + '\n' + hit['_source'].get('description', '') + '\n' + '\n'.join(hit['_source'].get('listCards', [])) + '\n' + '\n'.join([cell['content'] for cell in hit['_source'].get('cells', [])]) + '\n' + hit['_source'].get('fileTitle', ''))
+  print('\n\n---\n\n')
 
 
 
