@@ -116,6 +116,8 @@ class Index:
           params = {}
         if len(query) and ('query' not in params or not params['query']):
           params['query'] = query
+        if 'query' in params and (not params['query'] or not len(params['query'])):
+          del(params['query'])
         body = _params_to_query_dsl(params)
         start_time = time.time()
         print('Time of Sending ES Request: ', datetime.datetime.now())
@@ -502,7 +504,7 @@ def _params_to_query_dsl(params: dict=None):
   # Currently only handles term-based filters (i.e. not ranges, text searches...)
   # Only handles filters separated by 'AND'
   # Assumes each value is in "quotes"
-  if not params:
+  if not params or not len(params):
     return {
       'query': {
         'match_all': {}

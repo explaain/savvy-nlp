@@ -871,9 +871,14 @@ def searchCards(user: dict=None, query: str='', params: dict=None):
   # The next 2 lines are pretty much (if not exactly) dealt with in db.Cards.search so should decide where best to put them
   if (not query or not len(query)) and params and len(params) and 'query' in params:
     query = params['query']
-  if params and len(params) and 'search_service' in params:
-    search_service = params['search_service']
-    del(params['search_service'])
+  if params and len(params):
+    if 'search_service' in params:
+      search_service = params['search_service']
+      del(params['search_service'])
+    if 'hitsPerPage' in params:
+      del(params['hitsPerPage'])
+    if 'searchStrategy' in params:
+      del(params['searchStrategy'])
   else:
     search_service = 'algolia'
   results = db.Cards(user['organisationID']).search(query=query, params=params, search_service=search_service)

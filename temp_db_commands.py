@@ -492,43 +492,43 @@ source_params = {
 # pp.pprint(db.Files('soham_trivedi_16267537').browse())
 
 
-res = es.search(index='explaain__cards', body={
-  'query': {
-    'bool': {
-      'must': {
-        'multi_match': {
-          'query': 'yc application',
-          'type': 'most_fields',
-          'fields': [
-            'title^3',
-            'description^2',
-            'cells.value^1.5',
-            'listCards^1.5',
-            'fileTitle^0.8',
-            'context^0.5',
-            'creator^0.5',
-            'entityTypes^0.2',
-            'fileFormat^0.2',
-            'fileType^0.2',
-            'fileUrl^0.2',
-            'format^0.2',
-            'modifier^0.2',
-            'service^0.2',
-            'subService^0.2',
-            'superService^0.2',
-            'type^0.2',
-          ]
-        },
-      },
-      # 'filter': [
-      #   {'term': { 'type': 'file' }}
-      # ]
-    }
-  }
-})
+# res = es.search(index='explaain__cards', body={
+#   'query': {
+#     'bool': {
+#       'must': {
+#         'multi_match': {
+#           'query': 'yc application',
+#           'type': 'most_fields',
+#           'fields': [
+#             'title^3',
+#             'description^2',
+#             'cells.value^1.5',
+#             'listCards^1.5',
+#             'fileTitle^0.8',
+#             'context^0.5',
+#             'creator^0.5',
+#             'entityTypes^0.2',
+#             'fileFormat^0.2',
+#             'fileType^0.2',
+#             'fileUrl^0.2',
+#             'format^0.2',
+#             'modifier^0.2',
+#             'service^0.2',
+#             'subService^0.2',
+#             'superService^0.2',
+#             'type^0.2',
+#           ]
+#         },
+#       },
+#       # 'filter': [
+#       #   {'term': { 'type': 'file' }}
+#       # ]
+#     }
+#   }
+# })
 # }, explain=True)
 
-res = db.Cards('explaain').search()
+res = db.Cards('explaain').search('')
 # res = db.Cards('explaain').search('yc application', params={'filters': 'type:file'})
 
 # pp.pprint(res)
